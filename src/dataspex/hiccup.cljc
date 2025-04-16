@@ -1,5 +1,7 @@
 (ns dataspex.hiccup
-  (:require [dataspex.data :as data]
+  (:require [dataspex.actions :as-alias actions]
+            [dataspex.data :as data]
+            [dataspex.icons :as-alias icons]
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
             [dataspex.views :as views]))
@@ -134,7 +136,7 @@
            :then (into
                   (->> ((or get-entries data/get-indexed-entries) s opt)
                        (paginate {:page-size page-size, :offset offset})
-                       (mapv #(render-inline (:v %) (update opt ::path conj (:k %))))))
+                       (mapv #(render-inline (:v %) (update opt :dataspex/path conj (:k %))))))
 
            (< current-end (bounded-count (inc (+ offset page-size)) s))
            (conj [::ui/link
@@ -190,40 +192,122 @@
            [::ui/code s])]
         [::ui/code string]))))
 
+(defn render-copy-button [opt & paths]
+  [::ui/button
+   {::ui/title "Copy to clipboard"
+    ::ui/actions [[::actions/copy (:dataspex/inspectee opt) (views/path-to opt paths)]]}
+   [::icons/copy]])
+
+(defn render-primitive-dictionary [type-name v opt]
+  [::ui/dictionary
+   [::ui/entry
+    [::ui/symbol "Type"]
+    [::ui/symbol type-name]]
+   [::ui/entry
+    [::ui/symbol "Value"]
+    (render-inline v {})
+    (render-copy-button opt)]])
+
+(defn render-meta-entry [v opt]
+  (when-let [md (meta v)]
+    (let [opt (update opt :dataspex/path conj :dataspex/meta)]
+      [::ui/entry
+       {::ui/actions [(views/navigate-to opt (views/path-to opt))]}
+       [::ui/symbol "^meta"]
+       (render-inline (data/inspect md opt) opt)
+       (render-copy-button opt)])))
+
+(defn render-entries-dictionary [v entries opt]
+  (let [meta-entry (render-meta-entry v opt)]
+    (cond-> [::ui/dictionary]
+      meta-entry (conj meta-entry)
+
+      :then
+      (into
+       (for [{:keys [k path label v]} (-> (views/get-pagination opt)
+                                          (paginate entries))]
+         (let [opt (cond
+                     k (update opt :dataspex/path conj k)
+                     path (update opt :dataspex/path into path))]
+           [::ui/entry
+            {::ui/actions
+             (when (or k path)
+               [(views/navigate-to opt (views/path-to opt))])}
+            (or (some-> label (render-inline opt)) "")
+            (render-inline v opt)
+            (render-copy-button opt)]))))))
+
 (defn render-inline [data & [opt]]
   (if (satisfies? dp/IRenderInline data)
     (dp/render-inline data opt)
     (render-inline-object data opt)))
 
+(defn render-dictionary [data & [opt]]
+  (cond
+    (satisfies? dp/IRenderDictionary data)
+    (dp/render-dictionary data opt)
+
+    (map? data)
+    (render-entries-dictionary data (data/get-map-entries data opt) opt)
+
+    (coll? data)
+    (render-entries-dictionary data (data/get-indexed-entries data opt) opt)
+
+    (data/js-array? data)
+    (render-entries-dictionary data (data/get-js-array-entries data opt) opt)
+
+    (data/js-object? data)
+    (render-entries-dictionary data (data/get-js-object-entries data opt) opt)))
+
 (extend-type #?(:cljs string
                 :clj java.lang.String)
   dp/IRenderInline
   (render-inline [s _]
-    [::ui/string s]))
+    [::ui/string s])
+
+  dp/IRenderDictionary
+  (render-dictionary [s opt]
+    (render-primitive-dictionary "String" s opt)))
 
 (extend-type #?(:cljs cljs.core/Keyword
                 :clj clojure.lang.Keyword)
   dp/IRenderInline
   (render-inline [k _]
-    [::ui/keyword k]))
+    [::ui/keyword k])
+
+  dp/IRenderDictionary
+  (render-dictionary [k opt]
+    (render-primitive-dictionary "Keyword" k opt)))
 
 (extend-type #?(:cljs number
                 :clj java.lang.Number)
   dp/IRenderInline
   (render-inline [n _]
-    [::ui/number n]))
+    [::ui/number n])
+
+  dp/IRenderDictionary
+  (render-dictionary [n opt]
+    (render-primitive-dictionary "Number" n opt)))
 
 (extend-type #?(:cljs boolean
                 :clj java.lang.Boolean)
   dp/IRenderInline
   (render-inline [b _]
-    [::ui/boolean b]))
+    [::ui/boolean b])
+
+  dp/IRenderDictionary
+  (render-dictionary [b opt]
+    (render-primitive-dictionary "Boolean" b opt)))
 
 (extend-type #?(:cljs cljs.core/Symbol
                 :clj clojure.lang.Symbol)
   dp/IRenderInline
   (render-inline [s _]
-    [::ui/symbol s]))
+    [::ui/symbol s])
+
+  dp/IRenderDictionary
+  (render-dictionary [s opt]
+    (render-primitive-dictionary "Symbol" s opt)))
 
 (extend-type #?(:cljs cljs.core/PersistentVector
                 :clj clojure.lang.PersistentVector)
@@ -247,10 +331,18 @@
                 :clj clojure.lang.PersistentHashSet)
   dp/IRenderInline
   (render-inline [s opt]
-    (render-inline-set s opt)))
+    (render-inline-set s opt))
+
+  dp/IRenderDictionary
+  (render-dictionary [s opt]
+    (render-entries-dictionary s (data/get-set-entries s opt) opt)))
 
 (extend-type #?(:cljs cljs.core/Atom
                 :clj clojure.lang.IAtom)
   dp/IRenderInline
   (render-inline [r opt]
-    (render-paginated-sequential ::ui/vector [(deref r)] (assoc opt ::ui/prefix "#atom"))))
+    (render-paginated-sequential ::ui/vector [(deref r)] (assoc opt ::ui/prefix "#atom")))
+
+  dp/IRenderDictionary
+  (render-dictionary [r opt]
+    (render-dictionary (deref r) opt)))

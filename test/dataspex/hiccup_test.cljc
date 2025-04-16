@@ -1,6 +1,8 @@
 (ns dataspex.hiccup-test
   (:require [clojure.test :refer [deftest is testing]]
+            [dataspex.actions :as-alias actions]
             [dataspex.helper :as h]
+            [dataspex.icons :as-alias icons]
             [dataspex.ui :as-alias ui]
             [lookup.core :as lookup]))
 
@@ -187,3 +189,160 @@
     (is (= (h/render-inline (atom {}))
            [::ui/vector {::ui/prefix "#atom"}
             [::ui/map]]))))
+
+(deftest render-dictionary-test
+  (testing "Renders string"
+    (is (= (h/render-dictionary
+            {:dataspex/inspectee "Store"
+             :dataspex/path [:val]} "A string")
+           [::ui/dictionary
+            [::ui/entry
+             [::ui/symbol "Type"]
+             [::ui/symbol "String"]]
+            [::ui/entry
+             [::ui/symbol "Value"]
+             [::ui/string "A string"]
+             [::ui/button
+              {::ui/title "Copy to clipboard"
+               ::ui/actions [[::actions/copy "Store" [:val]]]}
+              [::icons/copy]]]])))
+
+  (testing "Renders keyword"
+    (is (= (->> :keyword
+                (h/render-dictionary
+                 {:dataspex/inspectee "Conn"
+                  :dataspex/path [:k]})
+                (lookup/select '[::ui/entry ::ui/keyword])
+                lookup/text)
+           ":keyword")))
+
+  (testing "Renders number"
+    (is (= (->> 42
+                (h/render-dictionary
+                 {:dataspex/inspectee "Store"
+                  :dataspex/path [:num]})
+                (lookup/select '[::ui/entry ::ui/number])
+                lookup/text)
+           "42")))
+
+  (testing "Renders boolean"
+    (is (= (->> (h/render-dictionary {:dataspex/path [:bool]} true)
+                (lookup/select '[::ui/entry ::ui/boolean])
+                lookup/text)
+           "true")))
+
+  (testing "Renders symbol"
+    (is (= (->> (h/render-dictionary {:dataspex/path [:sym]} 'namespaced/symbol)
+                (lookup/select '[::ui/entry ::ui/symbol])
+                last
+                lookup/text)
+           "namespaced/symbol")))
+
+  (testing "Renders vector"
+    (is (= (h/render-dictionary
+            {:dataspex/path [:libs]
+             :dataspex/inspectee "Clojars"}
+            [{:library/name "Replicant"}
+             {:library/name "Dataspex"}])
+           [::ui/dictionary
+            [::ui/entry
+             {::ui/actions [[::actions/assoc-in ["Clojars" :dataspex/path] [:libs 0]]]}
+             [::ui/number 0]
+             [::ui/map
+              [::ui/map-entry
+               [::ui/keyword :library/name]
+               [::ui/string "Replicant"]]]
+             [::ui/button
+              {::ui/title "Copy to clipboard"
+               ::ui/actions [[::actions/copy "Clojars" [:libs 0]]]}
+              [::icons/copy]]]
+            [::ui/entry
+             {::ui/actions [[::actions/assoc-in ["Clojars" :dataspex/path] [:libs 1]]]}
+             [::ui/number 1]
+             [::ui/map
+              [::ui/map-entry
+               [::ui/keyword :library/name]
+               [::ui/string "Dataspex"]]]
+             [::ui/button
+              {::ui/title "Copy to clipboard"
+               ::ui/actions [[::actions/copy "Clojars" [:libs 1]]]}
+              [::icons/copy]]]])))
+
+  (testing "Displays vector meta data"
+    (is (= (->> (with-meta
+                  [{:library/name "Replicant"}
+                   {:library/name "Dataspex"}] {:secret "Additional data"})
+                (h/render-dictionary {:dataspex/path [:libs]})
+                lookup/children
+                first
+                lookup/text)
+           "^meta :secret Additional data")))
+
+  (testing "Navigates with current path"
+    (is (= (->> [{:library/name "Replicant"}
+                 {:library/name "Dataspex"}]
+                (h/render-dictionary
+                 {:dataspex/inspectee "Libs"
+                  :dataspex/path [:libraries]})
+                (lookup/select ::ui/entry)
+                (mapv lookup/attrs))
+           [{::ui/actions [[::actions/assoc-in ["Libs" :dataspex/path] [:libraries 0]]]}
+            {::ui/actions [[::actions/assoc-in ["Libs" :dataspex/path] [:libraries 1]]]}])))
+
+  (testing "Paginates vector"
+    (is (= (->> ["Replicant" "Portfolio" "Dataspex" "m1p" "lookup" "phosphor-clj"]
+                (mapv (fn [lib] {:library/name lib}))
+                (h/render-dictionary
+                 {:dataspex/path [:libs]
+                  :dataspex/pagination {[:libs] {:offset 2}
+                                       :page-size 3}})
+                (lookup/select ::ui/number)
+                (mapv lookup/text))
+           ["2" "3" "4"])))
+
+  (testing "Browses list as dictionary"
+    (is (= (->> (h/render-dictionary
+                 (list {:library/name "Replicant"}
+                       {:library/name "Dataspex"}))
+                (lookup/select ::ui/number)
+                (mapv lookup/text))
+           ["0" "1"])))
+
+  (testing "Browses seq as dictionary"
+    (is (= (->> ["Replicant" "Dataspex"]
+                (map (fn [lib] {:library/name lib}))
+                h/render-dictionary
+                (lookup/select ::ui/number)
+                (mapv lookup/text))
+           ["0" "1"])))
+
+  (testing "Browses set as dictionary"
+    (is (= (->> #{"Replicant" "Dataspex"}
+                (h/render-dictionary
+                 {:dataspex/inspectee "Datas"
+                  :dataspex/path [:lib-names]})
+                (lookup/select ::ui/entry)
+                first)
+           [::ui/entry
+            {::ui/actions [[::actions/assoc-in ["Datas" :dataspex/path] [:lib-names "Dataspex"]]]}
+            ""
+            [::ui/string "Dataspex"]
+            [::ui/button
+             {::ui/title "Copy to clipboard"
+              ::ui/actions [[::actions/copy "Datas" [:lib-names "Dataspex"]]]}
+             [::icons/copy]]])))
+
+  (testing "Browses map as dictionary"
+    (is (= (->> (h/render-dictionary
+                 {:library/name "Replicant"
+                  :library/version "2025.03.27"})
+                (lookup/select ::ui/keyword)
+                (mapv lookup/text))
+           [":library/name" ":library/version"])))
+
+  (testing "Renders atom dictionary"
+    (is (= (->> (atom {:name "Dataspex"})
+                h/render-dictionary
+                (lookup/select ::ui/keyword)
+                (mapv lookup/text))
+           [":name"]))))
