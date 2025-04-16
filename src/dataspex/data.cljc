@@ -95,7 +95,10 @@
             (recur (aget data (cond-> k
                                 (keyword? k) name)) (next ks))))))))
 
-(defn tableable? [x opt]
+(defn tableable?
+  "Determine if `x` can render as a table. Returns `false` if `x` does not
+  implement the `IRenderTable` protocol."
+  [x opt]
   (let [data (datafy/datafy x)]
     (if (satisfies? dp/IRenderTable data)
       (dp/tableable? data opt)
