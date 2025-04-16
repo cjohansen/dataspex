@@ -36,4 +36,87 @@
   (testing "Renders insts"
     (is (= (h/render-inline #inst "2025-04-05")
            [::ui/literal {::ui/prefix "#inst"}
-            [::ui/string "2025-04-05T00:00:00.000-00:00"]]))))
+            [::ui/string "2025-04-05T00:00:00.000-00:00"]])))
+
+  (testing "Renders short vector"
+    (is (= (h/render-inline [:hello])
+           [::ui/vector
+            [::ui/keyword :hello]])))
+
+  (testing "Renders longer vector"
+    (is (= (h/render-inline
+            [:hello :hello :hello :hello :hello
+             :hello :hello :hello :hello :hello
+             :hello :hello :hello :hello :hello
+             :hello :hello :hello :hello])
+           [::ui/link "[19 keywords]"])))
+
+  (testing "Renders longer vector of mixed contents"
+    (is (= (h/render-inline
+            [:hello :hello :hello :hello :hello
+             :hello :hello :hello :hello 2
+             :hello :hello :hello :hello :hello
+             :hello :hello :hello :hello])
+           [::ui/link "[19 items]"])))
+
+  (testing "Renders short list"
+    (is (= (h/render-inline '(:hello))
+           [::ui/list
+            [::ui/keyword :hello]])))
+
+  (testing "Renders longer list"
+    (is (= (h/render-inline
+            (list
+             :hello :hello :hello :hello :hello
+             :hello :hello :hello :hello :hello
+             :hello :hello :hello :hello :hello
+             :hello :hello :hello :hello))
+           [::ui/link "(19 keywords)"])))
+
+  (testing "Renders longer list of mixed contents"
+    (is (= (h/render-inline
+            (list
+             :hello :hello :hello :hello :hello
+             :hello :hello :hello :hello 2
+             :hello :hello :hello :hello :hello
+             :hello :hello :hello :hello))
+           [::ui/link "(19 items)"])))
+
+  (testing "Renders short seq"
+    (is (= (h/render-inline (range 0 5))
+           [::ui/list
+            [::ui/number 0]
+            [::ui/number 1]
+            [::ui/number 2]
+            [::ui/number 3]
+            [::ui/number 4]])))
+
+  (testing "Renders longer seq"
+    (is (= (h/render-inline (range 0 50))
+           [::ui/link "(50 numbers)"])))
+
+  (testing "Renders longer seq of mixed contents"
+    (is (= (h/render-inline (concat (range 0 50) (repeat 3 :lol)))
+           [::ui/link "(53 items)"])))
+
+  (testing "Renders indefinite seq"
+    (is (= (h/render-inline (range))
+           [::ui/link "(1000+ items)"])))
+
+  (testing "Renders short set"
+    (is (= (h/render-inline #{:hello})
+           [::ui/set
+            [::ui/keyword :hello]])))
+
+  (testing "Renders longer set"
+    (is (= (h/render-inline
+            #{:hello :hallo :hillo :hollo :hullo
+              :hella :halla :hilla :holla :hulla
+              :helle :halle :hille :holle :hulle
+              :hellu :hallu :hillu :hollu})
+           [::ui/link "#{19 keywords}"])))
+
+  (testing "Renders longer set of mixed contents"
+    (is (= (h/render-inline
+            (set (conj (range 0 50) :lol)))
+           [::ui/link "#{51 items}"]))))

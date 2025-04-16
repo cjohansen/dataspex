@@ -95,9 +95,49 @@
             (recur (aget data (cond-> k
                                 (keyword? k) name)) (next ks))))))))
 
+(defn as-key [v]
+  (if (satisfies? dp/IKey v)
+    (dp/to-key v)
+    v))
+
 (defn stringify [v]
   (binding [*print-namespace-maps* false]
     (pr-str v)))
+
+(defn type-pref [x]
+  (cond
+    (qualified-keyword? x) 0
+    (keyword? x) 1
+    (qualified-symbol? x) 2
+    (symbol? x) 3
+    (string? x) 4
+    (number? x) 5
+    (map? x) 6
+    (vector? x) 7
+    (list? x) 8
+    (set? x) 9
+    (seq? x) 10
+    (boolean? x) 11
+    :else 12))
+
+(def sort-order (juxt type-pref str))
+
+(defn get-indexed-entries [coll opt]
+  (map-indexed
+   (fn [i x]
+     {:k i
+      :label i
+      :v (inspect x opt)})
+   coll))
+
+(defn get-set-entries [s opt]
+  (->> (cond->> s
+         (not (sorted? s))
+         (sort-by sort-order))
+       (map (fn [v]
+              (let [v (inspect v opt)]
+                {:k (as-key v)
+                 :v v})))))
 
 #?(:cljs
    (extend-type js/Date
