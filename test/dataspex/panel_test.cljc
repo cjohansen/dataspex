@@ -119,3 +119,60 @@
               [[::actions/assoc-in ["Store" :dataspex/path] [:users]]]}
              [::ui/keyword :users]]
             [::ui/crumb [::ui/number 0]]]))))
+
+(deftest render-pagination-bar
+  (testing "Does not paginate strings"
+    (is (nil? (panel/render-pagination-bar "String" {}))))
+
+  (testing "Does not paginate collection that fits on one page"
+    (is (nil? (panel/render-pagination-bar (range 200) {}))))
+
+  (testing "Can go to next page"
+    (is (= (panel/render-pagination-bar
+            (range 200)
+            {:dataspex/inspectee "App data"
+             :dataspex/path [:data]
+             :dataspex/pagination
+             {[:data] {:page-size 100}}})
+           [::ui/navbar.center
+            [::ui/button [::icons/caret-left]]
+            [:span.code.text-smaller.subtle "0-99 of 200"]
+            [::ui/button
+             {::ui/actions
+              [[::actions/assoc-in ["App data" :dataspex/pagination [:data] :offset] 100]]}
+             [::icons/caret-right]]])))
+
+  (testing "Can go to previous page"
+    (is (= (panel/render-pagination-bar
+            (range 200)
+            {:dataspex/inspectee "App data"
+             :dataspex/path [:data]
+             :dataspex/pagination
+             {[:data] {:page-size 100
+                       :offset 100}}})
+           [::ui/navbar.center
+            [::ui/button
+             {::ui/actions
+              [[::actions/assoc-in ["App data" :dataspex/pagination [:data] :offset] 0]]}
+             [::icons/caret-left]]
+            [:span.code.text-smaller.subtle "100-199 of 200"]
+            [::ui/button [::icons/caret-right]]])))
+
+  (testing "Can go back and forth"
+    (is (= (panel/render-pagination-bar
+            (range 479)
+            {:dataspex/inspectee "xs"
+             :dataspex/path [:datas]
+             :dataspex/pagination
+             {[:datas] {:offset 100
+                        :page-size 100}}})
+           [::ui/navbar.center
+            [::ui/button
+             {::ui/actions
+              [[::actions/assoc-in ["xs" :dataspex/pagination [:datas] :offset] 0]]}
+             [::icons/caret-left]]
+            [:span.code.text-smaller.subtle "100-199 of 479"]
+            [::ui/button
+             {::ui/actions
+              [[::actions/assoc-in ["xs" :dataspex/pagination [:datas] :offset] 200]]}
+             [::icons/caret-right]]]))))
