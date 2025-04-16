@@ -2,9 +2,13 @@
   (:require [dataspex.actions :as actions]
             [dataspex.client.local :as local-client]
             [dataspex.data :as data]
+            [dataspex.datascript :as datascript]
+            [dataspex.demo-data :as demo-data]
             [dataspex.jwt :as jwt]
             [dataspex.panel :as panel]
             [dataspex.protocols :as dp]))
+
+::datascript/keep
 
 (defonce app-state
   {:app/title "Movie Explorer"
@@ -51,7 +55,9 @@
            :raw-js-object (js-obj "a" 1 "b" (clj->js {:nested [1 2 3]}))}})
 
 (defonce client (local-client/create-client js/document.body))
-(defonce store (atom {"App state" {:dataspex/pagination {:page-size 100}}}))
+(defonce store (atom {"App state" {:dataspex/pagination {:page-size 100}
+                                   :dataspex/path []}
+                      "Datascript" {:dataspex/path []}}))
 
 (data/add-string-inspector! jwt/inspect-jwt)
 
@@ -62,7 +68,10 @@
    (actions/handle-actions store actions)))
 
 (defn render [state]
-  (dp/render client (panel/render-panel state "App state" app-state)))
+  (dp/render client
+   [:div
+    (panel/render-panel state "App state" app-state)
+    (panel/render-panel state "Datascript" demo-data/conn)]))
 
 (add-watch store ::render (fn [_ _ _ state] (render state)))
 
