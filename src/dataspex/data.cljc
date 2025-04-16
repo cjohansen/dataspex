@@ -139,6 +139,16 @@
                 {:k (as-key v)
                  :v v})))))
 
+(defn get-map-entries [m opt & [{:keys [ks]}]]
+  (->> (or ks (if (sorted? m)
+                (mapv first m)
+                (sort-by sort-order (keys m))))
+       (map (fn [k]
+              (let [k (inspect k opt)]
+                {:k (as-key k)
+                 :label k
+                 :v (inspect (get m k) opt)})))))
+
 (defn get-js-array-entries [#?(:cljs ^js arr :clj arr) opt]
   (.map arr (fn [v i]
               {:k i

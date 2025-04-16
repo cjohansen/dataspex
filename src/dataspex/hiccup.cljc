@@ -146,8 +146,32 @@
 (defn render-inline-array [a opt]
   (render-paginated-sequential ::ui/vector a (assoc opt ::ui/prefix "#js") data/get-js-array-entries))
 
+(defn render-inline-map [m entries opt]
+  (let [prefix (::ui/prefix opt)
+        opt (dissoc opt ::ui/prefix)]
+    (if (summarize? m opt)
+      (let [ks (map :k entries)]
+        (if (summarize? ks opt)
+          [::ui/link
+           (str prefix (when prefix " ")
+                "{" (summarize ks {:kind "key"}) "}")]
+          (into (cond-> [::ui/map]
+                  prefix (conj {::ui/prefix prefix}))
+                (mapv (fn [k]
+                        [::ui/map-entry
+                         (render-inline k opt)])
+                      ks))))
+      (into (cond-> [::ui/map]
+              prefix (conj {::ui/prefix prefix}))
+            (mapv (fn [{:keys [label v]}]
+                    [::ui/map-entry
+                     (render-inline label opt)
+                     (render-inline v opt)])
+                  entries)))))
+
 (defn render-inline-object [o opt]
   (cond
+    (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
     (coll? o) (render-inline-seq o opt)
     (data/js-array? o) (render-inline-array o opt)
 

@@ -1,7 +1,8 @@
 (ns dataspex.hiccup-test
-  (:require [dataspex.helper :as h]
+  (:require [clojure.test :refer [deftest is testing]]
+            [dataspex.helper :as h]
             [dataspex.ui :as-alias ui]
-            [clojure.test :refer [deftest is testing]]))
+            [lookup.core :as lookup]))
 
 (deftest render-inline-test
   (testing "Renders string"
@@ -126,4 +127,49 @@
        (is (= (h/render-inline #js ["hello"])
               [::ui/vector
                {:dataspex.ui/prefix "#js"}
-               [::ui/string "hello"]])))))
+               [::ui/string "hello"]]))))
+
+  (testing "Renders short map"
+    (is (= (-> {:hello "There", :lol "lul"}
+               h/render-inline)
+           [::ui/map
+            [::ui/map-entry
+             [::ui/keyword :hello]
+             [::ui/string "There"]]
+            [::ui/map-entry
+             [::ui/keyword :lol]
+             [::ui/string "lul"]]])))
+
+  (testing "Sorts map keys"
+    (is (= (->> {:c 1, :dataspex/hello "There", :b 2, "a" 3, 'dataspex/sym "Sym"}
+                h/render-inline
+                (lookup/select '[::ui/map-entry ":first-child"])
+                (mapv second))
+           [:dataspex/hello :b :c 'dataspex/sym "a"])))
+
+  (testing "Summarizes just keys of longer map"
+    (is (= (->> {:title "Everything Everywhere All At Once"
+                 :year 2022
+                 :directors ["Daniel Kwan" "Daniel Scheinert"]
+                 :genres ["Action" "Comedy" "Drama" "Sci-Fi"]
+                 :rating 8.1
+                 :runtime-minutes 139
+                 :language "English"
+                 :awards {:oscars 7 :nominations 11}}
+                h/render-inline
+                (lookup/select '[::ui/map-entry])
+                (mapv (comp second second)))
+           [:awards :directors :genres :language :rating
+            :runtime-minutes :title :year])))
+
+  (testing "Summarizes when map is too large"
+    (is (= (->> {:title "Everything Everywhere All At Once"
+                 :year 2022
+                 :directors ["Daniel Kwan" "Daniel Scheinert"]
+                 :genres ["Action" "Comedy" "Drama" "Sci-Fi"]
+                 :rating 8.1
+                 :runtime-minutes 139
+                 :language "English"
+                 :awards {:oscars 7 :nominations 11}}
+                (h/render-inline {:dataspex/summarize-above-w 50}))
+           [::ui/link "{8 keys}"]))))
