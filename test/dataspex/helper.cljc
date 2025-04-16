@@ -30,3 +30,10 @@
   ([opt v]
    (let [opt (assoc opt :dataspex/view views/table)]
      (hiccup/render-table (data/inspect v opt) opt))))
+
+(defn render-source
+  ;; Make it thread-last friendly
+  ([v] (render-source nil v))
+  ([opt v]
+   (let [opt (assoc opt :dataspex/view views/source)]
+     (hiccup/render-source (data/inspect v opt) opt))))

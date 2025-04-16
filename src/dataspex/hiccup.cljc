@@ -72,6 +72,11 @@
 (defn string-label [s]
   (StringLabel. s))
 
+(defn hiccup? [data]
+  (and (vector? data)
+       (not (map-entry? data))
+       (keyword? (first data))))
+
 (defn add-attr [hiccup k v]
   (if (map? (second hiccup))
     (assoc-in hiccup [1 k] v)
@@ -397,6 +402,16 @@
          (every? map? (take 100 data)))
     (render-map-table data opt)))
 
+(defn render-source [data opt]
+  (let [opt (assoc opt :dataspex/summarize-above-w -1)]
+    (if (hiccup? data)
+      [::ui/hiccup
+       (if (satisfies? dp/IRenderHiccup data)
+         (dp/render-hiccup data opt)
+         (render-hiccup-node data (assoc opt :dataspex/folding-level 2) [0]))]
+      [::ui/source
+       (render-source-content data opt)])))
+
 (extend-type #?(:cljs string
                 :clj java.lang.String)
   dp/IRenderInline
@@ -483,7 +498,11 @@
 
   dp/IRenderDictionary
   (render-dictionary [r opt]
-    (render-dictionary (deref r) opt)))
+    (render-dictionary (deref r) opt))
+
+  dp/IRenderSource
+  (render-source [r opt]
+    (render-source-content [(deref r)] (assoc opt ::ui/prefix "#atom"))))
 
 #?(:cljs
    (extend-type js/Date

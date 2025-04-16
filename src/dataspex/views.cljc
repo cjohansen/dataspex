@@ -16,6 +16,10 @@
    [(:dataspex/inspectee opt) :dataspex/pagination (:dataspex/path opt) :offset]
    n])
 
+(defn ^{:indent 2} update-folding [opt path v]
+  [:dataspex.actions/assoc-in
+   [(:dataspex/inspectee opt) :dataspex/folding (into (vec (:dataspex/path opt)) path)] v])
+
 (defn path-to
   ([opt] (path-to opt []))
   ([{:dataspex/keys [path]} xs]

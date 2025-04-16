@@ -297,7 +297,7 @@
                 (h/render-dictionary
                  {:dataspex/path [:libs]
                   :dataspex/pagination {[:libs] {:offset 2}
-                                       :page-size 3}})
+                                        :page-size 3}})
                 (lookup/select ::ui/number)
                 (mapv lookup/text))
            ["2" "3" "4"])))
@@ -447,7 +447,7 @@
                  {:dataspex/path []
                   :dataspex/inspectee "Conn"
                   :dataspex/sorting {[] {:key :point/label
-                                        :order :dataspex.sort.order/ascending}}})
+                                         :order :dataspex.sort.order/ascending}}})
                 (lookup/select '::ui/th)
                 second
                 lookup/attrs
@@ -462,9 +462,301 @@
                  {:dataspex/path []
                   :dataspex/inspectee "Store"
                   :dataspex/sorting {[] {:key :point/label
-                                        :order :dataspex.sort.order/descending}}})
+                                         :order :dataspex.sort.order/descending}}})
                 (lookup/select '::ui/th)
                 second
                 lookup/attrs
                 ::ui/actions)
            [[::actions/assoc-in ["Store" :dataspex/sorting [] :order] :dataspex.sort.order/ascending]]))))
+
+(deftest source-test
+  (testing "Renders string"
+    (is (= (h/render-source "String")
+           [::ui/source [::ui/string "String"]])))
+
+  (testing "Renders keyword"
+    (is (= (h/render-source :key/word)
+           [::ui/source [::ui/keyword :key/word]])))
+
+  (testing "Renders number"
+    (is (= (h/render-source 42)
+           [::ui/source [::ui/number 42]])))
+
+  (testing "Renders boolean"
+    (is (= (h/render-source true)
+           [::ui/source [::ui/boolean true]])))
+
+  (testing "Renders symbol"
+    (is (= (h/render-source 'sym/bol)
+           [::ui/source [::ui/symbol 'sym/bol]])))
+
+  (testing "Renders vector"
+    (is (= (h/render-source {:dataspex/path [:fruits]} ["Apples" "Bananas"])
+           [::ui/source
+            [::ui/vector
+             [::ui/string "Apples"]
+             [::ui/string "Bananas"]]])))
+
+  (testing "Does not abbreviate long vector"
+    (is (= (->> [{:fruit/id :apple
+                  :fruit/name "Apple"}
+                 {:fruit/id :banana
+                  :fruit/name "Banana"}
+                 {:fruit/id :pear
+                  :fruit/name "Pear"}
+                 {:fruit/id :orange
+                  :fruit/name "Orange"}
+                 {:fruit/id :kiwi
+                  :fruit/name "Kiwi"}
+                 {:fruit/id :litchi
+                  :fruit/name "Litchi"}
+                 {:fruit/id :durian
+                  :fruit/name "Durian"}]
+                h/render-source
+                (lookup/select '::ui/string)
+                (mapv lookup/text))
+           ["Apple" "Banana" "Pear" "Orange"
+            "Kiwi" "Litchi" "Durian"])))
+
+  (testing "Renders list"
+    (is (= (h/render-source '("Apples" "Bananas"))
+           [::ui/source
+            [::ui/list
+             [::ui/string "Apples"]
+             [::ui/string "Bananas"]]])))
+
+  (testing "Does not abbreviate long list"
+    (is (= (->> '({:fruit/id :apple
+                   :fruit/name "Apple"}
+                  {:fruit/id :banana
+                   :fruit/name "Banana"}
+                  {:fruit/id :pear
+                   :fruit/name "Pear"}
+                  {:fruit/id :orange
+                   :fruit/name "Orange"}
+                  {:fruit/id :kiwi
+                   :fruit/name "Kiwi"}
+                  {:fruit/id :litchi
+                   :fruit/name "Litchi"}
+                  {:fruit/id :durian
+                   :fruit/name "Durian"})
+                h/render-source
+                (lookup/select '::ui/string)
+                (mapv lookup/text))
+           ["Apple" "Banana" "Pear" "Orange"
+            "Kiwi" "Litchi" "Durian"])))
+
+  (testing "Renders seq"
+    (is (= (h/render-source (map identity '("Apples" "Bananas")))
+           [::ui/source
+            [::ui/list
+             [::ui/string "Apples"]
+             [::ui/string "Bananas"]]])))
+
+  (testing "Does not abbreviate long seq"
+    (is (= (->> '({:fruit/id :apple
+                   :fruit/name "Apple"}
+                  {:fruit/id :banana
+                   :fruit/name "Banana"}
+                  {:fruit/id :pear
+                   :fruit/name "Pear"}
+                  {:fruit/id :orange
+                   :fruit/name "Orange"}
+                  {:fruit/id :kiwi
+                   :fruit/name "Kiwi"}
+                  {:fruit/id :litchi
+                   :fruit/name "Litchi"}
+                  {:fruit/id :durian
+                   :fruit/name "Durian"})
+                (map identity)
+                h/render-source
+                (lookup/select '::ui/string)
+                (mapv lookup/text))
+           ["Apple" "Banana" "Pear" "Orange"
+            "Kiwi" "Litchi" "Durian"])))
+
+  (testing "Paginates indefinite seq"
+    (is (= (->> (range)
+                (h/render-source
+                 {:dataspex/path []
+                  :dataspex/pagination
+                  {[] {:page-size 3
+                       :offset 2}}})
+                (lookup/select-one ::ui/list)
+                lookup/children
+                (mapv lookup/text))
+           ["2 more" "2" "3" "4" "1000+ more"])))
+
+  (testing "Renders set"
+    (is (= (h/render-source #{"Apples" "Bananas"})
+           [::ui/source
+            [::ui/set
+             [::ui/string "Apples"]
+             [::ui/string "Bananas"]]])))
+
+  (testing "Does not abbreviate long set"
+    (is (= (->> #{{:fruit/id :apple
+                   :fruit/name "Apple"}
+                  {:fruit/id :banana
+                   :fruit/name "Banana"}
+                  {:fruit/id :pear
+                   :fruit/name "Pear"}
+                  {:fruit/id :orange
+                   :fruit/name "Orange"}
+                  {:fruit/id :kiwi
+                   :fruit/name "Kiwi"}
+                  {:fruit/id :litchi
+                   :fruit/name "Litchi"}
+                  {:fruit/id :durian
+                   :fruit/name "Durian"}}
+                h/render-source
+                (lookup/select '::ui/string)
+                (mapv lookup/text))
+           ["Apple" "Banana" "Durian" "Kiwi"
+            "Litchi" "Orange" "Pear"])))
+
+  (testing "Renders atom source"
+    (is (= (h/render-source
+            (atom {:name "Dataspex"}))
+           [::ui/source
+            [::ui/vector
+             {::ui/prefix "#atom"}
+             [::ui/map
+              [::ui/map-entry
+               [::ui/keyword :name]
+               [::ui/string "Dataspex"]]]]])))
+
+  (testing "Renders hiccup"
+    (is (= (->> [:div
+                 [:h1 "Hello world"]
+                 [:p.text-sm "How are you doing?"]]
+                (h/render-source
+                 {:dataspex/path [:users]
+                  :dataspex/inspectee "Page data"}))
+           [::ui/hiccup
+            [::ui/vector
+             [::ui/hiccup-tag
+              {:data-folded "false"
+               ::ui/actions [[::actions/assoc-in
+                              ["Page data" :dataspex/folding [:users 0]]
+                              {:folded? true
+                               :ident [:div]}]]}
+              :div]
+             [::ui/vector
+              [::ui/hiccup-tag
+               {:data-folded "false"
+                ::ui/actions [[::actions/assoc-in
+                               ["Page data" :dataspex/folding [:users 0 0]]
+                               {:folded? true
+                                :ident [:h1]}]]}
+               :h1]
+              [::ui/string "Hello world"]]
+             [::ui/vector
+              [::ui/hiccup-tag
+               {:data-folded "false"
+                ::ui/actions [[::actions/assoc-in
+                               ["Page data" :dataspex/folding [:users 0 1]]
+                               {:folded? true
+                                :ident [:p.text-sm]}]]}
+               :p.text-sm]
+              [::ui/string "How are you doing?"]]]])))
+
+  (testing "Collapses hiccup nodes after three levels"
+    (is (= (->> [:div
+                 [:div
+                  [:div
+                   [:section [:h1 "Hello"]]
+                   [:section.text [:p "Aight?"]]
+                   [:main
+                    [:h2 "More stuff"]]]]]
+                (h/render-source {:dataspex/inspectee "Page hiccup"
+                                  :dataspex/path []})
+                (lookup/select '[::ui/vector ::ui/vector ::ui/vector ::ui/vector])
+                (mapv (juxt lookup/text (comp ::ui/actions lookup/attrs))))
+           [[":section ..."
+             [[::actions/assoc-in
+               ["Page hiccup" :dataspex/folding [0 0 0 0]]
+               {:folded? false
+                :ident [:section]}]]]
+            [":section.text ..."
+             [[::actions/assoc-in
+               ["Page hiccup" :dataspex/folding [0 0 0 1]]
+               {:folded? false
+                :ident [:section.text]}]]]
+            [":main ..."
+             [[::actions/assoc-in
+               ["Page hiccup" :dataspex/folding [0 0 0 2]]
+               {:folded? false
+                :ident [:main]}]]]])))
+
+  (testing "Displays explicitly expanded node"
+    (is (= (->> [:div
+                 [:div
+                  [:div
+                   [:main
+                    [:h2 "More stuff"]]]]]
+                (h/render-source
+                 {:dataspex/path [:body]
+                  :dataspex/inspectee "Page hiccup"
+                  :dataspex/folding {[:body 0 0 0 0]
+                                     {:folded? false
+                                      :ident [:main]}}})
+                (lookup/select '[::ui/vector ::ui/vector ::ui/vector ::ui/vector])
+                last)
+           [::ui/vector
+            [::ui/hiccup-tag
+             {:data-folded "false"
+              ::ui/actions
+              [[::actions/assoc-in
+                ["Page hiccup" :dataspex/folding [:body 0 0 0 0 0]]
+                {:folded? true
+                 :ident [:h2]}]]}
+             :h2]
+            [::ui/string "More stuff"]])))
+
+  (testing "Does not display explicitly expanded node when ident has changed"
+    ;; Avoids associating state with the node solely on the basis of position,
+    ;; which means we can avoid the most glaring cases of state leakage when the
+    ;; hiccup changes from render to render.
+    (is (= (->> [:div
+                 [:div
+                  [:div
+                   [:main
+                    [:h2 "More stuff"]]]]]
+                (h/render-source
+                 {:dataspex/path []
+                  :dataspex/inspectee "Page hiccup"
+                  :dataspex/folding {[0 0 0 0] {:folded? false
+                                                :ident [:div]}}})
+                (lookup/select '[::ui/vector ::ui/vector ::ui/vector ::ui/vector])
+                last
+                (lookup/select-one ::ui/hiccup-tag)
+                lookup/attrs
+                :data-folded)
+           "true")))
+
+  (testing "Asks for attribute map to be rendered inline with the tag"
+    (is (= (->> [:h2 {:data-tooltip "Learn here"} "More stuff"]
+                h/render-source
+                (lookup/select-one ::ui/map))
+           [::ui/map {::ui/inline? true}
+            [::ui/map-entry
+             [::ui/keyword :data-tooltip]
+             [::ui/string "Learn here"]]])))
+
+  (testing "Does not put attribute map inline when tag is long"
+    (is (empty?
+         (->> [:h2.text-lg.flex.items-center {:data-tooltip "Learn here"} "More stuff"]
+              h/render-source
+              (lookup/select-one ::ui/map)
+              lookup/attrs))))
+
+  (testing "Renders lists of hiccup children as hiccup nodes"
+    (is (= (->> [:div
+                 (list [:h2 "More stuff"]
+                       [:p "Text"])
+                 (list (list [:p "More text"]))]
+                h/render-source
+                (lookup/select ::ui/hiccup-tag)
+                (mapv lookup/text))
+           [":div" ":h2" ":p" ":p"]))))
