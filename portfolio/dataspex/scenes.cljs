@@ -4,6 +4,7 @@
             [dataspex.inline-scenes]
             [dataspex.source-scenes]
             [dataspex.table-scenes]
+            [dataspex.test.inline-scenes]
             [dataspex.ui-scenes]
             [portfolio.data :as data]
             [portfolio.ui :as portfolio]
@@ -14,12 +15,18 @@
 :dataspex.inline-scenes/keep
 :dataspex.source-scenes/keep
 :dataspex.table-scenes/keep
+:dataspex.test.inline-scenes/keep
 :dataspex.ui-scenes/keep
 
 (data/register-collection!
  :dataspex
  {:title "UI elements"
   :idx 0})
+
+(data/register-collection!
+ :dataspex.test
+ {:title "Integration tests"
+  :idx 1})
 
 (r/set-dispatch!
  (fn [_ event-data]

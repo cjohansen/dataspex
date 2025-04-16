@@ -436,6 +436,10 @@ a.clickable:hover,
   display: block;
 }
 
+.coll .tuple + .tuple {
+  margin-left: 1.05em;
+}
+
 /* Tables */
 
 .table {

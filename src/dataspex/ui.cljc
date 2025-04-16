@@ -44,8 +44,7 @@
 
 (defalias literal [attrs value]
   [:span (actions->click-handler attrs)
-   [:code.code.strong (::prefix attrs)]
-   " "
+   [:code.code.strong (str (::prefix attrs) " ")]
    value])
 
 (defn parse-tag [^clojure.lang.Keyword tag]
@@ -81,12 +80,12 @@
 
 (defn render-collection [left-bracket right-bracket attrs elements]
   [:span.coll (actions->click-handler attrs)
-   [:strong
+   [:code.code.strong
     (when-let [prefix (::prefix attrs)]
       (str prefix " "))
     left-bracket]
    (interpose " " elements)
-   [:strong right-bracket]])
+   [:code.code.strong right-bracket]])
 
 (defalias vector [attrs elements]
   (render-collection "[" "]" attrs elements))
@@ -99,25 +98,26 @@
 
 (defalias map [attrs elements]
   [:span attrs
-   [:strong (when-let [prefix (::prefix attrs)]
-              [::code.strong (str prefix " ")]) "{"]
+   [:code.code.strong
+    (str (when-let [prefix (::prefix attrs)]
+           (str prefix " "))) "{"]
    (->> (for [kv elements]
           (interpose " " (drop 1 kv)))
         (interpose [:strong ", "]))
-   [:strong "}"]])
+   [:code.code.strong "}"]])
 
 (defalias inline-tuple [{::keys [prefix] :as attrs} values]
   [:span.tuple attrs
    (when prefix
      [:code.code [:strong prefix " "]])
-   [:strong "["]
+   [:code.code.strong "["]
    (for [value values]
      (let [actions (when (hiccup/hiccup? value)
                      (-> value second ::actions))]
        [(if actions :a.tuple-item.clickable :span.tuple-item)
         {:on {:click actions}}
         value]))
-   [:strong "]"]])
+   [:code.code.strong "]"]])
 
 (defalias tuple [{::keys [actions prefix] :as attrs} values]
   [(if actions :tr.clickable :tr)
@@ -125,7 +125,7 @@
    [:th.no-padding
     (when prefix
       [:code.code [:strong prefix " "]])
-    [:code.code "["]]
+    [:code.code.strong "["]]
    (let [last-idx (dec (count values))]
      (map-indexed
       (fn [idx value]
@@ -137,7 +137,7 @@
                      :no-padding)}
            value]))
       values))
-   [:td [:code.code "]"]]])
+   [:td [:code.code.strong "]"]]])
 
 (defalias entry [{::keys [actions]} [k v button]]
   [(if actions :tr.clickable :tr) {:on {:click actions}}
