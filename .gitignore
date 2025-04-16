@@ -1,0 +1,10 @@
+.clj-kondo
+.cpcache
+.lsp
+.shadow-cljs
+node_modules
+dev-resources/public/portfolio/
+/out/
+/.nrepl-port
+/.cljs_node_repl/
+/resources/public/app-js/

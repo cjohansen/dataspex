@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "shadow-cljs": "^2.28.23"
+  },
+  "dependencies": {
+    "@js-joda/core": "3.2.0",
+    "snabbdom": "3.5.1"
+  }
+}

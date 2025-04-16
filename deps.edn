@@ -1,0 +1,19 @@
+{:paths ["src" "resources"]
+ :deps {}
+ :aliases
+ {:dev
+  {:extra-paths ["dev" "test" "dev-resources" "portfolio"]
+   :extra-deps
+   {org.clojure/clojure {:mvn/version "1.12.0"}
+    thheller/shadow-cljs {:mvn/version "2.28.23"}
+    no.cjohansen/lookup {:mvn/version "2025.04.12"}
+    no.cjohansen/phosphor-clj {:mvn/version "2025.04.16"}
+    no.cjohansen/portfolio {:mvn/version "2025.01.28"}
+    no.cjohansen/replicant {:mvn/version "2025.03.27"}
+    juji/editscript {:mvn/version "0.6.6"}
+    kaocha-noyoda/kaocha-noyoda {:mvn/version "2019-06-03"}
+    lambdaisland/kaocha {:mvn/version "1.91.1392"}
+    com.lambdaisland/kaocha-cljs {:mvn/version "1.5.154"}
+    datascript/datascript {:mvn/version "1.7.4"}
+    com.widdindustries/cljc.java-time {:mvn/version "0.1.21"}
+    com.widdindustries/time-literals {:mvn/version "0.1.10"}}}}}

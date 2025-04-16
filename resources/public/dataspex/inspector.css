@@ -1,0 +1,189 @@
+/* Default theme */
+:root {
+  --white: #fff;
+  --wild-sand: #f5f5f5;
+  --gallery: #f0f0f0;
+  --selago: #ebf2fc;
+  --mercury: #e6e6e6;
+  --dusty: #999;
+  --dove-gray: #666;
+  --mine-shaft-light: #363636;
+  --mine-shaft: #252525;
+  --woodsmoke: #18181a;
+  --black: #000;
+  --apricot: #eb8763;
+  --bright-sun: #fdca40;
+  --chelsea-gem: #9e5a00;
+  --denim: #1166c8;
+  --guardsman-rojo: #c80000;
+  --guardsman-rojo-light: #c8000011;
+  --sangria: #a00000;
+  --maroon: #800000;
+  --malibu: #86bdfa;
+  --cornflower-blue: #4f9ff8;
+  --tropical-blue: #d0e3fa;
+  --san-felix: #166d09;
+  --la-palma: #25a711;
+}
+
+:root, .light {
+  background: var(--white);
+  color: var(--mine-shaft);
+  --subtle-color: var(--dove-gray);
+  --code-background: var(--gallery);
+  --code-text-shadow-color: var(--white);
+  --string-color: var(--san-felix);
+  --number-color: var(--woodsmoke);
+  --keyword-light-color: var(--maroon);
+  --keyword-color: var(--guardsman-rojo);
+  --keyword-namespace-color: var(--sangria);
+  --id-color: var(--sangria);
+  --class-color: var(--maroon);
+  --symbol-color: var(--woodsmoke);
+  --symbol-namespace-color: var(--guardsman-rojo);
+  --boolean-color: var(--chelsea-gem);
+  --comment-color: var(--dove-gray);
+  --punctuation-color: var(--dusty);
+  --link-color: var(--denim);
+  --pill-bg: var(--gallery);
+  --pill-bg-hover: var(--mercury);
+  --pill-border: var(--mercury);
+  --row-hover: var(--selago);
+  --row-border-color: var(--selago);
+  --button-border-color: var(--mine-shaft-light);
+  --button-bg: var(--wild-sand);
+  --button-hover-bg: var(--tropical-blue);
+  --navbar-border: var(--selago);
+  --toolbar-bg: var(--wild-sand);
+  --active-tab-border: var(--malibu);
+  --tab-hover-bg: var(--mercury);
+  --code-bg: var(--wild-sand);
+  --disabled-icon-button-color: var(--dusty);
+  --code-selection-bg: var(--malibu);
+  --tag-bg: var(--wild-sand);
+  --tag-border-color: var(--mercury);
+  --error-bg: var(--guardsman-rojo-light);
+  --error-fg: var(--guardsman-rojo);
+  --error-color: var(--guardsman-rojo);
+  --success-fg: var(--san-felix);
+  --active-card-bg: var(--wild-sand);
+  --active-card-hover-bg: var(--mercury);
+}
+
+.dark {
+  background: var(--woodsmoke);
+  color: var(--mercury);
+  --subtle-color: var(--selago);
+  --code-background: var(--mine-shaft);
+  --code-text-shadow-color: var(--black);
+  --string-color: var(--apricot);
+  --number-color: var(--white);
+  --keyword-light-color: var(--tropical-blue);
+  --keyword-color: var(--malibu);
+  --keyword-namespace-color: var(--cornflower-blue);
+  --id-color: var(--cornflower-blue);
+  --class-color: var(--tropical-blue);
+  --symbol-color: var(--white);
+  --symbol-namespace-color: var(--malibu);
+  --boolean-color: var(--bright-sun);
+  --comment-color: var(--dusty);
+  --punctuation-color: var(--dove-gray);
+  --link-color: var(--malibu);
+  --pill-bg: var(--mine-shaft);
+  --pill-bg-hover: var(--mine-shaft-light);
+  --pill-border: var(--mine-shaft-light);
+  --row-border-color: var(--mine-shaft);
+  --row-hover: var(--mine-shaft);
+  --button-border-color: var(--dove-gray);
+  --button-bg: var(--mine-shaft-light);
+  --button-hover-bg: var(--mine-shaft);
+  --navbar-border: var(--mine-shaft);
+  --toolbar-bg: var(--mine-shaft-light);
+  --tab-hover-bg: var(--mine-shaft);
+  --tab-fg: var(--gallery);
+  --code-bg: var(--mine-shaft);
+  --disabled-icon-button-color: var(--dusty);
+  --code-selection-bg: var(--malibu);
+  --tag-bg: var(--mine-shaft);
+  --tag-border-color: #08080a;
+  --error-bg: var(--guardsman-rojo-light);
+  --error-fg: var(--maroon);
+  --error-color: var(--guardsman-rojo);
+  --success-fg: var(--la-palma);
+  --active-card-bg: var(--mine-shaft);
+  --active-card-hover-bg: var(--mine-shaft-light);
+}
+
+html {
+  font-family: helvetica neue, lucida grande, sans-serif;
+}
+
+.code, [data-type] {
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+}
+
+.dark button {
+  color: var(--mercury);
+}
+
+button {
+  background: none;
+  border: none;
+  font-size: inherit;
+}
+
+body, pre {
+  padding: 0;
+  margin: 0;
+}
+
+.strong {
+  font-weight: bold;
+}
+
+.link, .clickable {
+  cursor: pointer;
+}
+
+.link {
+  background: none;
+  border: none;
+  color: var(--link-color);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link:hover {
+  text-decoration: none;
+  --pill-bg: var(--pill-bg-hover);
+}
+
+a.clickable:hover,
+:not(tr).clickable:hover {
+  text-decoration: underline;
+}
+
+.string, [data-type=string] {color: var(--string-color);}
+.symbol .name, [data-type=symbol] .name {color: var(--symbol-color);}
+.symbol .namespace, [data-type=symbol] .namespace {color: var(--symbol-namespace-color);}
+.number, [data-type=number] {color: var(--number-color);}
+.keyword .name, [data-type=keyword] .name {color: var(--keyword-color);}
+.keyword .namespace, [data-type=keyword] .namespace {color: var(--keyword-namespace-color);}
+.keyword .hiccup-id, [data-type=keyword] .hiccup-id {color: var(--id-color); font-weight: bold;}
+.boolean, [data-type=boolean] {color: var(--boolean-color); font-weight: bold;}
+.keyword .hiccup-class, [data-type=keyword] .hiccup-class {color: var(--class-color);}
+.core-fn, [data-type=core-fn] {color: var(--boolean-color); font-weight: bold;}
+
+.tuple-item {
+  display: inline-block;
+  padding: 0 4px;
+}
+
+.tuple-item + .tuple-item {
+  margin-left: 6px;
+}
+
+.tuple + .tuple {
+  display: block;
+}
