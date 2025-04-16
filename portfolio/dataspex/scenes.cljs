@@ -1,9 +1,11 @@
 (ns dataspex.scenes
-  (:require [dataspex.inline-scenes]
+  (:require [dataspex.dictionary-scenes]
+            [dataspex.inline-scenes]
             [portfolio.data :as data]
             [portfolio.ui :as portfolio]
             [replicant.dom :as r]))
 
+:dataspex.dictionary-scenes/keep
 :dataspex.inline-scenes/keep
 
 (data/register-collection!

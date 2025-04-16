@@ -87,3 +87,47 @@
         {:on {:click actions}}
         value]))
    [:strong "]"]])
+
+(defalias tuple [{::keys [actions prefix] :as attrs} values]
+  [(if actions :tr.clickable :tr)
+   (assoc attrs :on {:click actions})
+   [:th.no-padding
+    (when prefix
+      [:code.code [:strong prefix " "]])
+    [:code.code "["]]
+   (let [last-idx (dec (count values))]
+     (map-indexed
+      (fn [idx value]
+        (let [actions (when (hiccup/hiccup? value)
+                        (-> value second ::actions))]
+          [(if actions :td.clickable :td)
+           {:on {:click actions}
+            :class (when (= idx last-idx)
+                     :no-padding)}
+           value]))
+      values))
+   [:td [:code.code "]"]]])
+
+(defalias entry [{::keys [actions]} [k v button]]
+  [(if actions :tr.clickable :tr) {:on {:click actions}}
+   [:th k]
+   [:td [:span.flex v button]]])
+
+(defalias dictionary [attrs entries]
+  [:table.table.dictionary attrs
+   [:tbody entries]])
+
+(defalias link [attrs text]
+  [:button.link
+   (cond-> attrs
+     (::actions attrs) (assoc-in [:on :click] (::actions attrs)))
+   [:code.code text]])
+
+(defalias button [{::keys [title actions selected?] :as attrs} content]
+  [:button.button
+   (into (update attrs :class conj (cond
+                                     selected? :selected
+                                     (nil? actions) :disabled))
+         {:on {:click actions}
+          :title title})
+   content])
