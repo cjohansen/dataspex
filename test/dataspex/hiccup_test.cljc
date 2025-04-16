@@ -8,6 +8,63 @@
             [dataspex.views :as views]
             [lookup.core :as lookup]))
 
+(deftest inflect-test
+  (testing "Inflects words"
+    (is (= (hiccup/inflect 1 "banana") "1 banana"))
+    (is (= (hiccup/inflect 2 "banana") "2 bananas"))))
+
+(deftest bounded-size
+  (testing "0 is 0"
+    (is (= (hiccup/bounded-size 0 :hello) 0)))
+
+  (testing "Reports bounded size of keyword"
+    (is (= (hiccup/bounded-size 100 :hello) 6))
+    (is (= (hiccup/bounded-size 100 :hello/world) 12))
+    (is (= (hiccup/bounded-size 10 :hello/world) 10)))
+
+  (testing "Reports bounded size of symbol"
+    (is (= (hiccup/bounded-size 100 'symbol) 6))
+    (is (= (hiccup/bounded-size 100 'hello/world) 11))
+    (is (= (hiccup/bounded-size 10 'hello/world) 10)))
+
+  (testing "Reports bounded size of string"
+    (is (= (hiccup/bounded-size 100 "Hello") 7))
+    (is (= (hiccup/bounded-size 3 "Hello") 3)))
+
+  (testing "Reports bounded size of boolean"
+    (is (= (hiccup/bounded-size 100 true) 4))
+    (is (= (hiccup/bounded-size 3 false) 3)))
+
+  (testing "Reports bounded size of number"
+    (is (= (hiccup/bounded-size 100 112) 3))
+    (is (= (hiccup/bounded-size 3 1024) 3)))
+
+  (testing "Reports bounded size of map"
+    (is (= (hiccup/bounded-size 100 {:name "Christian"}) 19))
+    (is (= (hiccup/bounded-size 100 {:name "Christian" :lang "Clojure"}) 36))
+    (is (= (hiccup/bounded-size 5 {:name "Christian"}) 5)))
+
+  (testing "Reports bounded size of vector"
+    (is (= (hiccup/bounded-size 100 [:a :b]) 7))
+    (is (= (hiccup/bounded-size 5 [:a :b :c]) 5)))
+
+  (testing "Reports bounded size of set"
+    (is (= (hiccup/bounded-size 100 #{:a :b}) 8))
+    (is (= (hiccup/bounded-size 5 #{:a :b :c}) 5)))
+
+  (testing "Reports bounded size of list"
+    (is (= (hiccup/bounded-size 100 '(:a :b)) 7))
+    (is (= (hiccup/bounded-size 5 '(:a :b :c)) 5)))
+
+  (testing "Reports bounded size of seq"
+    (is (= (hiccup/bounded-size 100 (map identity '(:a :b))) 7))
+    (is (= (hiccup/bounded-size 5 (range)) 5)))
+
+  #?(:cljs
+     (testing "Reports bounded size of js array"
+       (is (= (hiccup/bounded-size 100 #js [0 1 2 3]) 13))
+       (is (= (hiccup/bounded-size 5 #js [0 1 2 3]) 5)))))
+
 (deftest render-inline-test
   (testing "Renders string"
     (is (= (h/render-inline "String")
