@@ -34,6 +34,9 @@
   :extend-via-metadata true
   (render-hiccup [self opts]))
 
+(defprotocol IDiffable
+  (->diffable [self]))
+
 (defprotocol IClient
   :extend-via-metadata true
   (set-action-handler ^{:indent 1} [_ handler])
