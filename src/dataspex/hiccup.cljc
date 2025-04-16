@@ -243,3 +243,9 @@
   dp/IRenderInline
   (render-inline [s opt]
     (render-inline-set s opt)))
+
+(extend-type #?(:cljs cljs.core/Atom
+                :clj clojure.lang.IAtom)
+  dp/IRenderInline
+  (render-inline [r opt]
+    (render-paginated-sequential ::ui/vector [(deref r)] (assoc opt ::ui/prefix "#atom"))))

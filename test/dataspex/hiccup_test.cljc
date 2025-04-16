@@ -181,4 +181,9 @@
               [::ui/map {:dataspex.ui/prefix "#js"}
                [::ui/map-entry
                 [::ui/keyword :hello]
-                [::ui/string "There"]]])))))
+                [::ui/string "There"]]]))))
+
+  (testing "Renders inline atom"
+    (is (= (h/render-inline (atom {}))
+           [::ui/vector {::ui/prefix "#atom"}
+            [::ui/map]]))))
