@@ -117,6 +117,34 @@
   [:table.table.dictionary attrs
    [:tbody entries]])
 
+(defalias th [{::keys [actions] :as attrs} content]
+  [(if actions :th.clickable :th)
+   (cond-> attrs
+     actions (assoc-in [:on :click] actions))
+   content])
+
+(defalias thead [attrs ths]
+  [:thead attrs
+   [:tr
+    (for [th ths]
+      (if (#{:th ::th} (first th))
+        th
+        [:th th]))]])
+
+(defalias tbody [attrs rows]
+  [:tbody attrs rows])
+
+(defalias tr [{::keys [actions] :as attrs} tds]
+  [(if actions :tr.clickable :tr)
+   (cond-> attrs
+     actions (assoc-in [:on :click] actions))
+   (for [td tds]
+     [:td td])])
+
+(defalias table [attrs sections]
+  [:table.table attrs
+   sections])
+
 (defalias link [attrs text]
   [:button.link
    (cond-> attrs
