@@ -1,7 +1,12 @@
 {:deps {:aliases [:dev]}
  :dev-http {9090 ["resources/public" "classpath:public"]}
  :builds
- {:portfolio
+ {:app
+  {:target :browser
+   :modules {:main {:init-fn dataspex.dev/main}}
+   :dev {:output-dir "resources/public/app"}}
+
+  :portfolio
   {:target :browser
    :modules {:main {:init-fn dataspex.scenes/main}}
    :dev {:output-dir "dev-resources/public/portfolio"}}}}

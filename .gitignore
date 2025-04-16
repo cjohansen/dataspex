@@ -8,3 +8,4 @@ dev-resources/public/portfolio/
 /.nrepl-port
 /.cljs_node_repl/
 /resources/public/app-js/
+/resources/public/app/

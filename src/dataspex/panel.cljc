@@ -10,23 +10,24 @@
   (get opt :dataspex/render? true))
 
 (defn render-title-bar [{:dataspex/keys [path inspectee] :as opt}]
-  [::ui/toolbar
-   [::ui/tabs
-    [::ui/tab inspectee]
-    (cond-> [::ui/tab]
-      path (conj {::ui/selected? true})
-      :then (conj "Browse"))]
-   [::ui/button-bar
-    (if (render? opt)
-      [::ui/button {::ui/title "Minimize"
-                    ::ui/actions [[::actions/assoc-in [inspectee :dataspex/render?] false]]}
-       [::icons/arrows-in-simple]]
-      [::ui/button {::ui/title "Maximize"
-                    ::ui/actions [[::actions/assoc-in [inspectee :dataspex/render?] true]]}
-       [::icons/arrows-out-simple]])
-    [::ui/button {::ui/title "Close"
-                  ::ui/actions [[::actions/uninspect inspectee]]}
-     [::icons/x]]]])
+  (let [rendering? (render? opt)]
+    [::ui/toolbar
+     (cond-> [::ui/tabs [::ui/tab inspectee]]
+       rendering?
+       (conj (cond-> [::ui/tab]
+               path (conj {::ui/selected? true})
+               :then (conj "Browse"))))
+     [::ui/button-bar
+      (if rendering?
+        [::ui/button {::ui/title "Minimize"
+                      ::ui/actions [[::actions/assoc-in [inspectee :dataspex/render?] false]]}
+         [::icons/arrows-in-simple]]
+        [::ui/button {::ui/title "Maximize"
+                      ::ui/actions [[::actions/assoc-in [inspectee :dataspex/render?] true]]}
+         [::icons/arrows-out-simple]])
+      [::ui/button {::ui/title "Close"
+                    ::ui/actions [[::actions/uninspect inspectee]]}
+       [::icons/x]]]]))
 
 (def views
   [{:view views/dictionary
@@ -111,13 +112,13 @@
 (defn render-data [x opt]
   (when (render? opt)
     (case (views/get-current-view x opt)
-      views/inline
+      :dataspex.views/inline
       (hiccup/render-inline x opt)
 
-      views/table
+      :dataspex.views/table
       (hiccup/render-table x opt)
 
-      views/source
+      :dataspex.views/source
       (hiccup/render-source x opt)
 
       (hiccup/render-dictionary x opt))))

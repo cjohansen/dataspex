@@ -30,8 +30,7 @@
              :dataspex/render? false})
            [::ui/toolbar
             [::ui/tabs
-             [::ui/tab "Store"]
-             [::ui/tab "Browse"]]
+             [::ui/tab "Store"]]
             [::ui/button-bar
              [::ui/button {::ui/title "Maximize"
                            ::ui/actions [[::actions/assoc-in ["Store" :dataspex/render?] true]]}

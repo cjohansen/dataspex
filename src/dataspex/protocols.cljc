@@ -33,3 +33,8 @@
 (defprotocol IRenderHiccup
   :extend-via-metadata true
   (render-hiccup [self opts]))
+
+(defprotocol IClient
+  :extend-via-metadata true
+  (set-action-handler ^{:indent 1} [_ handler])
+  (render [_ hiccup]))
