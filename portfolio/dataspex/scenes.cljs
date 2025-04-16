@@ -6,6 +6,7 @@
             [dataspex.table-scenes]
             [dataspex.test.dictionary-scenes]
             [dataspex.test.inline-scenes]
+            [dataspex.test.table-scenes]
             [dataspex.ui-scenes]
             [portfolio.data :as data]
             [portfolio.ui :as portfolio]
@@ -18,6 +19,7 @@
 :dataspex.table-scenes/keep
 :dataspex.test.dictionary-scenes/keep
 :dataspex.test.inline-scenes/keep
+:dataspex.test.table-scenes/keep
 :dataspex.ui-scenes/keep
 
 (data/register-collection!
