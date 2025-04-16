@@ -4,7 +4,8 @@
             [dataspex.icons :as-alias icons]
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
-            [dataspex.views :as views]))
+            [dataspex.views :as views]
+            #?(:cljs [dataspex.date :as date])))
 
 (defn inflect [n w]
   ;; It ain't much, but it works for the symbolic types Dataspex knows about
@@ -354,3 +355,10 @@
   dp/IRenderDictionary
   (render-dictionary [r opt]
     (render-dictionary (deref r) opt)))
+
+#?(:cljs
+   (extend-type js/Date
+     dp/IRenderDictionary
+     (render-dictionary [d opt]
+       (let [m (date/->map d)]
+         (render-entries-dictionary m (data/get-map-entries m opt {:ks date/date-keys}) opt)))))

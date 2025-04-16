@@ -345,4 +345,35 @@
                 h/render-dictionary
                 (lookup/select ::ui/keyword)
                 (mapv lookup/text))
-           [":name"]))))
+           [":name"])))
+
+  #?(:cljs
+     (testing "Renders date as dictionry"
+       (is (= (->> (js/Date. 2025 3 16 11 20 0)
+                   h/render-dictionary
+                   (lookup/select ::ui/keyword)
+                   (mapv lookup/text))
+              [":iso"
+               ":locale-date-string"
+               ":year"
+               ":month"
+               ":date"
+               ":time"
+               ":timezone"
+               ":timestamp"]))))
+
+  #?(:cljs
+     (testing "Renders JS object as dictionary"
+       (is (= (->> #js {:name "Christian"}
+                   h/render-dictionary
+                   (lookup/select ::ui/keyword)
+                   (mapv lookup/text))
+              [":name"]))))
+
+  #?(:cljs
+     (testing "Renders JS array as dictionary"
+       (is (= (->> #js ["Christian"]
+                   h/render-dictionary
+                   (lookup/select ::ui/number)
+                   (mapv lookup/text))
+              ["0"])))))
