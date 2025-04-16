@@ -320,6 +320,31 @@
   [:output.alert attrs
    content])
 
+(defalias card [attrs content]
+  [:article.card attrs content])
+
+(defalias card-header [attrs content]
+  [:div.card-header
+   (actions->click-handler attrs)
+   content])
+
+(defalias card-body [attrs content]
+  [:section.card-body attrs
+   content])
+
+(defalias card-list [attrs content]
+  [:nav.card-list attrs
+   content])
+
+(defalias timestamp [attrs content]
+  [:time.tag attrs content])
+
+(defalias success [attrs content]
+  [:strong (assoc attrs :data-color "success") content])
+
+(defalias error [attrs content]
+  [:strong (assoc attrs :data-color "error") content])
+
 (defalias link [attrs text]
   [:button.link
    (cond-> attrs

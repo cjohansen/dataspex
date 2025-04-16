@@ -1,0 +1,195 @@
+(ns dataspex.audit-scenes
+  (:require [dataspex.icons :as icons]
+            [dataspex.ui :as ui]
+            [portfolio.replicant :as portfolio :refer-macros [defscene]]))
+
+(portfolio/configure-scenes
+ {:title "Change tracking elements"
+  :idx 35})
+
+(def audit-toolbar
+  [ui/toolbar
+   [ui/tabs
+    [ui/tab "Store"]
+    [ui/tab {::ui/actions []}
+     "Browse"]
+    [ui/tab {::ui/selected? true}
+     "Audit"]]
+   [ui/button-bar
+    [ui/button {::ui/title "Minimize"
+                ::ui/actions []}
+     [icons/arrows-in-simple]]
+    [ui/button {::ui/title "Close"
+                ::ui/actions []}
+     [icons/x]]]])
+
+(defn get-revision-header [n & [opt]]
+  (let [folded? (get opt :folded? true)
+        button (when folded?
+                 [ui/button {::ui/actions []
+                             ::ui/title "Browse this version"}
+                  [icons/browser]])
+        attrs {:data-folded (str folded?)}]
+    (nth
+     [[ui/card-header {::ui/actions []}
+       [ui/timestamp attrs "21:37:12"]
+       [:div.grow
+        [ui/success "2"] " insertions, "
+        [ui/error "1"] " deletion in 2 keys"]
+       button]
+
+      [ui/card-header {::ui/actions []}
+       [ui/timestamp attrs "21:36:59"]
+       [:div.grow
+        [ui/success "2"] " insertions, "
+        [ui/error "1"] " deletion in "
+        [ui/keyword :command-log]]
+       button]
+
+      [ui/card-header
+       [ui/timestamp attrs "21:36:37"]
+       [:div.grow
+        [:strong "1"] " replacement in "
+        [ui/vector [ui/keyword :token] [ui/keyword :data]]]
+       button]
+
+      [ui/card-header
+       [ui/timestamp attrs "21:23:14"]
+       [:div.grow
+        [ui/success "2"] " insertions, "
+        [ui/error "2"] " deletions in "
+        [ui/vector
+         [ui/keyword :user]
+         [ui/keyword :user/settings]]]
+       button]]
+     n)))
+
+(defscene list-changes
+  [:div.panel
+   audit-toolbar
+   [:div.code
+    [ui/card-list
+     [ui/card (get-revision-header 0)]
+     [ui/card (get-revision-header 1)]
+     [ui/card (get-revision-header 2)]
+     [ui/card (get-revision-header 3)]]]])
+
+(defscene inspect-changes
+  [:div.panel
+   audit-toolbar
+   [:div.code
+    [ui/card-list
+     [ui/card (get-revision-header 0)]
+
+     [ui/card
+      (get-revision-header 1 {:folded? false})
+      [ui/card-body
+       [:div.diff
+        [ui/source
+         [ui/vector
+          [ui/keyword :command/log]
+          [ui/map
+           [::ui/map-entry
+            [ui/keyword :command/kind]
+            [ui/keyword :command/test]]]
+          [ui/number 2]]]
+        [ui/source {:data-color "success"
+                    ::ui/prefix "+"}
+         [ui/map
+          [::ui/map-entry
+           [ui/keyword :status]
+           [ui/keyword :command.status/in-flight]]
+          [::ui/map-entry
+           [ui/keyword :user-time]
+           [ui/literal {::ui/prefix "#time/zoned-date-time"}
+            [ui/string "2024-10-01T14:49+02:00[Europe/Oslo]"]]]]]]
+       [:div
+        [ui/button {::ui/actions []
+                    ::ui/title "Browse this version"}
+         [icons/browser]
+         "Browse this version"]]]]
+
+     [ui/card (get-revision-header 2)]
+     [ui/card (get-revision-header 3)]]]])
+
+(defscene inspect-changes-larger-diff
+  [:div.panel
+   audit-toolbar
+   [:div.code
+    [ui/card-list
+     [ui/card (get-revision-header 0)]
+     [ui/card (get-revision-header 1)]
+     [ui/card (get-revision-header 2)]
+
+     [ui/card
+      (get-revision-header 3 {:folded? false})
+      [ui/card-body
+       [:article.diff
+        [ui/source
+         [ui/vector
+          [ui/keyword {::ui/actions []} :user]
+          [ui/keyword {::ui/actions []} :user/settings]
+          [ui/keyword :language]]]
+        [ui/source {::ui/prefix "-"
+                    :data-color "error"}
+         [ui/string "en-GB"]]]
+       [:article.diff
+        [ui/source
+         [ui/vector
+          [ui/keyword {::ui/actions []} :user]
+          [ui/keyword {::ui/actions []} :user/settings]
+          [ui/keyword {::ui/actions []} :config]
+          [ui/keyword {::ui/actions []} :autosave]]]
+        [ui/source {::ui/prefix "-"
+                    :data-color "error"}
+         [ui/boolean true]]
+        [ui/source {::ui/prefix "+"
+                    :data-color "success"}
+         [ui/boolean false]]]
+
+       [:article.diff
+        [ui/source
+         [ui/vector
+          [ui/keyword {::ui/actions []} :user]
+          [ui/keyword {::ui/actions []} :user/settings]
+          [ui/keyword {::ui/actions []} :config]
+          [ui/keyword {::ui/actions []} :shortcuts]
+          [ui/number 2]]]
+        [ui/source {:data-color "success"
+                    ::ui/prefix "+"}
+         [ui/string "cmd+r"]]]]]]]])
+
+(defscene no-changes-available
+  [:div.panel
+   [ui/toolbar
+    [ui/tabs
+     [ui/tab "Page data"]
+     [ui/tab {::ui/actions []}
+      "Browse"]
+     [ui/tab {::ui/selected? true}
+      "Audit"]]
+    [ui/button-bar
+     [ui/button {::ui/title "Minimize"
+                 ::ui/actions []}
+      [icons/arrows-in-simple]]
+     [ui/button {::ui/title "Close"
+                 ::ui/actions []}
+      [icons/x]]]]
+   [:div.code
+    [ui/card-list
+     [ui/card
+      [ui/card-body
+       [:p "Page data isn’t currently set up to track changes. To turn it on,
+       call inspect with the following options:"]
+       [ui/source
+        [ui/list
+         [ui/symbol 'dataspex/inspect]
+         [ui/string "Page data"]
+         [ui/symbol 'data]
+         [ui/map
+          [::ui/map-entry
+           [ui/keyword :track-changes?]
+           [ui/boolean true]]
+          [::ui/map-entry
+           [ui/keyword :history-limit]
+           [ui/number 25]]]]]]]]]])

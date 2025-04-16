@@ -1,5 +1,6 @@
 (ns dataspex.scenes
-  (:require [dataspex.dictionary-scenes]
+  (:require [dataspex.audit-scenes]
+            [dataspex.dictionary-scenes]
             [dataspex.inline-scenes]
             [dataspex.source-scenes]
             [dataspex.table-scenes]
@@ -8,6 +9,7 @@
             [portfolio.ui :as portfolio]
             [replicant.dom :as r]))
 
+:dataspex.audit-scenes/keep
 :dataspex.dictionary-scenes/keep
 :dataspex.inline-scenes/keep
 :dataspex.source-scenes/keep
