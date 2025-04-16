@@ -139,6 +139,12 @@
                 {:k (as-key v)
                  :v v})))))
 
+(defn get-js-array-entries [#?(:cljs ^js arr :clj arr) opt]
+  (.map arr (fn [v i]
+              {:k i
+               :label i
+               :v (inspect v opt)})))
+
 #?(:cljs
    (extend-type js/Date
      dp/INavigatable

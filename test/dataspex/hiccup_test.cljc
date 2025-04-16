@@ -119,4 +119,11 @@
   (testing "Renders longer set of mixed contents"
     (is (= (h/render-inline
             (set (conj (range 0 50) :lol)))
-           [::ui/link "#{51 items}"]))))
+           [::ui/link "#{51 items}"])))
+
+  #?(:cljs
+     (testing "Renders short JS array"
+       (is (= (h/render-inline #js ["hello"])
+              [::ui/vector
+               {:dataspex.ui/prefix "#js"}
+               [::ui/string "hello"]])))))

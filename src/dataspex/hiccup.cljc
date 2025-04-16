@@ -143,9 +143,13 @@
 (defn render-inline-set [s opt]
   (render-paginated-sequential ::ui/set s opt data/get-set-entries))
 
+(defn render-inline-array [a opt]
+  (render-paginated-sequential ::ui/vector a (assoc opt ::ui/prefix "#js") data/get-js-array-entries))
+
 (defn render-inline-object [o opt]
   (cond
     (coll? o) (render-inline-seq o opt)
+    (data/js-array? o) (render-inline-array o opt)
 
     :else
     (let [string (data/stringify o)]
