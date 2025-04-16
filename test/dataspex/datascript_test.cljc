@@ -1,10 +1,12 @@
 (ns dataspex.datascript-test
   (:require [clojure.test :refer [deftest is testing]]
             [datascript.core :as d]
+            [dataspex.actions :as-alias actions]
             [dataspex.data :as data]
             [dataspex.datascript :as datascript]
             [dataspex.helper :as h :refer [with-conn]]
-            [dataspex.ui :as-alias ui]))
+            [dataspex.ui :as-alias ui]
+            [lookup.core :as lookup]))
 
 ::datascript/keep
 
@@ -158,3 +160,102 @@
             [::ui/map-entry
              [::ui/keyword :person/id]
              [::ui/string "bob"]]]))))
+
+(deftest render-dictionary-test
+  (testing "Renders connection as dictionary"
+    (is (= (->> (with-conn [conn schema]
+                  (h/render-dictionary conn))
+                lookup/children
+                (mapv (comp first lookup/children))
+                (mapv lookup/text))
+           ["Schema"
+            "Entities"
+            "Datoms by entity (eavt)"
+            ":aevt"
+            ":avet"
+            ":max-eid"
+            ":max-tx"
+            ":rschema"
+            ":hash"])))
+
+  (testing "Renders database as dictionary"
+    (is (= (->> (with-conn [conn schema]
+                  (h/render-dictionary (d/db conn)))
+                lookup/children
+                (mapv (comp first lookup/children))
+                (mapv lookup/text))
+           ["Schema"
+            "Entities"
+            "Datoms by entity (eavt)"
+            ":aevt"
+            ":avet"
+            ":max-eid"
+            ":max-tx"
+            ":rschema"
+            ":hash"])))
+
+  (testing "Renders datom as dictionary"
+    (is (= (->> (with-conn [conn schema]
+                  (d/transact! conn [{:person/id "wendy"}])
+                  (->> (first (:eavt @conn))
+                       (h/render-dictionary
+                        {:dataspex/inspectee "DB"
+                         :dataspex/path [:eavt]})))
+                (lookup/select ::ui/entry)
+                (mapv (fn [entry]
+                        [(lookup/text (second (lookup/children entry)))
+                         (-> entry lookup/attrs ::ui/actions first last)])))
+           [["1" [:eavt 1]]
+            [":person/id" [:eavt :person/id]]
+            ["wendy" [:eavt 1 :person/id]]
+            ["536870913" [:eavt 536870913]]
+            ["true" nil]])))
+
+  (testing "Renders index as dictionary"
+    (is (= (->> (with-conn [conn schema]
+                  (d/transact! conn data)
+                  (->> (:eavt @conn)
+                       (h/render-dictionary {:dataspex/path [:eavt]})))
+                (lookup/select ::ui/tuple)
+                count)
+           8)))
+
+  (testing "Renders entity as dictionary"
+    (is (= (->> (with-conn [conn schema]
+                  (d/transact! conn data)
+                  (h/render-dictionary (d/entity (d/db conn) 1)))
+                (lookup/select '[::ui/dictionary > ::ui/entry])
+                (mapv (comp first lookup/children))
+                (mapv lookup/text))
+           [":person/id"
+            ":person/name"
+            ":person/friends"])))
+
+  (testing "Renders many ref as navigatable dictionary"
+    (is (= (with-conn [conn schema]
+             (d/transact! conn data)
+             (let [data (:person/friends (d/entity (d/db conn) 1))]
+               (->> data
+                    (h/render-dictionary
+                     {:dataspex/inspectee "DB"})
+                    (lookup/select '[::ui/entry])
+                    first
+                    lookup/attrs
+                    ::ui/actions
+                    first
+                    last
+                    (data/nav-in data)
+                    (into {}))))
+           {:person/id "alice"
+            :person/name "Alice"})))
+
+  (testing "Renders reverse refs to entity below regular keys"
+    (is (= (->> (with-conn [conn schema]
+                  (d/transact! conn data)
+                  (h/render-dictionary (d/entity (d/db conn) 2)))
+                (lookup/select '[::ui/dictionary > ::ui/entry])
+                (mapv (comp first lookup/children))
+                (mapv lookup/text))
+           [":person/id"
+            ":person/name"
+            ":person/_friends"]))))

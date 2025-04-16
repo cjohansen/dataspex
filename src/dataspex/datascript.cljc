@@ -12,12 +12,60 @@
             [dataspex.views :as views])
   #?(:clj (:import (me.tonsky.persistent_sorted_set PersistentSortedSet))))
 
+(defn get-datom-entries [[e a v t add?]]
+  [{:k e, :v e}
+   {:k a, :v a}
+   {:path [e a], :v v}
+   {:k t :v t}
+   {:v add?}])
+
+(defn get-index-entries [index]
+  (map-indexed
+   (fn [i v]
+     {:k i
+      :v v})
+   index))
+
 (defn get-entities [db]
   (->> (:eavt db)
        (mapv first)
        set
        sort
        (mapv #(d/entity db %))))
+
+(defn attr-sort-val [{:keys [rschema]} a]
+  [(if (contains? (:db/unique rschema) a)
+     0 1)
+   (if (contains? (:db.type/ref rschema) a)
+     1 0)
+   (if (contains? (:db.cardinality/many rschema) a)
+     1 0)
+   a])
+
+(defn find-reverse-refs [db e]
+  (->> (d/q '[:find ?a ?r
+              :in $ ?e
+              :where [?r ?a ?e]]
+            db (:db/id e))
+       (group-by first)
+       (sort-by #(attr-sort-val db (first %)))
+       (mapv
+        (fn [[a es]]
+          (let [attr (keyword (namespace a) (str "_" (name a)))]
+            {:k attr
+             :label attr
+             :v (set (mapv #(d/entity db (second %)) es))})))))
+
+(defn get-entity-entries [entity]
+  (let [db (d/entity-db entity)]
+    (into
+     (->> (keys entity)
+          (sort-by (partial attr-sort-val db))
+          (mapv (fn [k]
+                  {:k k
+                   :label k
+                   :v (get entity k)})))
+     (find-reverse-refs db entity))))
 
 (defn summarize-entity [e]
   (let [ks (keys e)]
@@ -36,10 +84,10 @@
      (get db p))
    path))
 
-(defn get-entity-k [coll e]
+(defn get-entity-k [coll db-id]
   (if (map? coll)
-    (val (first (filterv (comp #{(:db/id e)} :db/id key) coll)))
-    (first (filterv (comp #{(:db/id e)} :db/id) coll))))
+    (val (first (filterv (comp #{db-id} :db/id key) coll)))
+    (first (filterv (comp #{db-id} :db/id) coll))))
 
 (defn summarize-contents [db]
   (str (count (set (mapv first (:eavt db))))
@@ -66,6 +114,26 @@
    [::ui/number {::ui/actions [(navigate-to opt [t])]} t]
    [::ui/boolean add?]])
 
+(defn render-database-dictionary [db opt]
+  (hiccup/render-entries-dictionary
+   db
+   (into [{:k :schema
+           :label 'Schema
+           :v (:schema db)}
+          {:k ::entities
+           :label 'Entities
+           :v (get-entities db)}
+          {:k :eavt
+           :label (hiccup/string-label "Datoms by entity (eavt)")
+           :v (:eavt db)}]
+         (->> [:aevt :avet :max-eid :max-tx :rschema :hash]
+              (mapv (fn [k] {:k k, :label k, :v (k db)}))))
+   opt))
+
+(defn render-index-dictionary [index opt]
+  (into [::ui/dictionary {:class :table-auto}]
+        (mapv #(render-datom % opt {:alias ::ui/tuple}) index)))
+
 (extend-type datascript.conn.Conn
   dp/INavigatable
   (nav-in [conn [p & path]]
@@ -73,7 +141,11 @@
 
   dp/IRenderInline
   (render-inline [conn _]
-    (render-conn-inline conn)))
+    (render-conn-inline conn))
+
+  dp/IRenderDictionary
+  (render-dictionary [conn opt]
+    (render-database-dictionary (d/db conn) opt)))
 
 (extend-type datascript.db.DB
   dp/INavigatable
@@ -82,33 +154,54 @@
 
   dp/IRenderInline
   (render-inline [db _]
-    (render-database-inline db)))
+    (render-database-inline db))
+
+  dp/IRenderDictionary
+  (render-dictionary [db opt]
+    (render-database-dictionary db opt)))
 
 (extend-type datascript.db.Datom
   dp/IRenderInline
   (render-inline [datom opt]
-    (render-datom datom opt)))
+    (render-datom datom opt))
+
+  dp/IRenderDictionary
+  (render-dictionary [datom opt]
+    (hiccup/render-entries-dictionary datom (get-datom-entries datom) opt)))
 
 (extend-type #?(:clj PersistentSortedSet
                 :cljs pss/BTSet)
   dp/IRenderInline
   (render-inline [pss opt]
-    (hiccup/render-inline-set pss opt)))
+    (hiccup/render-inline-set pss opt))
 
-(defrecord EntityKey [e]
+  dp/IRenderDictionary
+  (render-dictionary [pss opt]
+    (if (instance? datascript.db.Datom (first pss))
+      (render-index-dictionary pss opt)
+      (hiccup/render-entries-dictionary pss (get-index-entries pss) opt))))
+
+(defrecord EntityKey [id summary]
   p/Datafiable
   (datafy [_]
-    (summarize-entity e))
+    summary)
 
   dp/IKeyLookup
   (lookup [_ coll]
-    (get-entity-k coll e)))
+    (get-entity-k coll id)))
+
+(defn make-entity-key [e]
+  (EntityKey. (:db/id e) (summarize-entity e)))
 
 (extend-type datascript.impl.entity.Entity
   dp/IKey
   (to-key [e]
-    (EntityKey. e))
+    (make-entity-key e))
 
   dp/IRenderInline
   (render-inline [entity opt]
-    (hiccup/render-inline (summarize-entity entity) opt)))
+    (hiccup/render-inline (summarize-entity entity) opt))
+
+  dp/IRenderDictionary
+  (render-dictionary [entity opt]
+    (hiccup/render-entries-dictionary entity (get-entity-entries entity) opt)))

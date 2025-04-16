@@ -63,6 +63,14 @@
          :else
          (count (pr-str v)))))
 
+(defrecord StringLabel [s]
+  dp/IRenderInline
+  (render-inline [_ _]
+    [::ui/code s]))
+
+(defn string-label [s]
+  (StringLabel. s))
+
 (defn add-attr [hiccup k v]
   (if (map? (second hiccup))
     (assoc-in hiccup [1 k] v)
