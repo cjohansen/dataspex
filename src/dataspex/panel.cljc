@@ -107,3 +107,33 @@
            (cond-> [::ui/button]
              (< next-n n) (conj {::ui/actions [(views/offset-pagination opt next-n)]})
              :then (conj [::icons/caret-right]))])))))
+
+(defn render-data [x opt]
+  (when (render? opt)
+    (case (views/get-current-view x opt)
+      views/inline
+      (hiccup/render-inline x opt)
+
+      views/table
+      (hiccup/render-table x opt)
+
+      views/source
+      (hiccup/render-source x opt)
+
+      (hiccup/render-dictionary x opt))))
+
+(defn render-panel [state label x]
+  (let [opt (views/get-view-options state label)
+        data (-> (data/nav-in x (:dataspex/path opt))
+                 (data/inspect opt))
+        pagination (render-pagination-bar data opt)]
+    [:div.panel
+     (render-title-bar opt)
+     [:div
+      (when (render? opt)
+        [::ui/navbar
+         (render-path (:dataspex/path opt) opt)
+         (render-view-menu data opt)])
+      pagination
+      (render-data data opt)
+      pagination]]))
