@@ -172,4 +172,13 @@
                  :language "English"
                  :awards {:oscars 7 :nominations 11}}
                 (h/render-inline {:dataspex/summarize-above-w 50}))
-           [::ui/link "{8 keys}"]))))
+           [::ui/link "{8 keys}"])))
+
+  #?(:cljs
+     (testing "Renders short JS object"
+       (is (= (-> #js {:hello "There"}
+                  h/render-inline)
+              [::ui/map {:dataspex.ui/prefix "#js"}
+               [::ui/map-entry
+                [::ui/keyword :hello]
+                [::ui/string "There"]]])))))

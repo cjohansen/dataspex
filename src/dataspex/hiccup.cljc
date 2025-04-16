@@ -174,6 +174,7 @@
     (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
     (coll? o) (render-inline-seq o opt)
     (data/js-array? o) (render-inline-array o opt)
+    (data/js-object? o) (render-inline-map o (data/get-js-object-entries o opt) (assoc opt ::ui/prefix "#js"))
 
     :else
     (let [string (data/stringify o)]

@@ -155,6 +155,16 @@
                :label i
                :v (inspect v opt)})))
 
+(defn get-js-object-entries [#?(:cljs ^js o :clj o) opt]
+  (->> #?(:cljs (into [] (js/Object.keys o))
+          :clj (keys o))
+       (sort-by sort-order)
+       (map (fn [k]
+              (let [n (keyword k)]
+                {:k n
+                 :label n
+                 :v (inspect (aget o k) opt)})))))
+
 #?(:cljs
    (extend-type js/Date
      dp/INavigatable
