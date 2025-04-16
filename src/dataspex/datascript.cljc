@@ -134,6 +134,9 @@
   (into [::ui/dictionary {:class :table-auto}]
         (mapv #(render-datom % opt {:alias ::ui/tuple}) index)))
 
+(defn render-db-source [db opt]
+  (dp/render-dictionary (:eavt db) opt))
+
 (extend-type datascript.conn.Conn
   dp/INavigatable
   (nav-in [conn [p & path]]
@@ -145,7 +148,11 @@
 
   dp/IRenderDictionary
   (render-dictionary [conn opt]
-    (render-database-dictionary (d/db conn) opt)))
+    (render-database-dictionary (d/db conn) opt))
+
+  dp/IRenderSource
+  (render-source [conn opt]
+    (render-db-source (d/db conn) opt)))
 
 (extend-type datascript.db.DB
   dp/INavigatable
@@ -158,7 +165,11 @@
 
   dp/IRenderDictionary
   (render-dictionary [db opt]
-    (render-database-dictionary db opt)))
+    (render-database-dictionary db opt))
+
+  dp/IRenderSource
+  (render-source [db opt]
+    (render-db-source db opt)))
 
 (extend-type datascript.db.Datom
   dp/IRenderInline

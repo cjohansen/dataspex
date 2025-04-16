@@ -259,3 +259,20 @@
            [":person/id"
             ":person/name"
             ":person/_friends"]))))
+
+(deftest render-source-test
+  (testing "Renders connection as source"
+    (is (= (->> (with-conn [conn schema]
+                  (d/transact! conn data)
+                  (h/render-source conn))
+                (lookup/select ::ui/tuple)
+                count)
+           8)))
+
+  (testing "Renders database as source"
+    (is (= (->> (with-conn [conn schema]
+                  (d/transact! conn data)
+                  (h/render-source (d/db conn)))
+                (lookup/select ::ui/tuple)
+                count)
+           8))))
