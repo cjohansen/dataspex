@@ -4,6 +4,7 @@
             [dataspex.inline-scenes]
             [dataspex.source-scenes]
             [dataspex.table-scenes]
+            [dataspex.test.dictionary-scenes]
             [dataspex.test.inline-scenes]
             [dataspex.ui-scenes]
             [portfolio.data :as data]
@@ -15,6 +16,7 @@
 :dataspex.inline-scenes/keep
 :dataspex.source-scenes/keep
 :dataspex.table-scenes/keep
+:dataspex.test.dictionary-scenes/keep
 :dataspex.test.inline-scenes/keep
 :dataspex.ui-scenes/keep
 
