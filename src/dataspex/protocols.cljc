@@ -4,6 +4,14 @@
   :extend-via-metadata true
   (nav-in [self ks]))
 
+(defprotocol IKey
+  :extend-via-metadata true
+  (to-key [self]))
+
+(defprotocol IKeyLookup
+  :extend-via-metadata true
+  (lookup [self x]))
+
 (defprotocol IRenderInline
   :extend-via-metadata true
   (render-inline [self opts]))

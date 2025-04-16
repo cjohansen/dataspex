@@ -74,23 +74,30 @@
     x
     (if (satisfies? dp/INavigatable x)
       (dp/nav-in x ks)
-      (let [data (inspect x)]
+      (let [data (inspect x)
+            k (first ks)]
         (cond
           (satisfies? dp/INavigatable data)
           (dp/nav-in data ks)
+
+          (satisfies? dp/IKeyLookup k)
+          (recur (dp/lookup k data) (next ks))
 
           (or (associative? data) (set? data))
           (recur (get data (first ks)) (next ks))
 
           :else
-          (let [[p & npath] ks]
-            (cond
-              (and (coll? data) (number? p))
-              (recur (nth data p) npath)
+          (cond
+            (and (coll? data) (number? k))
+            (recur (nth data k) (next ks))
 
-              (or (js-array? data) (js-object? data))
-              (recur (aget data (cond-> p
-                                  (keyword? p) name)) npath))))))))
+            (or (js-array? data) (js-object? data))
+            (recur (aget data (cond-> k
+                                (keyword? k) name)) (next ks))))))))
+
+(defn stringify [v]
+  (binding [*print-namespace-maps* false]
+    (pr-str v)))
 
 #?(:cljs
    (extend-type js/Date
