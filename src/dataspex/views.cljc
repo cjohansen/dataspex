@@ -34,3 +34,7 @@
       (when (data/supports-view? v default-view opt)
         default-view)
       dictionary))
+
+(defn get-view-options [state inspectee]
+  (-> (get state inspectee)
+      (assoc :dataspex/inspectee inspectee)))
