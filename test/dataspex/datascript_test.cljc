@@ -3,7 +3,8 @@
             [datascript.core :as d]
             [dataspex.data :as data]
             [dataspex.datascript :as datascript]
-            [dataspex.helper :as h :refer [with-conn]]))
+            [dataspex.helper :as h :refer [with-conn]]
+            [dataspex.ui :as-alias ui]))
 
 ::datascript/keep
 
@@ -100,3 +101,60 @@
              (let [friend (d/entity (d/db conn) 1)]
                (data/nav-in (d/entity (d/db conn) 3) [:person/_friends (data/as-key friend) :person/name])))
            "Bob"))))
+
+(deftest render-inline-test
+  (testing "Renders connection inline"
+    (is (= (with-conn [conn schema]
+             (d/transact! conn data)
+             (h/render-inline conn))
+           [::ui/code "#datascript/Conn [3 entities, 8 datoms]"])))
+
+  (testing "Renders database inline"
+    (is (= (with-conn [conn schema]
+             (d/transact! conn data)
+             (h/render-inline (d/db conn)))
+           [::ui/code "#datascript/DB [3 entities, 8 datoms]"])))
+
+  (testing "Renders datom inline"
+    (is (= (with-conn [conn schema]
+             (d/transact! conn [{:person/id "wendy"}])
+             (->> (first (:eavt @conn))
+                  (h/render-inline
+                   {:dataspex/inspectee "DS"
+                    :dataspex/path [:eavt]})))
+           [::ui/inline-tuple {::ui/prefix "datom"}
+            [::ui/number
+             {::ui/actions [[:dataspex.actions/assoc-in ["DS" :dataspex/path] [:eavt 1]]]}
+             1]
+            [::ui/keyword
+             {::ui/actions [[:dataspex.actions/assoc-in ["DS" :dataspex/path] [:eavt :person/id]]]}
+             :person/id]
+            [::ui/string
+             {::ui/actions [[:dataspex.actions/assoc-in ["DS" :dataspex/path] [:eavt 1 :person/id]]]}
+             "wendy"]
+            [::ui/number
+             {::ui/actions [[:dataspex.actions/assoc-in ["DS" :dataspex/path] [:eavt 536870913]]]}
+             536870913]
+            [::ui/boolean true]])))
+
+  (testing "Renders index inline"
+    (is (= (->> (with-conn [conn schema]
+                  (d/transact! conn [{:person/id "wendy"}])
+                  (h/render-inline (:eavt @conn)))
+                first)
+           ::ui/set)))
+
+  (testing "Renders large index inline"
+    (is (= (with-conn [conn schema]
+             (d/transact! conn data)
+             (h/render-inline (:eavt @conn)))
+           [::ui/link "#{8 Datoms}"])))
+
+  (testing "Renders entity inline"
+    (is (= (with-conn [conn schema]
+             (d/transact! conn data)
+             (h/render-inline (d/entity (d/db conn) 1)))
+           [::ui/map
+            [::ui/map-entry
+             [::ui/keyword :person/id]
+             [::ui/string "bob"]]]))))

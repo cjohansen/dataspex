@@ -61,6 +61,11 @@
          :else
          (count (pr-str v)))))
 
+(defn add-attr [hiccup k v]
+  (if (map? (second hiccup))
+    (assoc-in hiccup [1 k] v)
+    (into [(first hiccup) {k v}] (rest hiccup))))
+
 (defn type-name [x]
   (cond
     (keyword? x) "keyword"
