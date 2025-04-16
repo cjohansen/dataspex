@@ -1,5 +1,9 @@
 (ns dataspex.protocols)
 
+(defprotocol INavigatable
+  :extend-via-metadata true
+  (nav-in [self ks]))
+
 (defprotocol IRenderInline
   :extend-via-metadata true
   (render-inline [self opts]))

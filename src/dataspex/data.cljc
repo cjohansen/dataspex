@@ -1,7 +1,8 @@
 (ns dataspex.data
   (:require [clojure.datafy :as datafy]
             [dataspex.views :as views]
-            [dataspex.protocols :as dp]))
+            [dataspex.protocols :as dp]
+            #?(:cljs [dataspex.date :as date])))
 
 (defn js-array? [#?(:cljs v :clj _)]
   #?(:cljs (array? v)))
@@ -57,3 +58,42 @@
 
        :else
        (datafy/datafy data)))))
+
+(defn nav-in
+  "Returns the value located at `ks` in a nested structure `x`.
+
+  Works like `clojure.core/get-in`, but supports custom navigation:
+  - If `x` (or its inspected form) satisfies `dataspex.protocols/INavigatable`,
+    navigation is delegated to it.
+  - Otherwise, falls back to standard `get`, `nth`, or `aget` logic depending
+    on the structure.
+
+  Returns `x` unchanged if `ks` is empty."
+  [x ks]
+  (if (empty? ks)
+    x
+    (if (satisfies? dp/INavigatable x)
+      (dp/nav-in x ks)
+      (let [data (inspect x)]
+        (cond
+          (satisfies? dp/INavigatable data)
+          (dp/nav-in data ks)
+
+          (or (associative? data) (set? data))
+          (recur (get data (first ks)) (next ks))
+
+          :else
+          (let [[p & npath] ks]
+            (cond
+              (and (coll? data) (number? p))
+              (recur (nth data p) npath)
+
+              (or (js-array? data) (js-object? data))
+              (recur (aget data (cond-> p
+                                  (keyword? p) name)) npath))))))))
+
+#?(:cljs
+   (extend-type js/Date
+     dp/INavigatable
+     (nav-in [d [p & path]]
+       (nav-in (get (date/->map d) p) path))))
