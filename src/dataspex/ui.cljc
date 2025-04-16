@@ -334,3 +334,34 @@
          {:on {:click actions}
           :title title})
    content])
+
+(defalias crumb [{::keys [actions] :as attrs} content]
+  [(if actions
+     :button.clickable.pill.pill-big
+     :span.pill.pill-ph)
+   (assoc attrs :on {:click actions})
+   (if (hiccup/hiccup? (first content))
+     content
+     [:code.code content])])
+
+(defalias path [attrs crumbs]
+  [:nav attrs crumbs])
+
+(defalias navbar [attrs children]
+  [:div.flex.navbar attrs children])
+
+(defalias button-bar [attrs children]
+  [:nav.flex.gap-2 attrs children])
+
+(defalias tab [{::keys [selected? actions]} content]
+  [(if actions :button.tab.clickable :div.tab)
+   {:on {:click actions}
+    :class (when selected? :tab-selected)}
+   content])
+
+(defalias tabs [attrs children]
+  [:nav.flex attrs children])
+
+(defalias toolbar [attrs children]
+  [:div.toolbar.flex attrs
+   children])

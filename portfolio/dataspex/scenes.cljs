@@ -3,6 +3,7 @@
             [dataspex.inline-scenes]
             [dataspex.source-scenes]
             [dataspex.table-scenes]
+            [dataspex.ui-scenes]
             [portfolio.data :as data]
             [portfolio.ui :as portfolio]
             [replicant.dom :as r]))
@@ -11,6 +12,7 @@
 :dataspex.inline-scenes/keep
 :dataspex.source-scenes/keep
 :dataspex.table-scenes/keep
+:dataspex.ui-scenes/keep
 
 (data/register-collection!
  :dataspex
