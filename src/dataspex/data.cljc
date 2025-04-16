@@ -1,6 +1,5 @@
 (ns dataspex.data
   (:require [clojure.datafy :as datafy]
-            [dataspex.views :as views]
             [dataspex.protocols :as dp]
             #?(:cljs [dataspex.date :as date])))
 
@@ -37,19 +36,19 @@
                 (some #(% x) (conj @string-inspectors identity))
                 x)]
      (cond
-       (and (= view views/inline)
+       (and (= view :dataspex.views/inline)
             (satisfies? dp/IRenderInline data))
        data
 
-       (and (= view views/dictionary)
+       (and (= view :dataspex.views/dictionary)
             (satisfies? dp/IRenderDictionary data))
        data
 
-       (and (= view views/table)
+       (and (= view :dataspex.views/table)
             (satisfies? dp/IRenderTable data))
        data
 
-       (and (= view views/source)
+       (and (= view :dataspex.views/source)
             (satisfies? dp/IRenderSource data))
        data
 
@@ -106,7 +105,7 @@
 
 (defn supports-view? [x view opt]
   (cond
-    (not= views/table view)
+    (not= :dataspex.views/table view)
     true
 
     (satisfies? dp/IRenderTable x)

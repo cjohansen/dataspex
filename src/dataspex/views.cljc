@@ -1,4 +1,5 @@
-(ns dataspex.views)
+(ns dataspex.views
+  (:require [dataspex.data :as data]))
 
 (def inline ::inline)
 (def dictionary ::dictionary)
@@ -27,3 +28,9 @@
 
 (defn ^{:indent 1} navigate-to [opt path]
   [:dataspex.actions/assoc-in [(:dataspex/inspectee opt) :dataspex/path] path])
+
+(defn get-current-view [v {:dataspex/keys [path view default-view] :as opt}]
+  (or (get view path)
+      (when (data/supports-view? v default-view opt)
+        default-view)
+      dictionary))

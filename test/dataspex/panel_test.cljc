@@ -1,9 +1,11 @@
 (ns dataspex.panel-test
   (:require [clojure.test :refer [deftest is testing]]
             [dataspex.actions :as-alias actions]
-            [dataspex.ui :as-alias ui]
             [dataspex.icons :as-alias icons]
-            [dataspex.panel :as panel]))
+            [dataspex.panel :as panel]
+            [dataspex.ui :as-alias ui]
+            [dataspex.views :as views]
+            [lookup.core :as lookup]))
 
 (deftest render-title-bar
   (testing "Renders title bar"
@@ -37,3 +39,56 @@
              [::ui/button {::ui/title "Close"
                            ::ui/actions [[::actions/uninspect "Store"]]}
               [::icons/x]]]]))))
+
+(deftest render-view-menu
+  (testing "Renders full menu for collection of maps"
+    (is (= (panel/render-view-menu [{}] {:dataspex/inspectee "Store"
+                                         :dataspex/view views/dictionary
+                                         :dataspex/path [:data]})
+           [::ui/button-bar
+            [::ui/button
+             {::ui/title "Viewing in data browser"
+              ::ui/selected? true}
+             [::icons/browser]]
+            [::ui/button
+             {::ui/title "View raw data"
+              ::ui/actions [[::actions/assoc-in ["Store" :dataspex/view [:data]] views/source]
+                            [::actions/assoc-in ["Store" :dataspex/default-view] views/source]]}
+             [::icons/brackets-square]]
+            [::ui/button
+             {::ui/title "View as table"
+              ::ui/actions [[::actions/assoc-in ["Store" :dataspex/view [:data]] views/table]
+                            [::actions/assoc-in ["Store" :dataspex/default-view] views/table]]}
+             [::icons/table]]])))
+
+  (testing "Renders disabled button for unsupported table view"
+    (is (= (->> (panel/render-view-menu "String" {})
+                lookup/children
+                last)
+           [::ui/button
+            {::ui/title "The data doesn't support the table view"}
+            [::icons/table]])))
+
+  (testing "Renders appropriate source icon for map"
+    (is (= (->> (panel/render-view-menu {} {})
+                lookup/children
+                second
+                lookup/children
+                last)
+           [::icons/brackets-curly])))
+
+  (testing "Renders appropriate source icon for list"
+    (is (= (->> (panel/render-view-menu '() {})
+                lookup/children
+                second
+                lookup/children
+                last)
+           [::icons/brackets-round])))
+
+  (testing "Renders appropriate source icon for vector"
+    (is (= (->> (panel/render-view-menu [] {})
+                lookup/children
+                second
+                lookup/children
+                last)
+           [::icons/brackets-square]))))
