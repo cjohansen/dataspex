@@ -92,3 +92,30 @@
                 lookup/children
                 last)
            [::icons/brackets-square]))))
+
+(deftest render-path
+  (testing "Renders root path as a dot"
+    (is (= (panel/render-path [] {})
+           [::ui/path
+            [::ui/crumb {} "."]])))
+
+  (testing "Renders path of one string"
+    (is (= (panel/render-path ["users"] {:dataspex/inspectee "Store"})
+           [::ui/path
+            [::ui/crumb {::ui/actions [[::actions/assoc-in ["Store" :dataspex/path] []]]}
+             "."]
+            [::ui/crumb
+             [::ui/string "users"]]])))
+
+  (testing "Renders path of strings, keywords and numbers"
+    (is (= (panel/render-path [:users 0] {:dataspex/inspectee "Store"})
+
+           [::ui/path
+            [::ui/crumb
+             {::ui/actions [[::actions/assoc-in ["Store" :dataspex/path] []]]}
+             "."]
+            [::ui/crumb
+             {::ui/actions
+              [[::actions/assoc-in ["Store" :dataspex/path] [:users]]]}
+             [::ui/keyword :users]]
+            [::ui/crumb [::ui/number 0]]]))))

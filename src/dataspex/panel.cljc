@@ -1,6 +1,7 @@
 (ns dataspex.panel
   (:require [dataspex.actions :as-alias actions]
             [dataspex.data :as data]
+            [dataspex.hiccup :as hiccup]
             [dataspex.icons :as-alias icons]
             [dataspex.ui :as-alias ui]
             [dataspex.views :as views]))
@@ -61,3 +62,31 @@
              {::ui/title (str "The data doesn't support the " (name view) " view")})
            (or icon source-icon)]))
       views))))
+
+(defn render-path [path opt]
+  (let [n (count path)]
+    (cond-> [::ui/path
+             [::ui/crumb
+              (cond-> {}
+                (< 0 n)
+                (assoc ::ui/actions [(views/navigate-to opt [])]))
+              "."]]
+
+      (< 1 n)
+      (into
+       (->> (butlast path)
+            (reduce
+             (fn [{:keys [curr res]} e]
+               (let [curr (conj curr e)]
+                 {:curr curr
+                  :res (conj res
+                             [::ui/crumb
+                              {::ui/actions [(views/navigate-to opt curr)]}
+                              (hiccup/render-inline e opt)])}))
+             {:curr []
+              :res []})
+            :res))
+
+      (< 0 n)
+      (conj [::ui/crumb
+             (hiccup/render-inline (last path) opt)]))))
