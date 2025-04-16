@@ -120,7 +120,7 @@ html {
   font-family: helvetica neue, lucida grande, sans-serif;
 }
 
-.code, [data-type] {
+.code, [data-type], .source {
   font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
   font-size: 0.9rem;
 }
@@ -151,6 +151,33 @@ body, pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* Color schemes */
+[data-color=error] {
+  color: var(--error-color);
+  --string-color: var(--error-color);
+  --symbol-color: var(--error-color);
+  --symbol-namespace-color: var(--error-color);
+  --number-color: var(--error-color);
+  --keyword-color: var(--error-color);
+  --keyword-namespace-color: var(--error-color);
+  --boolean-color: var(--error-color);
+  --class-color: var(--error-color);
+  --id-color: var(--error-color);
+}
+
+[data-color=success] {
+  color: var(--success-fg);
+  --string-color: var(--success-fg);
+  --symbol-color: var(--success-fg);
+  --symbol-namespace-color: var(--success-fg);
+  --number-color: var(--success-fg);
+  --keyword-color: var(--success-fg);
+  --keyword-namespace-color: var(--success-fg);
+  --boolean-color: var(--success-fg);
+  --class-color: var(--success-fg);
+  --id-color: var(--success-fg);
 }
 
 /* Clickable stuff */
@@ -223,6 +250,48 @@ a.clickable:hover,
     display: inline-block;
     width: 1.25em;
     height: 1.25em;
+}
+
+/* Tags */
+
+.tag, .button.tag {
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border-color);
+  display: inline-flex;
+  opacity: 0.8;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.9em;
+}
+
+.tag[data-color=error], .button.tag[data-color=error] {
+  background: var(--error-bg);
+  border-color: var(--error-fg);
+}
+
+.tag > svg {
+  width: 1em;
+  height: 1em;
+}
+
+/* Alerts */
+
+.alert[data-color=error] {
+  background: var(--error-bg);
+  border: 1px solid var(--error-fg);
+  border-radius: 8px;
+  display: block;
+  font-size: 1em;
+  padding: 18px;
+  white-space: normal;
+}
+
+.alert > :first-child {
+  margin-top: 0;
+}
+
+.alert > :last-child {
+  margin-bottom: 0;
 }
 
 /* Syntax/data types */
@@ -338,4 +407,58 @@ a.clickable:hover,
 
 .dictionary:not(.table-auto) th {
   width: 15em;
+}
+
+/* Source listings */
+
+.source {
+  line-height: 1.5;
+  padding: 12px;
+}
+
+/* Hiccup */
+
+.hiccup {
+  .keyword .name, [data-type=keyword] .name {color: var(--keyword-light-color);}
+  .keyword .namespace, [data-type=keyword] .namespace {color: var(--keyword-color);}
+  .hiccup-tag .name {color: var(--keyword-color);}
+  .hiccup-tag .namespace {color: var(--keyword-namespace-color);}
+}
+
+/* Folding */
+
+[data-folded] {
+  position: relative;
+}
+
+[data-folded]::before {
+  position: absolute;
+  left: -1.5em;
+  padding-right: 1.5em;
+}
+
+.coll > .coll:nth-child(2) > :nth-child(2)[data-folded]::before {
+  left: -2em;
+}
+
+.coll > .coll:nth-child(2) > .coll:nth-child(2) > :nth-child(2)[data-folded]::before {
+  left: -2.5em;
+}
+
+.coll > .coll:nth-child(2) > .coll:nth-child(2) > .coll:nth-child(2) > :nth-child(2)[data-folded]::before {
+  left: -3em;
+}
+
+[data-folded=true]::before {
+  content: "▶";
+}
+
+[data-folded=false]::before {
+  content: "▼";
+  opacity: 0.2;
+  transition: opacity 0.15s;
+}
+
+[data-folded=false]:hover::before {
+  opacity: 1;
 }

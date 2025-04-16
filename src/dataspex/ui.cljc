@@ -48,6 +48,37 @@
    " "
    value])
 
+(defn parse-tag [^clojure.lang.Keyword tag]
+  ;; Borrowed from hiccup, and adapted to support multiple classes
+  (let [ns ^String (namespace tag)
+        tag ^String (name tag)
+        id-index (let [index (.indexOf tag "#")] (when (pos? index) index))
+        class-index (let [index (.indexOf tag ".")] (when (pos? index) index))
+        tag-name (cond
+                   id-index (.substring tag 0 id-index)
+                   class-index (.substring tag 0 class-index)
+                   :else tag)
+        id (when id-index
+             (if class-index
+               (.substring tag (unchecked-inc-int id-index) class-index)
+               (.substring tag (unchecked-inc-int id-index))))
+        classes (when class-index
+                  (seq (.split (.substring tag (unchecked-inc-int class-index)) #?(:clj "\\." :cljs "."))))]
+    [ns tag-name id classes]))
+
+(defalias hiccup-tag [attrs [tag]]
+  (let [[ns tag id classes] (parse-tag tag)]
+    (into
+     [:code.hiccup-tag (assoc (actions->click-handler attrs) :data-type "keyword")]
+     (cond-> (if ns
+               [[:span.namespace (str ":" ns)] "/"
+                [:span.name (name tag)]]
+               [[:span.name (str ":" (name tag))]])
+       id (conj [:span.hiccup-id (str "#" id)])
+       classes (into (mapv (fn [class]
+                             [:span.hiccup-class
+                              (str "." class)]) classes))))))
+
 (defn render-collection [left-bracket right-bracket attrs elements]
   [:span.coll (actions->click-handler attrs)
    [:strong
@@ -144,6 +175,150 @@
 (defalias table [attrs sections]
   [:table.table attrs
    sections])
+
+(defn indent-str [n]
+  (loop [s ""
+         n n]
+    (if (= 0 n)
+      s
+      (recur (str s " ") (dec n)))))
+
+(declare render-source-element)
+
+(defn bounded-sum [bound numbers]
+  (if bound
+    (loop [sum 0
+           numbers numbers]
+      (if (or (< bound sum)
+              (empty? numbers))
+        sum
+        (recur (+ sum (first numbers)) (next numbers))))
+    (reduce + 0 numbers)))
+
+(defn content-length [node & [bound]]
+  (let [[tag & xs] node
+        [attrs children] (if (map? (first xs))
+                           [(first xs) (drop 1 xs)]
+                           [nil xs])]
+    (+ (if-let [prefix (::prefix attrs)]
+         (inc (count prefix))
+         0)
+       (case tag
+         ::string
+         (+ 2 (count (str (first children))))
+
+         (::vector ::list ::set)
+         (+ (if (= ::set tag) 1 0)
+            2                      ;; Brackets
+            (dec (count children)) ;; Spaces
+            (->> (mapv content-length children)
+                 (bounded-sum bound)))
+
+         ::map
+         (+ 2                            ;; Brackets
+            (* 2 (dec (count children))) ;; Commas + spaces
+            (->> (mapv (fn [[_ k v]]
+                         (+ (content-length k)
+                            1 ;; Space
+                            (content-length v))) children)
+                 (bounded-sum bound)))
+
+         (count (str (first children)))))))
+
+(defn render-map-source [{::keys [prefix] :as attrs} map-entries indent]
+  (let [indent-s (indent-str (+ indent 1 (if prefix (inc (count prefix)) 0))
+                             )]
+    (into [:span attrs
+           [::code.strong
+            (when-let [prefix prefix]
+              (str prefix " ")) "{"]]
+          (loop [entries map-entries
+                 res []]
+            (let [[_ k v] (first entries)
+                  indent-w (+ indent 2 (content-length k))
+                  new-line? (and (< 40 indent-w)
+                                 (#{::map ::list ::set ::vector} (first v))
+                                 (< 60 (content-length v 60)))
+                  more (next entries)
+                  res (cond-> res
+                        v (into [k [::code (if new-line? (str "\n" indent-s) " ")]
+                                 (render-source-element v
+                                   {:indent (if new-line?
+                                              (inc indent)
+                                              (+ indent 2 (content-length k)))})])
+                        more (conj (str "\n" indent-s))
+                        (nil? more) (conj [::code.strong "}"]))]
+              (if more
+                (recur more res)
+                res))))))
+
+(defn render-coll-source [{::keys [prefix] :as attrs} xs indent l-br r-br]
+  (let [indent (+ indent (count l-br) (if prefix (inc (count prefix)) 0))
+        indent-s (indent-str (+ indent (if prefix (inc (count prefix)) 0)))
+        inline? (< (reduce + indent (mapv content-length xs)) 80)
+        separator (if inline?
+                    " "
+                    (str "\n" indent-s))]
+    (into [:span.coll (actions->click-handler attrs)
+           [::code.strong
+            (str (when prefix
+                   (str prefix " ")) l-br)]]
+          (loop [values xs
+                 res []
+                 column indent
+                 prev nil]
+            (let [v (first values)
+                  more (next values)
+                  sep (if (::inline? (second (first more)))
+                        " "
+                        separator)
+                  res (cond-> (conj res (render-source-element v
+                                          {:indent
+                                           (if (or inline? (and (::inline? (second v)) prev))
+                                             column
+                                             indent)}))
+                        more (conj sep)
+                        (nil? more) (conj [::code.strong r-br]))]
+              (if more
+                (recur more res (+ column 1 (content-length v)) v)
+                res))))))
+
+(defn ^{:indent 1} render-source-element [element {:keys [indent]}]
+  (let [[kind & xs] element
+        [attrs children] (if (map? (first xs))
+                           [(first xs) (rest xs)]
+                           [nil xs])]
+    (case kind
+      ::map
+      (render-map-source attrs children indent)
+
+      ::vector
+      (render-coll-source attrs children indent "[" "]")
+
+      ::list
+      (render-coll-source attrs children indent "(" ")")
+
+      ::set
+      (render-coll-source attrs children indent "#{" "}")
+
+      element)))
+
+(defalias source [attrs elements]
+  (let [indent (if (::prefix attrs) (inc (count (::prefix attrs))) 0)]
+    (cond-> [:pre.source attrs]
+      (::prefix attrs) (conj [:code.strong (str (::prefix attrs) " ")])
+      :then (into (mapv #(render-source-element % {:indent indent}) elements)))))
+
+(defalias hiccup [attrs elements]
+  (into [:pre.source.hiccup attrs]
+        (mapv #(render-source-element % {:indent 0}) elements)))
+
+(defalias tag [attrs value]
+  [:code.tag attrs value])
+
+(defalias alert [attrs content]
+  [:output.alert attrs
+   content])
 
 (defalias link [attrs text]
   [:button.link

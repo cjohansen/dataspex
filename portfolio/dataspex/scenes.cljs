@@ -1,6 +1,7 @@
 (ns dataspex.scenes
   (:require [dataspex.dictionary-scenes]
             [dataspex.inline-scenes]
+            [dataspex.source-scenes]
             [dataspex.table-scenes]
             [portfolio.data :as data]
             [portfolio.ui :as portfolio]
@@ -8,6 +9,7 @@
 
 :dataspex.dictionary-scenes/keep
 :dataspex.inline-scenes/keep
+:dataspex.source-scenes/keep
 :dataspex.table-scenes/keep
 
 (data/register-collection!
