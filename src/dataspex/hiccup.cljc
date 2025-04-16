@@ -246,6 +246,125 @@
             (render-inline v opt)
             (render-copy-button opt)]))))))
 
+(defn ^{:indent 2} update-sorting [opt k v]
+  [::actions/assoc-in [(:dataspex/inspectee opt) :dataspex/sorting (:dataspex/path opt) k] v])
+
+(defn render-table-header [k label sort-k sort-order opt]
+  [::ui/th
+   {::ui/actions
+    (cond-> []
+      (not= k sort-k)
+      (conj (update-sorting opt :key k))
+
+      :then
+      (conj (update-sorting opt :order
+              (if (or (not= k sort-k)
+                      (and (= k sort-k)
+                           (= sort-order :dataspex.sort.order/descending)))
+                :dataspex.sort.order/ascending
+                :dataspex.sort.order/descending))))}
+   (some-> label (render-inline opt))
+   (when (= sort-k k)
+     (if (= :dataspex.sort.order/descending sort-order)
+       [:dataspex.icons/sort-descending]
+       [:dataspex.icons/sort-ascending]))])
+
+(defn render-map-table [xs opt]
+  ;; Assume there are no new keys beyond the first 1000 items. Tables work best
+  ;; for homogenous collections, and we can't realize an infinite seq, so that
+  ;; seems like a reasonable compromise.
+  (let [ks (->> (take 1000 xs)
+                (mapcat keys)
+                set
+                (sort-by data/sort-order))
+        sort-k (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :key]) :dataspex/idx)
+        sort-order (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :order]) :dataspex.sort.order/asc)]
+    [::ui/table
+     (-> [::ui/thead
+          (render-table-header :dataspex/idx nil sort-k sort-order opt)]
+         (into (mapv #(render-table-header % % sort-k sort-order opt) ks))
+         (conj [:th]))
+     (into
+      [::ui/tbody]
+      (mapv
+       (fn [m]
+         (-> [::ui/tr {::ui/actions [(views/navigate-to opt
+                                       (views/path-to opt [(:dataspex/idx m)]))]}
+              (render-inline (:dataspex/idx m) opt)]
+             (into (mapv #(render-inline (get m %) opt) ks))
+             (conj (render-copy-button opt (:dataspex/idx m)))))
+       (cond->> (mapv (fn [idx m] (assoc m :dataspex/idx idx)) (range) xs)
+         (get-in opt [:dataspex/sorting (:dataspex/path opt) :key])
+         (sort-by sort-k)
+
+         (= (get-in opt [:dataspex/sorting (:dataspex/path opt) :order])
+            :dataspex.sort.order/descending) reverse
+         :then (paginate (views/get-pagination opt)))))]))
+
+(defn render-source-content [data opt]
+  (if (satisfies? dp/IRenderSource data)
+    (dp/render-source data opt)
+    (render-inline data opt)))
+
+(defn get-ident [hiccup]
+  [(first hiccup)])
+
+(defn unfolded? [v {:dataspex/keys [folding-level path] :as opt} node-path]
+  (or (< 0 folding-level)
+      (not (hiccup? v))
+      (every? #(not (hiccup? %)) v)
+      (let [{:keys [folded? ident]} (get-in opt [:dataspex/folding (into path node-path)])]
+        (and (false? folded?) (= ident (get-ident v))))))
+
+(declare render-hiccup-node)
+
+(defn render-hiccup-child [node opt path idx]
+  (cond
+    (hiccup? node)
+    (let [node-path (conj path idx)]
+      (if (unfolded? node opt node-path)
+        (render-hiccup-node node (update opt :dataspex/folding-level dec) node-path)
+        [::ui/vector
+         {::ui/actions
+          [(views/update-folding opt node-path
+             {:folded? false
+              :ident (get-ident node)})]}
+         [::ui/hiccup-tag {:data-folded "true"} (first node)]
+         [::ui/code "..."]]))
+
+    (list? node)
+    (into
+     [::ui/list]
+     (let [path (conj path idx)]
+       (map-indexed (fn [iidx e]
+                      (render-hiccup-child e opt path iidx)) node)))
+
+    :else
+    (render-inline node opt)))
+
+(defn render-hiccup-node [hiccup opt path]
+  (let [xs (data/get-indexed-entries hiccup opt)
+        [tag attrs children] (if (map? (:v (second xs)))
+                               [(first xs) (second xs) (drop 2 xs)]
+                               [(first xs) nil (next xs)])]
+    (cond-> [::ui/vector
+             [::ui/hiccup-tag
+              {:data-folded "false"
+               ::ui/actions
+               [(views/update-folding opt path
+                  {:folded? true
+                   :ident (get-ident [(:v tag)])})]}
+              (:v tag)]]
+      attrs
+      (conj (cond-> (render-inline (:v attrs) opt)
+              (< (bounded-size 21 (:v tag)) 20)
+              (add-attr ::ui/inline? true)))
+
+      (seq children)
+      (into (map-indexed
+             (fn [idx {:keys [v]}]
+               (render-hiccup-child v opt path idx)) children)))))
+
 (defn render-inline [data & [opt]]
   (if (satisfies? dp/IRenderInline data)
     (dp/render-inline data opt)
@@ -267,6 +386,16 @@
 
     (data/js-object? data)
     (render-entries-dictionary data (data/get-js-object-entries data opt) opt)))
+
+(defn render-table [data opt]
+  (cond
+    (satisfies? dp/IRenderTable data)
+    (dp/render-table data opt)
+
+    (and (sequential? data)
+         ;; Don't "every" an infinite seq
+         (every? map? (take 100 data)))
+    (render-map-table data opt)))
 
 (extend-type #?(:cljs string
                 :clj java.lang.String)

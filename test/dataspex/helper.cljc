@@ -23,3 +23,10 @@
   ([opt v]
    (let [opt (assoc opt :dataspex/view views/dictionary)]
      (hiccup/render-dictionary (data/inspect v opt) opt))))
+
+(defn render-table
+  ;; Make it thread-last friendly
+  ([v] (render-table nil v))
+  ([opt v]
+   (let [opt (assoc opt :dataspex/view views/table)]
+     (hiccup/render-table (data/inspect v opt) opt))))

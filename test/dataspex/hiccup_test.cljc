@@ -2,8 +2,10 @@
   (:require [clojure.test :refer [deftest is testing]]
             [dataspex.actions :as-alias actions]
             [dataspex.helper :as h]
+            [dataspex.hiccup :as hiccup]
             [dataspex.icons :as-alias icons]
             [dataspex.ui :as-alias ui]
+            [dataspex.views :as views]
             [lookup.core :as lookup]))
 
 (deftest render-inline-test
@@ -377,3 +379,92 @@
                    (lookup/select ::ui/number)
                    (mapv lookup/text))
               ["0"])))))
+
+(deftest render-table-test
+  (testing "Renders collection of maps as table"
+    (is (= (->> (h/render-table
+                 [{:point/label "Bulbasaur"
+                   :point/latitude 37.807962
+                   :point/longitude -122.475238}
+                  {:point/label "Charmander"
+                   :point/latitude 34.062759
+                   :point/longitude -118.35718}
+                  {:point/label "Squirtle"
+                   :point/latitude 37.805929
+                   :point/longitude -122.429582}
+                  {:point/label "Magnemite"
+                   :point/latitude 37.8269775
+                   :point/longitude -122.425144}
+                  {:point/label "Magmar"
+                   :point/latitude 37.571414
+                   :point/longitude -122.00004}])
+                (lookup/select '::ui/th)
+                (mapv (comp lookup/text first lookup/children)))
+           ["" ":point/label" ":point/latitude" ":point/longitude"])))
+
+  (testing "Paginates huge map collection table"
+    (is (= (->> [{:point/label "Bulbasaur"
+                  :point/latitude 37.807962
+                  :point/longitude -122.475238}
+                 {:point/label "Charmander"
+                  :point/latitude 34.062759
+                  :point/longitude -118.35718}
+                 {:point/label "Squirtle"
+                  :point/latitude 37.805929
+                  :point/longitude -122.429582}
+                 {:point/label "Magnemite"
+                  :point/latitude 37.8269775
+                  :point/longitude -122.425144}
+                 {:point/label "Magmar"
+                  :point/latitude 37.571414
+                  :point/longitude -122.00004}]
+                (h/render-table
+                 {:dataspex/path []
+                  :dataspex/pagination {[] {:page-size 2 :offset 2}}})
+                (lookup/select [::ui/tbody ::ui/tr ::ui/string])
+                (mapv lookup/text))
+           ["Squirtle" "Magnemite"])))
+
+  (testing "Allows sorting by column headers"
+    (is (= (->> [{:point/label "Bulbasaur"
+                  :point/latitude 37.807962
+                  :point/longitude -122.475238}]
+                (h/render-table
+                 {:dataspex/path []
+                  :dataspex/inspectee "Store"})
+                (lookup/select '::ui/th)
+                second
+                lookup/attrs
+                ::ui/actions)
+           [[::actions/assoc-in ["Store" :dataspex/sorting [] :key] :point/label]
+            [::actions/assoc-in ["Store" :dataspex/sorting [] :order] :dataspex.sort.order/ascending]])))
+
+  (testing "Flips sorting order when clicking on sorted column"
+    (is (= (->> [{:point/label "Bulbasaur"
+                  :point/latitude 37.807962
+                  :point/longitude -122.475238}]
+                (h/render-table
+                 {:dataspex/path []
+                  :dataspex/inspectee "Conn"
+                  :dataspex/sorting {[] {:key :point/label
+                                        :order :dataspex.sort.order/ascending}}})
+                (lookup/select '::ui/th)
+                second
+                lookup/attrs
+                ::ui/actions)
+           [[::actions/assoc-in ["Conn" :dataspex/sorting [] :order] :dataspex.sort.order/descending]])))
+
+  (testing "Flips sorting order back when clicking on sorted column a second time"
+    (is (= (->> [{:point/label "Bulbasaur"
+                  :point/latitude 37.807962
+                  :point/longitude -122.475238}]
+                (h/render-table
+                 {:dataspex/path []
+                  :dataspex/inspectee "Store"
+                  :dataspex/sorting {[] {:key :point/label
+                                        :order :dataspex.sort.order/descending}}})
+                (lookup/select '::ui/th)
+                second
+                lookup/attrs
+                ::ui/actions)
+           [[::actions/assoc-in ["Store" :dataspex/sorting [] :order] :dataspex.sort.order/ascending]]))))

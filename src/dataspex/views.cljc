@@ -21,5 +21,5 @@
   ([{:dataspex/keys [path]} xs]
    (into (vec path) xs)))
 
-(defn navigate-to [opt path]
+(defn ^{:indent 1} navigate-to [opt path]
   [:dataspex.actions/assoc-in [(:dataspex/inspectee opt) :dataspex/path] path])

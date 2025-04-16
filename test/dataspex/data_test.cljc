@@ -106,3 +106,14 @@
          (is (= (data/nav-in obj []) obj))
          (is (= (data/nav-in obj [:b]) 2))
          (is (= (data/nav-in obj [2]) nil))))))
+
+(deftest supports-view?-test
+  (testing "Primitives are not tableable"
+    (is (false? (data/supports-view? "String" views/table {})))
+    (is (false? (data/supports-view? :kw views/table {}))))
+
+  (testing "Maps are not tableable"
+    (is (false? (data/supports-view? {} views/table {}))))
+
+  (testing "Sequential collections of maps are tableable"
+    (is (true? (data/supports-view? [{}] views/table {})))))

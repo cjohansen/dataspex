@@ -95,6 +95,26 @@
             (recur (aget data (cond-> k
                                 (keyword? k) name)) (next ks))))))))
 
+(defn tableable? [x opt]
+  (let [data (datafy/datafy x)]
+    (if (satisfies? dp/IRenderTable data)
+      (dp/tableable? data opt)
+      false)))
+
+(defn supports-view? [x view opt]
+  (cond
+    (not= views/table view)
+    true
+
+    (satisfies? dp/IRenderTable x)
+    (dp/tableable? x opt)
+
+    (sequential? x)
+    (every? map? x)
+
+    :else
+    (tableable? x opt)))
+
 (defn as-key [v]
   (if (satisfies? dp/IKey v)
     (dp/to-key v)
