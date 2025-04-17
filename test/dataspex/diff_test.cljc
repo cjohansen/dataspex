@@ -2,6 +2,15 @@
   (:require [clojure.test :refer [deftest testing is]]
             [dataspex.diff :as diff]))
 
+(deftest get-diff-stats-test
+  (testing "Counts operations"
+    (is (= (->> (diff/diff
+                 {:name "Dataspex" :version "2025-04-17"}
+                 {:name "Dataspex" :sha "a9012bc732" :ref "HEAD"})
+                diff/get-stats)
+           {:insertions 2
+            :deletions 1}))))
+
 (deftest summarize-diffs-test
   (testing "single insertion"
     (is (= (->> (diff/diff

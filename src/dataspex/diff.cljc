@@ -22,9 +22,12 @@
    :- :deletions
    :r :replacements})
 
+(defn get-stats [edits]
+  (frequencies (mapv (comp op->ks second) edits)))
+
 (defn summarize [edits]
   (->> edits
        (group-by (comp grouping-path first))
        (mapv
         (fn [[path xs]]
-          (assoc (frequencies (mapv (comp op->ks second) xs)) :path path)))))
+          (assoc (get-stats xs) :path path)))))
