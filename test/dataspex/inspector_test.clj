@@ -78,3 +78,61 @@
                (inspector/inspect-val (assoc data :update "Ok!") {:track-changes? false})
                :rev)
            2))))
+
+(def app-store (atom {:my "Data"}))
+
+(deftest inspect-test
+  (testing "Tracks history by default"
+    (is (= (let [store (atom {})]
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
+               (inspector/inspect store "Store" {:my "Data"}))
+             @store)
+           {"Store"
+            {:dataspex/path []
+             :dataspex/activity :dataspex.activity/browse
+             :rev 1
+             :val {:my "Data"}
+             :history [{:created-at #inst "2025-04-16T16:19:58"
+                        :rev 1
+                        :val {:my "Data"}}]}})))
+
+  (testing "Inspects atom"
+    (is (= (let [dataspex-store (atom {})]
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
+               (inspector/inspect dataspex-store "Store" app-store))
+             @dataspex-store)
+           {"Store"
+            {:dataspex/path []
+             :dataspex/activity :dataspex.activity/browse
+             :rev 1
+             :val {:my "Data"}
+             :ref app-store
+             :history [{:created-at #inst "2025-04-16T16:19:58"
+                        :rev 1
+                        :val {:my "Data"}}]}})))
+
+  (testing "Inspect watches atom for updates"
+    (is (= (let [my-store (atom {})
+                 dataspex-store (atom {})]
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
+               (inspector/inspect dataspex-store "Store" my-store))
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T17:02:23")]
+               (swap! my-store assoc :new "Data"))
+             (get-in @dataspex-store ["Store" :history]))
+           [{:created-at #inst "2025-04-16T17:02:23"
+             :rev 2
+             :val {:new "Data"}
+             :diff [[[] :r {:new "Data"}]]}
+            {:created-at #inst "2025-04-16T16:19:58"
+             :rev 1
+             :val {}}])))
+
+  (testing "Uninspect stops watching atom for updates"
+    (is (nil? (let [my-store (atom {})
+                    dataspex-store (atom {})]
+                (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
+                  (inspector/inspect dataspex-store "App data" my-store))
+                (inspector/uninspect dataspex-store "App data")
+                (with-redefs [inspector/now (constantly #inst "2025-04-16T17:02:23")]
+                  (swap! my-store assoc :new "Data"))
+                (get @dataspex-store "App data"))))))
