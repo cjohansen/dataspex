@@ -84,6 +84,9 @@
      (get db p))
    path))
 
+(defn get-last-tx [db]
+  (d/entity db (:max-tx db)))
+
 (defn get-entity-k [coll db-id]
   (if (map? coll)
     (val (first (filterv (comp #{db-id} :db/id key) coll)))
@@ -162,6 +165,13 @@
   dp/IDiffable
   (->diffable [db]
     (into [] (:eavt db)))
+
+  dp/IAuditable
+  (get-audit-summary [self]
+    (:dataspex.audit/summary (get-last-tx self)))
+
+  (get-audit-details [self]
+    (:dataspex.audit/details (get-last-tx self)))
 
   dp/IRenderInline
   (render-inline [db _]

@@ -1,5 +1,6 @@
 (ns dataspex.inspector
-  (:require [dataspex.diff :as diff])
+  (:require [dataspex.diff :as diff]
+            [dataspex.protocols :as dp])
   #?(:clj (:import (java.util Date))))
 
 (defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit now ref]}]
@@ -17,12 +18,16 @@
 
        track-changes?
        (assoc :history
-              (->> (cond-> {:created-at now
-                            :rev rev
-                            :val x}
-                     prev (assoc :diff (diff/diff (:val prev) x)))
-                   (conj (:history current))
-                   (take history-limit)))))))
+              (let [summary (dp/get-audit-summary x)
+                    details (dp/get-audit-details x)]
+                (->> (cond-> {:created-at now
+                              :rev rev
+                              :val x}
+                       prev (assoc :diff (diff/diff (:val prev) x))
+                       summary (assoc :dataspex.audit/summary summary)
+                       details (assoc :dataspex.audit/details details))
+                     (conj (:history current))
+                     (take history-limit))))))))
 
 (defn- now []
   #?(:cljs (js/Date.)

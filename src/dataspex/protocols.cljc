@@ -37,6 +37,10 @@
 (defprotocol IDiffable
   (->diffable [self]))
 
+(defprotocol IAuditable
+  (get-audit-summary [self])
+  (get-audit-details [self]))
+
 (defprotocol IClient
   :extend-via-metadata true
   (set-action-handler ^{:indent 1} [_ handler])

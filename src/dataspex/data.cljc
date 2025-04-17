@@ -187,8 +187,23 @@
                  :label n
                  :v (inspect (aget o k) opt)})))))
 
+(defn get-audit-summary [x]
+  (:dataspex.audit/summary (meta x)))
+
+(defn get-audit-details [x]
+  (:dataspex.audit/details (meta x)))
+
 #?(:cljs
    (extend-type js/Date
      dp/INavigatable
      (nav-in [d [p & path]]
        (nav-in (get (date/->map d) p) path))))
+
+(extend-type #?(:clj Object
+                :cljs object)
+  dp/IAuditable
+  (get-audit-summary [self]
+    (get-audit-summary self))
+
+  (get-audit-details [self]
+    (get-audit-details self)))

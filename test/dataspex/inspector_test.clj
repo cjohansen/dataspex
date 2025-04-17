@@ -63,6 +63,20 @@
              :val {:movie/title "Interstellar"
                    :movie/year 2014}}])))
 
+  (testing "Records dataspex-specific audit meta"
+    (is (= (-> (inspector/inspect-val
+                nil (with-meta data
+                      {:dataspex.audit/summary "Made some changes"
+                       :dataspex.audit/details "Here are the details"})
+                apr16-1620)
+               :history)
+           [{:created-at #inst "2025-04-16T16:20:07.000-00:00"
+             :rev 1
+             :val {:movie/title "Interstellar"
+                   :movie/year 2014}
+             :dataspex.audit/summary "Made some changes"
+             :dataspex.audit/details "Here are the details"}])))
+
   (testing "Truncates history"
     (is (= (-> (inspector/inspect-val nil data apr16-1620)
                (inspector/inspect-val (dissoc data :movie/year) apr16-1621)
@@ -165,4 +179,20 @@
             {:created-at #inst "2025-04-16T16:19:58.000-00:00"
              :rev 1
              :val [[1 :person/given-name "Christian" 536870913 true]
-                   [1 :person/id "christian" 536870913 true]]}]))))
+                   [1 :person/id "christian" 536870913 true]]}])))
+
+  (testing "Extracts audit metadata from Datascript transaction"
+    (is (= (let [conn (d/create-conn {:person/id {:db/unique :db.unique/identity}})
+                 dataspex-store (atom {})]
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
+               (inspector/inspect dataspex-store "DB" conn))
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T17:02:23")]
+               (d/transact! conn [{:person/id "christian"
+                                   :person/given-name "Christian"}
+                                  {:db/id :db/current-tx
+                                   :dataspex.audit/summary [:db/transact [:person/id "christian"]]}]))
+             (-> @dataspex-store
+                 (get-in ["DB" :history])
+                 first
+                 :dataspex.audit/summary))
+           [:db/transact [:person/id "christian"]]))))
