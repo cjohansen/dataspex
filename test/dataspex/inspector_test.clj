@@ -1,5 +1,7 @@
 (ns dataspex.inspector-test
   (:require [clojure.test :refer [deftest is testing]]
+            [datascript.core :as d]
+            [dataspex.helper :as h]
             [dataspex.inspector :as inspector]))
 
 (def dataspex-opts
@@ -135,4 +137,32 @@
                 (inspector/uninspect dataspex-store "App data")
                 (with-redefs [inspector/now (constantly #inst "2025-04-16T17:02:23")]
                   (swap! my-store assoc :new "Data"))
-                (get @dataspex-store "App data"))))))
+                (get @dataspex-store "App data")))))
+
+  (testing "Inspects Datascript conn"
+    (is (= (let [conn (d/create-conn {:person/id {:db/unique :db.unique/identity}})
+                 dataspex-store (atom {})]
+             (d/transact! conn [{:person/id "christian"
+                                 :person/given-name "Christian"}])
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
+               (inspector/inspect dataspex-store "DB" conn))
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T17:02:23")]
+               (d/transact! conn [{:person/id "christian"
+                                   :person/given-name "Christian"
+                                   :person/family-name "Johansen"}]))
+             (-> @dataspex-store
+                 (get-in ["DB" :history])
+                 vec
+                 (update-in [0 :diff] h/undatom-diff)
+                 (update-in [0 :val] (comp h/undatom :eavt))
+                 (update-in [1 :val] (comp h/undatom :eavt))))
+           [{:created-at #inst "2025-04-16T17:02:23.000-00:00"
+             :rev 2
+             :val [[1 :person/family-name "Johansen" 536870914 true]
+                   [1 :person/given-name "Christian" 536870913 true]
+                   [1 :person/id "christian" 536870913 true]]
+             :diff [[[0] :+ [1 :person/family-name "Johansen" 536870914 true]]]}
+            {:created-at #inst "2025-04-16T16:19:58.000-00:00"
+             :rev 1
+             :val [[1 :person/given-name "Christian" 536870913 true]
+                   [1 :person/id "christian" 536870913 true]]}]))))

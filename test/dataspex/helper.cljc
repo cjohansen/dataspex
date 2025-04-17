@@ -40,7 +40,10 @@
      (hiccup/render-source (data/inspect v opt) opt))))
 
 (defn undatom [x]
-  (cond->> x (d/datom? x) (into [])))
+  (let [datom? (d/datom? x)]
+    (cond->> x
+      datom? (into [])
+      (and (not datom?) (coll? x)) (mapv undatom))))
 
 (defn undatom-diff [diffs]
   (mapv
