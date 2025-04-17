@@ -9,7 +9,10 @@
 
 (defn inflect [n w]
   ;; It ain't much, but it works for the symbolic types Dataspex knows about
-  (str n " " w (when-not (= 1 n) "s")))
+  (str w (when-not (= 1 n) "s")))
+
+(defn enumerate [n w]
+  (str n " " (inflect n w)))
 
 (declare bounded-size)
 
@@ -109,7 +112,7 @@
   (if (< 1000 (bounded-count 1001 xs))
     "1000+ items"
     (let [types (set (mapv type-name xs))]
-      (inflect
+      (enumerate
        (count xs)
        (cond
          kind kind

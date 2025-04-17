@@ -5,13 +5,13 @@
             [dataspex.hiccup :as hiccup]
             [dataspex.icons :as-alias icons]
             [dataspex.ui :as-alias ui]
-            [dataspex.views :as views]
             [lookup.core :as lookup]))
 
 (deftest inflect-test
   (testing "Inflects words"
-    (is (= (hiccup/inflect 1 "banana") "1 banana"))
-    (is (= (hiccup/inflect 2 "banana") "2 bananas"))))
+    (is (= (hiccup/enumerate 1 "banana") "1 banana"))
+    (is (= (hiccup/enumerate 2 "banana") "2 bananas"))
+    (is (= (hiccup/inflect 2 "banana") "bananas"))))
 
 (deftest bounded-size
   (testing "0 is 0"
