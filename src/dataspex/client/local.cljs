@@ -11,7 +11,9 @@
   dp/IClient
   (set-action-handler [_ handler]
     (r/set-dispatch!
-     (fn [_ actions]
+     (fn [{:replicant/keys [^js dom-event]} actions]
+       (.preventDefault dom-event)
+       (.stopPropagation dom-event)
        (handler actions))))
 
   (render [_ hiccup]

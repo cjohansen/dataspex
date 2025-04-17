@@ -4,6 +4,7 @@
             [dataspex.data :as data]
             [dataspex.datascript :as datascript]
             [dataspex.demo-data :as demo-data]
+            [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
             [dataspex.panel :as panel]
             [dataspex.protocols :as dp]))
@@ -55,9 +56,7 @@
            :raw-js-object (js-obj "a" 1 "b" (clj->js {:nested [1 2 3]}))}})
 
 (defonce client (local-client/create-client js/document.body))
-(defonce store (atom {"App state" {:dataspex/pagination {:page-size 100}
-                                   :dataspex/path []}
-                      "Datascript" {:dataspex/path []}}))
+(defonce store (atom {}))
 
 (data/add-string-inspector! jwt/inspect-jwt)
 
@@ -70,8 +69,11 @@
 (defn render [state]
   (dp/render client
    [:div
-    (panel/render-panel state "App state" app-state)
-    (panel/render-panel state "Datascript" demo-data/conn)]))
+    (panel/render-panel state "App state" (get-in state ["App state" :val]))
+    (panel/render-panel state "DB" (get-in state ["DB" :val]))]))
+
+(inspector/inspect store "App state" app-state)
+(inspector/inspect store "DB" demo-data/conn)
 
 (add-watch store ::render (fn [_ _ _ state] (render state)))
 
