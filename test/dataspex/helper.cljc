@@ -1,5 +1,6 @@
 (ns dataspex.helper
-  (:require [dataspex.data :as data]
+  (:require [datascript.core :as d]
+            [dataspex.data :as data]
             [dataspex.hiccup :as hiccup]
             [dataspex.views :as views])
   #?(:cljs (:require-macros dataspex.helper)))
@@ -37,3 +38,13 @@
   ([opt v]
    (let [opt (assoc opt :dataspex/view views/source)]
      (hiccup/render-source (data/inspect v opt) opt))))
+
+(defn undatom [x]
+  (cond->> x (d/datom? x) (into [])))
+
+(defn undatom-diff [diffs]
+  (mapv
+   (fn [[path op v]]
+     (cond-> [(mapv undatom path) op]
+       v (conj (undatom v))))
+   diffs))

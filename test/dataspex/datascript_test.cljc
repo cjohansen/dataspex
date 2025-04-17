@@ -4,6 +4,7 @@
             [dataspex.actions :as-alias actions]
             [dataspex.data :as data]
             [dataspex.datascript :as datascript]
+            [dataspex.diff :as diff]
             [dataspex.helper :as h :refer [with-conn]]
             [dataspex.ui :as-alias ui]
             [lookup.core :as lookup]))
@@ -276,3 +277,14 @@
                 (lookup/select ::ui/tuple)
                 count)
            8))))
+
+(deftest diff-test
+  (testing "Diffs two datascript databases"
+    (is (= (-> (with-conn [conn schema]
+                 (d/transact! conn data)
+                 (let [a (d/db conn)]
+                   (d/transact! conn [{:person/id "bob"
+                                       :person/alias "Notorious B-O-B"}])
+                   (diff/diff a (d/db conn))))
+               h/undatom-diff)
+           [[[0] :+ [1 :person/alias "Notorious B-O-B" 536870914 true]]]))))

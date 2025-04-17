@@ -159,6 +159,10 @@
   (nav-in [db [p & path]]
     (nav-in-db db p path))
 
+  dp/IDiffable
+  (->diffable [db]
+    (into [] (:eavt db)))
+
   dp/IRenderInline
   (render-inline [db _]
     (render-database-inline db))
