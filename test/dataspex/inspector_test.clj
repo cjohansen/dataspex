@@ -104,7 +104,8 @@
                (inspector/inspect store "Store" {:my "Data"}))
              @store)
            {"Store"
-            {:dataspex/path []
+            {:dataspex/inspectee "Store"
+             :dataspex/path []
              :dataspex/activity :dataspex.activity/browse
              :rev 1
              :val {:my "Data"}
@@ -118,7 +119,8 @@
                (inspector/inspect dataspex-store "Store" app-store))
              @dataspex-store)
            {"Store"
-            {:dataspex/path []
+            {:dataspex/inspectee "Store"
+             :dataspex/path []
              :dataspex/activity :dataspex.activity/browse
              :rev 1
              :val {:my "Data"}

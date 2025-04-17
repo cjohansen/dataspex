@@ -3,12 +3,14 @@
             [dataspex.protocols :as dp])
   #?(:clj (:import (java.util Date))))
 
-(defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit now ref]}]
+(defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit now ref label]}]
   (let [prev (first (:history current))
         rev (inc (or (:rev current) 0))]
     (merge
      {:dataspex/path []
       :dataspex/activity :dataspex.activity/browse}
+     (when label
+       {:dataspex/inspectee label})
      (->> (keys current)
           (filter (comp #{"dataspex"} namespace))
           (select-keys current))
@@ -48,7 +50,9 @@
 
 (defn inspect [store label x & [opt]]
   (let [[val ref] (if (ref? x) [@x x] [x])]
-    (swap! store update label inspect-val val (assoc (get-opts opt) :ref ref))
+    (swap! store update label inspect-val val (assoc (get-opts opt)
+                                                     :ref ref
+                                                     :label label))
     (when ref
       (add-watch ref ::inspect
        (fn [_ _ _ new-val]
