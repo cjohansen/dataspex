@@ -356,8 +356,9 @@ a.clickable:hover,
   padding: 12px 12px;
 }
 
-.tab.link:not(.tab-selected):hover {
+.tab.clickable:not(.tab-selected):hover {
   background: var(--tab-hover-bg);
+  text-decoration: none;
 }
 
 .tab-selected:hover {
