@@ -1,6 +1,8 @@
 (ns dataspex.views-test
-  (:require [dataspex.views :as views]
-            [clojure.test :refer [deftest is testing]]))
+  (:require [clojure.test :refer [deftest is testing]]
+            [dataspex.inspector :as inspector]
+            [dataspex.time :as time]
+            [dataspex.views :as views]))
 
 (deftest get-view-options
   (testing "Gets initial view options"
@@ -25,4 +27,13 @@
             :dataspex/path [:users]
             :dataspex/pagination {[:libs] {:offset 2}}
             :dataspex/sorting {[:users] {:key :user/id}}
-            :dataspex/folding {[:users :user/friends] {:folded? false}}}))))
+            :dataspex/folding {[:users :user/friends] {:folded? false}}})))
+
+  (testing "Ignores technical data"
+    (is (= (let [dataspex-store (atom {})]
+             (with-redefs [time/now (constantly #inst "2025-04-16T16:19:58")]
+               (inspector/inspect dataspex-store "Store" (atom {})))
+             (views/get-view-options @dataspex-store "Store"))
+           {:dataspex/inspectee "Store"
+            :dataspex/path []
+            :dataspex/activity :dataspex.activity/browse}))))

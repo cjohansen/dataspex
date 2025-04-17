@@ -36,5 +36,8 @@
       dictionary))
 
 (defn get-view-options [state inspectee]
-  (-> (get state inspectee)
-      (assoc :dataspex/inspectee inspectee)))
+  (let [inspector-state (get state inspectee)]
+    (merge {:dataspex/inspectee inspectee}
+           (select-keys inspector-state
+                        (->> (keys inspector-state)
+                             (filter (comp #{"dataspex"} namespace)))))))
