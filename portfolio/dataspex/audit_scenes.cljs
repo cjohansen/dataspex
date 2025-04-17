@@ -23,12 +23,14 @@
                 ::ui/actions []}
      [icons/x]]]])
 
+(def browse-this-version
+  [ui/button {::ui/actions []
+              ::ui/title "Browse this version"}
+   [icons/browser]])
+
 (defn get-revision-header [n & [opt]]
   (let [folded? (get opt :folded? true)
-        button (when folded?
-                 [ui/button {::ui/actions []
-                             ::ui/title "Browse this version"}
-                  [icons/browser]])
+        button (when folded? browse-this-version)
         attrs {:data-folded (str folded?)}]
     (nth
      [[ui/card-header {::ui/actions []}
@@ -158,6 +160,69 @@
         [ui/source {:data-color "success"
                     ::ui/prefix "+"}
          [ui/string "cmd+r"]]]]]]]])
+
+(defscene custom-summary
+  [:div.panel
+   audit-toolbar
+   [:div.code
+    [ui/card-list
+     [ui/card
+      [ui/card-header {::ui/actions []}
+       [ui/timestamp {:data-folded "true"} "21:37:12"]
+       [:div.grow.flex
+        [ui/vector
+         [ui/keyword :actions/transact]
+         [ui/vector
+          [ui/keyword :user/id]
+          [ui/string "cjno"]]]
+        [:div.tag
+         [ui/success "+2"] " " [ui/error "-1"]]]
+       browse-this-version]]
+
+     [ui/card
+      [ui/card-header {::ui/actions []}
+       [ui/timestamp {:data-folded "true"} "21:36:59"]
+       [:div.grow.flex
+        [ui/vector
+         [ui/keyword :actions/transact]
+         [ui/vector
+          [ui/keyword :user/id]
+          [ui/string "cjno"]]]
+        [:div.tag
+         [ui/error "-3"]]]
+       browse-this-version]]
+
+     [ui/card
+      [ui/card-header {::ui/actions []}
+       [ui/timestamp {:data-folded "true"} "21:36:37"]
+       [:div.grow.flex
+        [ui/vector
+         [ui/keyword :actions/navigate]
+         [ui/map
+          [::ui/map-entry
+           [ui/keyword :query-params]
+           [ui/map
+            [::ui/map-entry
+             [ui/keyword :user-id]
+             [ui/string "cjno"]]]]]]
+        [:div.tag
+         [ui/success "+1"]]]
+       browse-this-version]]
+
+     [ui/card
+      [ui/card-header {::ui/actions []}
+       [ui/timestamp {:data-folded "true"} "21:23:14"]
+       [:div.grow.flex
+        [ui/vector
+         [ui/keyword :actions/navigate]
+         [ui/map
+          [::ui/map-entry
+           [ui/keyword :page-id]
+           [ui/string :pages/user-page]]]]
+        [:div.tag
+         [ui/success "+4"] " "
+         [ui/error "-5"]]]
+       browse-this-version]]]]])
 
 (defscene no-changes-available
   [:div.panel
