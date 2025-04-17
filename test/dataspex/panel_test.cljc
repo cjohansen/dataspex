@@ -14,7 +14,7 @@
              :dataspex/inspectee "Store"})
            [::ui/toolbar
             [::ui/tabs
-             [::ui/tab "Store"]
+             [::ui/tab.strong "Store"]
              [::ui/tab {::ui/selected? true} "Browse"]]
             [::ui/button-bar
              [::ui/button {::ui/title "Minimize"
@@ -30,7 +30,7 @@
              :dataspex/render? false})
            [::ui/toolbar
             [::ui/tabs
-             [::ui/tab "Store"]]
+             [::ui/tab.strong "Store"]]
             [::ui/button-bar
              [::ui/button {::ui/title "Maximize"
                            ::ui/actions [[::actions/assoc-in ["Store" :dataspex/render?] true]]}

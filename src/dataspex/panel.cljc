@@ -12,7 +12,7 @@
 (defn render-title-bar [{:dataspex/keys [path inspectee] :as opt}]
   (let [rendering? (render? opt)]
     [::ui/toolbar
-     (cond-> [::ui/tabs [::ui/tab inspectee]]
+     (cond-> [::ui/tabs [::ui/tab.strong inspectee]]
        rendering?
        (conj (cond-> [::ui/tab]
                path (conj {::ui/selected? true})

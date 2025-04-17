@@ -378,10 +378,10 @@
 (defalias button-bar [attrs children]
   [:nav.flex.gap-2 attrs children])
 
-(defalias tab [{::keys [selected? actions]} content]
+(defalias tab [{::keys [selected? actions] :as attrs} content]
   [(if actions :button.tab.clickable :div.tab)
-   {:on {:click actions}
-    :class (when selected? :tab-selected)}
+   (cond-> (assoc attrs :on {:click actions})
+     selected? (update :class conj :tab-selected))
    content])
 
 (defalias tabs [attrs children]

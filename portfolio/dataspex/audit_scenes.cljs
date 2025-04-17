@@ -10,7 +10,7 @@
 (def audit-toolbar
   [ui/toolbar
    [ui/tabs
-    [ui/tab "Store"]
+    [ui/tab [:strong "Store"]]
     [ui/tab {::ui/actions []}
      "Browse"]
     [ui/tab {::ui/selected? true}
