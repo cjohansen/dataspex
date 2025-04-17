@@ -1,4 +1,5 @@
-(ns dataspex.actions)
+(ns dataspex.actions
+  (:require [dataspex.inspector :as inspector]))
 
 (defn handle-action [_ [action & args]]
   (case action
@@ -9,7 +10,7 @@
     []
 
     ::uninspect
-    []))
+    [[:effect/uninspect (first args)]]))
 
 (defn assoc-in* [m kvs]
   (reduce (fn [m [path v]]
@@ -20,9 +21,13 @@
     :effect/assoc-in
     (swap! store assoc-in* (mapv #(drop 1 %) effects))
 
+    :effect/uninspect
+    (doseq [[_ label] effects]
+      (inspector/uninspect store label))
+
     (println "Unknown effect" effects)))
 
-(defn handle-actions [store actions]
+(defn ^{:indent 1} handle-actions [store actions]
   (let [state @store]
     (->> (mapcat #(handle-action state %) actions)
          (group-by first)

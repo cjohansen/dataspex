@@ -18,8 +18,16 @@
     (is (= (let [store (atom {})
                  res (atom [])]
              (add-watch store ::remember #(swap! res conj %4))
-             (actions/handle-actions store [[::actions/assoc-in [:path-1] "Val 1"]
-                                            [::actions/assoc-in [:path-2] "Val 2"]])
+             (actions/handle-actions store
+               [[::actions/assoc-in [:path-1] "Val 1"]
+                [::actions/assoc-in [:path-2] "Val 2"]])
              @res)
            [{:path-1 "Val 1"
-             :path-2 "Val 2"}]))))
+             :path-2 "Val 2"}])))
+
+  (testing "Uninspects value"
+    (is (= (let [store (atom {"Store" {:val 42}})]
+             (actions/handle-actions store
+               [[::actions/uninspect "Store"]])
+             @store)
+           {}))))
