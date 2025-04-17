@@ -3,12 +3,15 @@
             [dataspex.protocols :as dp])
   #?(:clj (:import (java.util Date))))
 
-(defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit now ref label]}]
+(defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit
+                                              now ref label auditable?]}]
   (let [prev (first (:history current))
         rev (inc (or (:rev current) 0))]
     (merge
      {:dataspex/path []
       :dataspex/activity :dataspex.activity/browse}
+     (when (not= nil auditable?)
+       {:dataspex/auditable? auditable?})
      (when label
        {:dataspex/inspectee label})
      (->> (keys current)

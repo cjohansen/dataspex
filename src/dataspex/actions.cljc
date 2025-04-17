@@ -1,6 +1,7 @@
 (ns dataspex.actions
-  (:require [dataspex.inspector :as inspector]
-            [dataspex.data :as data]))
+  (:require [dataspex.data :as data]
+            [dataspex.inspector :as inspector]
+            [dataspex.time :as time]))
 
 (defn to-clipboard [#?(:cljs text :clj _)]
   #?(:cljs
@@ -23,6 +24,17 @@
                          (data/nav-in path)
                          data/stringify)]])
 
+    ::inspect-revision
+    (let [[label rev] args
+          revision (->> (get-in state [label :history])
+                        (filterv (comp #{rev} :rev))
+                        first)]
+      [[:effect/inspect
+        (str label "@" (time/hh:mm:ss (:created-at revision)))
+        nil
+        (:val revision)
+        {:auditable? false}]])
+
     ::uninspect
     [[:effect/uninspect (first args)]]))
 
@@ -38,6 +50,11 @@
     :effect/copy
     (doseq [[_ text] effects]
       (to-clipboard text))
+
+    :effect/inspect
+    (doseq [[_ label current value opts] effects]
+      (->> (inspector/inspect-val current value opts)
+           (swap! store assoc label)))
 
     :effect/uninspect
     (doseq [[_ label] effects]

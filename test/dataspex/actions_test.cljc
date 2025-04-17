@@ -31,3 +31,21 @@
                [[::actions/uninspect "Store"]])
              @store)
            {}))))
+
+(deftest inspect-revision-test
+  (testing "Inspects revision of other value"
+    (is (= (actions/handle-action
+            {"Store"
+             {:rev 2
+              :val {:my "New data"}
+              :history [{:created-at #inst "2025-04-16T19:05:23"
+                         :rev 2
+                         :val {:my "New data"}}
+                        {:created-at #inst "2025-04-16T16:19:58"
+                         :rev 1
+                         :val {:my "Data"}}]}}
+            [::actions/inspect-revision "Store" 1])
+           [[:effect/inspect "Store@18:19:58"
+             nil
+             {:my "Data"}
+             {:auditable? false}]]))))
