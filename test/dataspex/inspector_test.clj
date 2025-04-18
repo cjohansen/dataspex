@@ -57,7 +57,7 @@
            [{:created-at #inst "2025-04-16T16:21:14.000-00:00"
              :rev 2
              :val {:movie/title "Interstellar"}
-             :diff [[[:movie/year] :-]]}
+             :diff [[[:movie/year] :- 2014]]}
             {:created-at #inst "2025-04-16T16:20:07.000-00:00"
              :rev 1
              :val {:movie/title "Interstellar"
@@ -140,7 +140,7 @@
            [{:created-at #inst "2025-04-16T17:02:23"
              :rev 2
              :val {:new "Data"}
-             :diff [[[] :r {:new "Data"}]]}
+             :diff [[[] :+ {:new "Data"}]]}
             {:created-at #inst "2025-04-16T16:19:58"
              :rev 1
              :val {}}])))
