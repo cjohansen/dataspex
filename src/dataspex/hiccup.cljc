@@ -1,5 +1,6 @@
 (ns dataspex.hiccup
-  (:require [dataspex.actions :as-alias actions]
+  (:require [clojure.string :as str]
+            [dataspex.actions :as-alias actions]
             [dataspex.data :as data]
             [dataspex.icons :as-alias icons]
             [dataspex.protocols :as dp]
@@ -9,7 +10,9 @@
 
 (defn inflect [n w]
   ;; It ain't much, but it works for the symbolic types Dataspex knows about
-  (str w (when-not (= 1 n) "s")))
+  (if (and (< 1 n) (str/ends-with? w "y") (not (str/ends-with? w "ey")))
+    (str (apply str (butlast w)) "ies")
+    (str w (when-not (= 1 n) "s"))))
 
 (defn enumerate [n w]
   (str n " " (inflect n w)))

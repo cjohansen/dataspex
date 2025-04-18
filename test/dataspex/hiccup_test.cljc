@@ -11,7 +11,8 @@
   (testing "Inflects words"
     (is (= (hiccup/enumerate 1 "banana") "1 banana"))
     (is (= (hiccup/enumerate 2 "banana") "2 bananas"))
-    (is (= (hiccup/inflect 2 "banana") "bananas"))))
+    (is (= (hiccup/inflect 2 "banana") "bananas"))
+    (is (= (hiccup/inflect 2 "entity") "entities"))))
 
 (deftest bounded-size
   (testing "0 is 0"
