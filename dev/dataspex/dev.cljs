@@ -67,12 +67,15 @@
    (actions/handle-actions store actions)))
 
 (defn render [state]
-  (dp/render client
-   [:div
-    (panel/render-panel state "App state" (get-in state ["App state" :val]))
-    (panel/render-panel state "DB" (get-in state ["DB" :val]))]))
+  (dp/render
+   client
+   (->> (keys state)
+        (filter string?)
+        sort
+        (mapv #(panel/render-panel state %))
+        (into [:div]))))
 
-(inspector/inspect store "App state" app-state)
+(inspector/inspect store "App state" (assoc app-state :app/title "Movie Explorer!"))
 (inspector/inspect store "DB" demo-data/conn)
 
 (add-watch store ::render (fn [_ _ _ state] (render state)))

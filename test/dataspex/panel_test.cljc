@@ -15,7 +15,9 @@
            [::ui/toolbar
             [::ui/tabs
              [::ui/tab.strong "Store"]
-             [::ui/tab {::ui/selected? true} "Browse"]]
+             [::ui/tab {::ui/selected? true} "Browse"]
+             [::ui/tab {::ui/actions [[::actions/assoc-in ["Store" :dataspex/activity] panel/audit]]}
+              "Audit"]]
             [::ui/button-bar
              [::ui/button {::ui/title "Minimize"
                            ::ui/actions [[::actions/assoc-in ["Store" :dataspex/render?] false]]}
@@ -23,6 +25,26 @@
              [::ui/button {::ui/title "Close"
                            ::ui/actions [[::actions/uninspect "Store"]]}
               [::icons/x]]]])))
+
+  (testing "Cannot audit value that isn't auditable"
+    (is (= (->> (panel/render-title-bar
+                 {:dataspex/path []
+                  :dataspex/inspectee "Store@12:27:06"
+                  :dataspex/auditable? false})
+                (lookup/select ::ui/tab)
+                (map lookup/text))
+           ["Store@12:27:06" "Browse"])))
+
+  (testing "Selects audit tab when auditing"
+    (is (= (->> (panel/render-title-bar
+                 {:dataspex/path []
+                  :dataspex/inspectee "Store@12:27:06"
+                  :dataspex/activity panel/audit})
+                (lookup/select ::ui/tab))
+           [[:dataspex.ui/tab {:class #{"strong"}} "Store@12:27:06"]
+            [:dataspex.ui/tab {::ui/actions [[::actions/assoc-in ["Store@12:27:06" :dataspex/activity] panel/browse]]}
+             "Browse"]
+            [:dataspex.ui/tab {::ui/selected? true} "Audit"]])))
 
   (testing "Renders minimized title bar"
     (is (= (panel/render-title-bar
@@ -175,3 +197,25 @@
              {::ui/actions
               [[::actions/assoc-in ["xs" :dataspex/pagination [:datas] :offset] 200]]}
              [::icons/caret-right]]]))))
+
+(deftest render-panel
+  (testing "Renders panel in browsing mode by default"
+    (is (= (->> (panel/render-panel
+                 {"Store" {:dataspex/path []
+                           :dataspex/inspectee "Store"
+                           :val {:data "Here"}}}
+                 "Store")
+                (lookup/select [::ui/dictionary ::ui/string]))
+           [[:dataspex.ui/string "Here"]])))
+
+  (testing "Renders audit log"
+    (is (not-empty
+         (->> (panel/render-panel
+               {"Store" {:dataspex/path []
+                         :dataspex/inspectee "Store"
+                         :dataspex/activity panel/audit
+                         :rev 1
+                         :val {}
+                         :history [{:rev 1 :val {}}]}}
+               "Store")
+              (lookup/select ::ui/card-list))))))

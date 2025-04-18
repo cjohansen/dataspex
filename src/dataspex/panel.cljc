@@ -1,22 +1,35 @@
 (ns dataspex.panel
-  (:require [dataspex.actions :as-alias actions]
+  (:require [clojure.string :as str]
+            [dataspex.actions :as-alias actions]
+            [dataspex.audit-log :as audit-log]
             [dataspex.data :as data]
             [dataspex.hiccup :as hiccup]
             [dataspex.icons :as-alias icons]
             [dataspex.ui :as-alias ui]
             [dataspex.views :as views]))
 
+(def browse :dataspex.activity/browse)
+(def audit :dataspex.activity/audit)
+
 (defn render? [opt]
   (get opt :dataspex/render? true))
 
-(defn render-title-bar [{:dataspex/keys [path inspectee] :as opt}]
+(defn render-tab [{:dataspex/keys [activity inspectee]} tab-activity]
+  [::ui/tab
+   (if (= (or activity browse) tab-activity)
+     {::ui/selected? true}
+     {::ui/actions [[::actions/assoc-in [inspectee :dataspex/activity] tab-activity]]})
+   (str/capitalize (name tab-activity))])
+
+(defn render-title-bar [{:dataspex/keys [inspectee] :as opt}]
   (let [rendering? (render? opt)]
     [::ui/toolbar
      (cond-> [::ui/tabs [::ui/tab.strong inspectee]]
        rendering?
-       (conj (cond-> [::ui/tab]
-               path (conj {::ui/selected? true})
-               :then (conj "Browse"))))
+       (conj (render-tab opt browse))
+
+       (and rendering? (get opt :dataspex/auditable? true))
+       (conj (render-tab opt audit)))
      [::ui/button-bar
       (if rendering?
         [::ui/button {::ui/title "Minimize"
@@ -123,18 +136,22 @@
 
       (hiccup/render-dictionary x opt))))
 
-(defn render-panel [state label x]
-  (let [opt (views/get-view-options state label)
-        data (-> (data/nav-in x (:dataspex/path opt))
-                 (data/inspect opt))
-        pagination (render-pagination-bar data opt)]
-    [:div.panel
-     (render-title-bar opt)
-     [:div
-      (when (render? opt)
-        [::ui/navbar
-         (render-path (:dataspex/path opt) opt)
-         (render-view-menu data opt)])
-      pagination
-      (render-data data opt)
-      pagination]]))
+(defn render-panel [state label]
+  (let [opt (views/get-view-options state label)]
+    (into
+     [:div.panel (render-title-bar opt)]
+     (when (render? opt)
+       (if (= audit (:dataspex/activity opt))
+         [(audit-log/render-log (get state label) opt)]
+         (let [data (-> (get-in state [label :val])
+                        (data/nav-in (:dataspex/path opt))
+                        (data/inspect opt))
+               pagination (render-pagination-bar data opt)]
+           [[:div
+             (when (render? opt)
+               [::ui/navbar
+                (render-path (:dataspex/path opt) opt)
+                (render-view-menu data opt)])
+             pagination
+             (render-data data opt)
+             pagination]]))))))
