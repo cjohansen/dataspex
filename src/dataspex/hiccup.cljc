@@ -104,7 +104,7 @@
       "object")))
 
 (defn summarize? [v {:dataspex/keys [summarize-above-w]}]
-  (let [w (or summarize-above-w 120)]
+  (let [w (or summarize-above-w 80)]
     (when (< 0 w)
       (< (dec w) (bounded-size w v)))))
 
