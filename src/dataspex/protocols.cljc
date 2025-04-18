@@ -41,6 +41,12 @@
   (get-audit-summary [self])
   (get-audit-details [self]))
 
+(defprotocol IRenderDiffSummary
+  (render-diff-summary [self diff]))
+
+(defprotocol IRenderDiff
+  (render-diff [self diff]))
+
 (defprotocol IClient
   :extend-via-metadata true
   (set-action-handler ^{:indent 1} [_ handler])
