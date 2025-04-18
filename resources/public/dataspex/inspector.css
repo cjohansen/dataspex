@@ -586,3 +586,9 @@ a.clickable:hover,
 [data-folded=false]:hover::before {
   opacity: 1;
 }
+
+/* Panels */
+
+.panel + .panel {
+  margin-top: 3em;
+}
