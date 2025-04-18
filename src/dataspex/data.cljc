@@ -1,7 +1,8 @@
 (ns dataspex.data
-  (:require [clojure.datafy :as datafy]
-            [dataspex.protocols :as dp]
-            #?(:cljs [dataspex.date :as date])))
+  (:require [clojure.core.protocols :as p]
+            [clojure.datafy :as datafy]
+            #?(:cljs [dataspex.date :as date])
+            [dataspex.protocols :as dp]))
 
 (defn js-array? [#?(:cljs v :clj _)]
   #?(:cljs (array? v)))
@@ -117,6 +118,16 @@
     :else
     (tableable? x opt)))
 
+(def meta-k
+  (reify
+    dp/IRenderInline
+    (render-inline [_ _]
+      [:dataspex.ui/symbol "^meta"])
+
+    dp/IKeyLookup
+    (lookup [_ x]
+      (meta x))))
+
 (defn as-key [v]
   (if (satisfies? dp/IKey v)
     (dp/to-key v)
@@ -143,6 +154,13 @@
     :else 12))
 
 (def sort-order (juxt type-pref str))
+
+(defn get-meta-entries [x]
+  (if-let [md (meta x)]
+    [{:k meta-k
+      :label meta-k
+      :v md}]
+    []))
 
 (defn get-indexed-entries [coll opt]
   (map-indexed

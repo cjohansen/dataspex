@@ -122,7 +122,7 @@
            [::ui/link "[19 items]"])))
 
   (testing "Renders short list"
-    (is (= (h/render-inline '(:hello))
+    (is (= (h/render-inline (list :hello))
            [::ui/list
             [::ui/keyword :hello]])))
 
@@ -576,7 +576,7 @@
             "Kiwi" "Litchi" "Durian"])))
 
   (testing "Renders list"
-    (is (= (h/render-source '("Apples" "Bananas"))
+    (is (= (h/render-source (list "Apples" "Bananas"))
            [::ui/source
             [::ui/list
              [::ui/string "Apples"]

@@ -77,8 +77,13 @@
            (or icon source-icon)]))
       views))))
 
+(defn render-path-k [k opt]
+  (-> (data/inspect k opt)
+      (hiccup/render-inline opt)))
+
 (defn render-path [path opt]
-  (let [n (count path)]
+  (let [n (count path)
+        opt (assoc opt :dataspex/view views/inline)]
     (cond-> [::ui/path
              [::ui/crumb
               (cond-> {}
@@ -96,14 +101,13 @@
                   :res (conj res
                              [::ui/crumb
                               {::ui/actions [(views/navigate-to opt curr)]}
-                              (hiccup/render-inline e opt)])}))
+                              (render-path-k e opt)])}))
              {:curr []
               :res []})
             :res))
 
       (< 0 n)
-      (conj [::ui/crumb
-             (hiccup/render-inline (last path) opt)]))))
+      (conj [::ui/crumb (render-path-k (last path) opt)]))))
 
 (defn render-pagination-bar [v opt]
   (when (coll? v)

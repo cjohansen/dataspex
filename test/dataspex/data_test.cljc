@@ -105,7 +105,12 @@
        (let [obj #js {:a 1, :b 2 :c 3}]
          (is (= (data/nav-in obj []) obj))
          (is (= (data/nav-in obj [:b]) 2))
-         (is (= (data/nav-in obj [2]) nil))))))
+         (is (= (data/nav-in obj [2]) nil)))))
+
+  (testing "Navigates into meta data"
+    (is (= (-> (with-meta {} {:meta? true})
+               (data/nav-in [data/meta-k]))
+           {:meta? true}))))
 
 (deftest supports-view?-test
   (testing "Primitives are not tableable"
