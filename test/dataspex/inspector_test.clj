@@ -50,6 +50,17 @@
            {:rev 2
             :val {:movie/title "Interstellar"}})))
 
+  (testing "Ignores multiple inspects of exact same value"
+    (is (= (-> (inspector/inspect-val nil data apr16-1620)
+               (inspector/inspect-val data apr16-1621)
+               (select-keys [:rev :val :history]))
+           {:rev 1
+            :val data
+            :history
+            [{:created-at #inst "2025-04-16T16:20:07.000-00:00"
+              :rev 1
+              :val data}]})))
+
   (testing "Tracks diffs between versions"
     (is (= (-> (inspector/inspect-val nil data apr16-1620)
                (inspector/inspect-val (dissoc data :movie/year) apr16-1621)

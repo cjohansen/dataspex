@@ -5,34 +5,36 @@
 
 (defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit
                                               now ref label auditable?]}]
-  (let [prev (first (:history current))
-        rev (inc (or (:rev current) 0))]
-    (merge
-     {:dataspex/path []
-      :dataspex/activity :dataspex.activity/browse}
-     (when (not= nil auditable?)
-       {:dataspex/auditable? auditable?})
-     (when label
-       {:dataspex/inspectee label})
-     (->> (keys current)
-          (filter (comp #{"dataspex"} namespace))
-          (select-keys current))
-     (cond-> {:rev rev
-              :val x}
-       ref (assoc :ref ref)
+  (if (= x (:val current))
+    current
+    (let [prev (first (:history current))
+          rev (inc (or (:rev current) 0))]
+      (merge
+       {:dataspex/path []
+        :dataspex/activity :dataspex.activity/browse}
+       (when (not= nil auditable?)
+         {:dataspex/auditable? auditable?})
+       (when label
+         {:dataspex/inspectee label})
+       (->> (keys current)
+            (filter (comp #{"dataspex"} namespace))
+            (select-keys current))
+       (cond-> {:rev rev
+                :val x}
+         ref (assoc :ref ref)
 
-       track-changes?
-       (assoc :history
-              (let [summary (dp/get-audit-summary x)
-                    details (dp/get-audit-details x)]
-                (->> (cond-> {:created-at now
-                              :rev rev
-                              :val x}
-                       prev (assoc :diff (diff/diff (:val prev) x))
-                       summary (assoc :dataspex.audit/summary summary)
-                       details (assoc :dataspex.audit/details details))
-                     (conj (:history current))
-                     (take history-limit))))))))
+         track-changes?
+         (assoc :history
+                (let [summary (dp/get-audit-summary x)
+                      details (dp/get-audit-details x)]
+                  (->> (cond-> {:created-at now
+                                :rev rev
+                                :val x}
+                         prev (assoc :diff (diff/diff (:val prev) x))
+                         summary (assoc :dataspex.audit/summary summary)
+                         details (assoc :dataspex.audit/details details))
+                       (conj (:history current))
+                       (take history-limit)))))))))
 
 (defn- now []
   #?(:cljs (js/Date.)
