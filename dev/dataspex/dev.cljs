@@ -29,23 +29,25 @@
                         {:id 2 :type :error :message "Could not fetch recommendations"}]
         :pagination {:current 2 :per-page 10}}
 
-   :movies [{:id 101
-             :title "Interstellar"
-             :year 2014
-             :genres [:sci-fi :drama]
-             :rating 8.6
-             :cast ["Matthew McConaughey" "Anne Hathaway"]
-             :meta {:favorited? true
-                    :watchlist? false}}
+   :movies [(with-meta
+              {:id 101
+               :title "Interstellar"
+               :year 2014
+               :genres [:sci-fi :drama]
+               :rating 8.6
+               :cast ["Matthew McConaughey" "Anne Hathaway"]}
+              {:favorited? true
+               :watchlist? false})
 
-            {:id 102
-             :title "Amélie"
-             :year 2001
-             :genres [:comedy :romance]
-             :rating 8.3
-             :cast ["Audrey Tautou"]
-             :meta {:favorited? false
-                    :watchlist? true}}]
+            (with-meta
+              {:id 102
+               :title "Amélie"
+               :year 2001
+               :genres [:comedy :romance]
+               :rating 8.3
+               :cast ["Audrey Tautou"]}
+              {:favorited? false
+               :watchlist? true})]
 
    :debug {:expanded-paths #{[:movies 0 :cast]
                              [:ui :modal]}
@@ -66,6 +68,13 @@
    (prn 'Actions actions)
    (actions/handle-actions store actions)))
 
+(defn dark-mode? []
+  (.-matches (js/window.matchMedia "(prefers-color-scheme: dark)")))
+
+(defonce set-color-scheme
+  (when (dark-mode?)
+    (.add (.-classList js/document.documentElement) "dark")))
+
 (defn render [state]
   (dp/render
    client
@@ -77,6 +86,9 @@
 
 (inspector/inspect store "App state" (assoc app-state :app/title "Movie Explorer!"))
 (inspector/inspect store "DB" demo-data/conn)
+
+(defonce txes
+  (demo-data/add-data demo-data/conn))
 
 (add-watch store ::render (fn [_ _ _ state] (render state)))
 
