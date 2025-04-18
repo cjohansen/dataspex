@@ -136,22 +136,30 @@
 
       (hiccup/render-dictionary x opt))))
 
+(defn possibly-scroll [hiccup opt]
+  (cond->> hiccup
+    (:dataspex/max-height opt)
+    (conj [:div {:style {:max-height (:dataspex/max-height opt)
+                         :overflow-y "scroll"}}])))
+
 (defn render-panel [state label]
   (let [opt (views/get-view-options state label)]
     (into
      [:div.panel (render-title-bar opt)]
      (when (render? opt)
        (if (= audit (:dataspex/activity opt))
-         [(audit-log/render-log (get state label) opt)]
+         [(-> (get state label)
+              (audit-log/render-log opt)
+              (possibly-scroll opt))]
          (let [data (-> (get-in state [label :val])
                         (data/nav-in (:dataspex/path opt))
                         (data/inspect opt))
                pagination (render-pagination-bar data opt)]
-           [[:div
-             (when (render? opt)
-               [::ui/navbar
-                (render-path (:dataspex/path opt) opt)
-                (render-view-menu data opt)])
-             pagination
-             (render-data data opt)
-             pagination]]))))))
+           [(when (render? opt)
+              [::ui/navbar
+               (render-path (:dataspex/path opt) opt)
+               (render-view-menu data opt)])
+            pagination
+            (-> (render-data data opt)
+                (possibly-scroll opt))
+            pagination]))))))

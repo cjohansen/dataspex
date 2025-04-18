@@ -4,7 +4,7 @@
   #?(:clj (:import (java.util Date))))
 
 (defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit
-                                              now ref label auditable?]}]
+                                              now ref label auditable? max-height]}]
   (if (= x (:val current))
     current
     (let [prev (first (:history current))
@@ -16,6 +16,8 @@
          {:dataspex/auditable? auditable?})
        (when label
          {:dataspex/inspectee label})
+       (when (number? max-height)
+         {:dataspex/max-height max-height})
        (->> (keys current)
             (filter (comp #{"dataspex"} namespace))
             (select-keys current))
@@ -53,7 +55,10 @@
     #?(:clj (instance? clojure.lang.IDeref x)
        :cljs (satisfies? cljs.core/IDeref x))))
 
-(defn inspect [store label x & [opt]]
+(defn inspect
+  {:arglists '[[store label x]
+               [store label x {:keys [track-changes? history-limit max-height]}]]}
+  [store label x & [opt]]
   (let [[val ref] (if (ref? x) [@x x] [x])]
     (swap! store update label inspect-val val (assoc (get-opts opt)
                                                      :ref ref
