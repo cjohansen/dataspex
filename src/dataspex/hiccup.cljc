@@ -252,7 +252,7 @@
          [::ui/entry
           {::ui/actions
            (when (or k path)
-             [(views/navigate-to opt (views/path-to opt))])}
+             (views/navigate-to opt (views/path-to opt)))}
           (or (some-> label (render-inline opt)) "")
           (render-inline v opt)
           (render-copy-button opt)])))))
@@ -299,8 +299,8 @@
       [::ui/tbody]
       (mapv
        (fn [m]
-         (-> [::ui/tr {::ui/actions [(views/navigate-to opt
-                                       (views/path-to opt [(:dataspex/idx m)]))]}
+         (-> [::ui/tr {::ui/actions (views/navigate-to opt
+                                      (views/path-to opt [(:dataspex/idx m)]))}
               (render-inline (:dataspex/idx m) opt)]
              (into (mapv #(render-inline (get m %) opt) ks))
              (conj (render-copy-button opt (:dataspex/idx m)))))

@@ -133,8 +133,8 @@
       (into
        [::ui/enumeration
         [::ui/link
-         {::ui/actions [(->> (views/path-to opt [(->EntitiesByAttrKey nil)])
-                             (views/navigate-to opt))]}
+         {::ui/actions (->> (views/path-to opt [(->EntitiesByAttrKey nil)])
+                            (views/navigate-to opt))}
          (str "All (" (count entities) ")")]]
        (->> db :rschema :db/unique sort
             (mapv (juxt identity #(count-entities-by-attr db %)))
@@ -142,8 +142,8 @@
             (mapv
              (fn [[attr n]]
                [::ui/clickable
-                {::ui/actions [(->> (views/path-to opt [(->EntitiesByAttrKey attr)])
-                                    (views/navigate-to opt))]}
+                {::ui/actions (->> (views/path-to opt [(->EntitiesByAttrKey attr)])
+                                   (views/navigate-to opt))}
                 [::ui/keyword attr]
                 [::ui/code (str " (" n ")")]])))))))
 
@@ -201,11 +201,11 @@
   (let [e-k (->EntityId e)
         a-k (->Attr a)]
     [(or alias ::ui/inline-tuple) {::ui/prefix "datom"}
-     [::ui/number {::ui/actions [(navigate-to opt [e-k])]} e]
-     [::ui/keyword {::ui/actions [(navigate-to opt [a-k])]} a]
+     [::ui/number {::ui/actions (navigate-to opt [e-k])} e]
+     [::ui/keyword {::ui/actions (navigate-to opt [a-k])} a]
      (-> (hiccup/render-inline v)
-         (hiccup/add-attr ::ui/actions [(navigate-to opt [e-k a-k (->AttrValue a v)])]))
-     [::ui/number {::ui/actions [(navigate-to opt [(->EntityId t)])]} t]
+         (hiccup/add-attr ::ui/actions (navigate-to opt [e-k a-k (->AttrValue a v)])))
+     [::ui/number {::ui/actions (navigate-to opt [(->EntityId t)])} t]
      [::ui/boolean add?]]))
 
 (defrecord Schema [db]

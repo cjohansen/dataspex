@@ -139,7 +139,8 @@
              (->> (first (:eavt @conn))
                   (h/render-inline
                    {:dataspex/inspectee "DS"
-                    :dataspex/path [:eavt]})))
+                    :dataspex/path [:eavt]
+                    :dataspex/activity :dataspex.activity/browse})))
            [::ui/inline-tuple {::ui/prefix "datom"}
             [::ui/number
              {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]

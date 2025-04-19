@@ -27,7 +27,9 @@
    (into (vec path) xs)))
 
 (defn ^{:indent 1} navigate-to [opt path]
-  [:dataspex.actions/assoc-in [(:dataspex/inspectee opt) :dataspex/path] path])
+  (cond-> [[:dataspex.actions/assoc-in [(:dataspex/inspectee opt) :dataspex/path] path]]
+    (not= :dataspex.activity/browse (:dataspex/activity opt))
+    (conj [:dataspex.actions/assoc-in [(:dataspex/inspectee opt) :dataspex/activity] :dataspex.activity/browse])))
 
 (defn get-current-view [v {:dataspex/keys [path view default-view] :as opt}]
   (or (get view path)

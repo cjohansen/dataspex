@@ -93,7 +93,7 @@
                                 {:curr curr
                                  :res (conj res
                                             [::ui/crumb
-                                             {::ui/actions [(views/navigate-to opt curr)]}
+                                             {::ui/actions (views/navigate-to opt curr)}
                                              (render-path-k e opt)])}))
                             {:curr []
                              :res []})
@@ -102,7 +102,7 @@
              [::ui/crumb
               (cond-> {}
                 (< 0 n)
-                (assoc ::ui/actions [(views/navigate-to opt [])]))
+                (assoc ::ui/actions (views/navigate-to opt [])))
               "."]]
 
       (< 4 n)

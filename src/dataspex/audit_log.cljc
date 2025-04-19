@@ -16,8 +16,8 @@
   {:insertions "insertion"
    :deletions "deletion"})
 
-(defn render-inline [v]
-  (hiccup/render-inline v {:dataspex/summarize-above-w -1}))
+(defn render-inline [v & [opt]]
+  (hiccup/render-inline v (assoc opt :dataspex/summarize-above-w -1)))
 
 (defn render-elaborate-diff-summary [diff]
   (let [stats (diff/get-stats diff)
@@ -53,24 +53,24 @@
     (dp/render-diff-summary x diff)
     (render-elaborate-diff-summary diff)))
 
-(defn render-diffs [diff]
+(defn render-diffs [diff opt]
   (->> (group-by first diff)
        (sort-by first)
        (mapv
         (fn [[path edits]]
           (into [:article.diff
-                 [::ui/source (render-inline path)]]
+                 [::ui/source (render-inline path opt)]]
                 (mapv
                  (fn [[_ op v]]
                    [::ui/source {::ui/prefix (name op)
                                  :data-color (if (= :- op) "error" "success")}
-                    (render-inline v)])
+                    (render-inline v opt)])
                  edits))))))
 
-(defn ^{:indent 1} render-diff-details [x diff]
+(defn ^{:indent 1} render-diff-details [x diff opt]
   (if (satisfies? dp/IRenderDiff x)
     (dp/render-diff x diff)
-    (render-diffs diff)))
+    (render-diffs diff opt)))
 
 (defn render-custom-summary [summary diff]
   [:div.grow.flex
@@ -117,7 +117,7 @@
                 (render-browse-rev-button revision opt))]]
       (not folded?)
       (conj (cond-> [::ui/card-body]
-              :then (into (render-diff-details (:val revision) (:diff revision)))
+              :then (into (render-diff-details (:val revision) (:diff revision) opt))
               (not current?)
               (conj [:div (-> (render-browse-rev-button revision opt)
                               (conj "Browse this version"))]))))))

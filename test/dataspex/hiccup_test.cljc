@@ -301,7 +301,8 @@
   (testing "Renders vector"
     (is (= (h/render-dictionary
             {:dataspex/path [:libs]
-             :dataspex/inspectee "Clojars"}
+             :dataspex/inspectee "Clojars"
+             :dataspex/activity :dataspex.activity/browse}
             [{:library/name "Replicant"}
              {:library/name "Dataspex"}])
            [::ui/dictionary
@@ -343,7 +344,8 @@
                  {:library/name "Dataspex"}]
                 (h/render-dictionary
                  {:dataspex/inspectee "Libs"
-                  :dataspex/path [:libraries]})
+                  :dataspex/path [:libraries]
+                  :dataspex/activity :dataspex.activity/browse})
                 (lookup/select ::ui/entry)
                 (mapv lookup/attrs))
            [{::ui/actions [[::actions/assoc-in ["Libs" :dataspex/path] [:libraries 0]]]}
@@ -380,7 +382,8 @@
     (is (= (->> #{"Replicant" "Dataspex"}
                 (h/render-dictionary
                  {:dataspex/inspectee "Datas"
-                  :dataspex/path [:lib-names]})
+                  :dataspex/path [:lib-names]
+                  :dataspex/activity :dataspex.activity/browse})
                 (lookup/select ::ui/entry)
                 first)
            [::ui/entry

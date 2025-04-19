@@ -129,7 +129,8 @@
   (testing "Renders path of one string"
     (is (= (panel/render-path ["users"] {:dataspex/inspectee "Store"})
            [::ui/path
-            [::ui/crumb {::ui/actions [[::actions/assoc-in ["Store" :dataspex/path] []]]}
+            [::ui/crumb {::ui/actions [[::actions/assoc-in ["Store" :dataspex/path] []]
+                                       [::actions/assoc-in ["Store" :dataspex/activity] :dataspex.activity/browse]]}
              "."]
             [::ui/crumb
              [::ui/string "users"]]])))
@@ -138,11 +139,13 @@
     (is (= (panel/render-path [:users 0] {:dataspex/inspectee "Store"})
            [::ui/path
             [::ui/crumb
-             {::ui/actions [[::actions/assoc-in ["Store" :dataspex/path] []]]}
+             {::ui/actions [[::actions/assoc-in ["Store" :dataspex/path] []]
+                            [::actions/assoc-in ["Store" :dataspex/activity] :dataspex.activity/browse]]}
              "."]
             [::ui/crumb
              {::ui/actions
-              [[::actions/assoc-in ["Store" :dataspex/path] [:users]]]}
+              [[::actions/assoc-in ["Store" :dataspex/path] [:users]]
+               [::actions/assoc-in ["Store" :dataspex/activity] :dataspex.activity/browse]]}
              [::ui/keyword :users]]
             [::ui/crumb [::ui/number 0]]])))
 
