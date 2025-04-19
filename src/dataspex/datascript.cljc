@@ -79,9 +79,11 @@
 
 (defn nav-in-db [db p path]
   (data/nav-in
-   (case p
-     ::entities (get-entities db)
-     (get db p))
+   (if (satisfies? dp/IKeyLookup p)
+     (dp/lookup p db)
+     (case p
+       ::entities (get-entities db)
+       (get db p)))
    path))
 
 (defn get-last-tx [db]
@@ -91,6 +93,59 @@
   (if (map? coll)
     (val (first (filterv (comp #{db-id} :db/id key) coll)))
     (first (filterv (comp #{db-id} :db/id) coll))))
+
+(defn get-entities-by-attr [db attr]
+  (->> (d/q '[:find [?e ...]
+              :in $ ?a
+              :where [?e ?a]]
+            db attr)
+       (mapv #(d/entity db %))
+       set))
+
+(defn count-entities-by-attr [db attr]
+  (or (d/q '[:find (count ?e) .
+             :in $ ?a
+             :where [?e ?a]]
+           db attr) 0))
+
+(defrecord EntitiesByAttrKey [attr]
+  dp/IRenderInline
+  (render-inline [_ _]
+    (if attr
+      [:span.code "Entities by " [::ui/keyword attr]]
+      [:span.code "Entities"]))
+
+  dp/IKeyLookup
+  (lookup [_ x]
+    (if attr
+      (get-entities-by-attr (if (d/conn? x) (d/db x) x) attr)
+      (get-entities (if (d/conn? x) (d/db x) x)))))
+
+(defn render-entity-index [db opt]
+  (let [entities (get-entities db)]
+    (if (= 0 (count entities))
+      [::ui/code "No entities, better get to it!"]
+      (into
+       [::ui/enumeration
+        [::ui/link
+         {::ui/actions [(->> (views/path-to opt [(->EntitiesByAttrKey nil)])
+                             (views/navigate-to opt))]}
+         (str "All (" (count entities) ")")]]
+       (->> db :rschema :db/unique sort
+            (mapv (juxt identity #(count-entities-by-attr db %)))
+            (remove (comp #{0} second))
+            (mapv
+             (fn [[attr n]]
+               [::ui/clickable
+                {::ui/actions [(->> (views/path-to opt [(->EntitiesByAttrKey attr)])
+                                    (views/navigate-to opt))]}
+                [::ui/keyword attr]
+                [::ui/code (str " (" n ")")]])))))))
+
+(defrecord EntityIndex [db]
+  dp/IRenderInline
+  (render-inline [_ opt]
+    (render-entity-index db opt)))
 
 (defn summarize-contents [db]
   (str (count (set (mapv first (:eavt db))))
@@ -123,9 +178,8 @@
    (into [{:k :schema
            :label 'Schema
            :v (:schema db)}
-          {:k ::entities
-           :label 'Entities
-           :v (get-entities db)}
+          {:label 'Entities
+           :v (->EntityIndex db)}
           {:k :eavt
            :label (hiccup/string-label "Datoms by entity (eavt)")
            :v (:eavt db)}]

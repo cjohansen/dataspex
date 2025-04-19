@@ -15,7 +15,8 @@
   {:person/id {:db/cardinality :db.cardinality/one
                :db/unique :db.unique/identity}
    :person/friends {:db/valueType :db.type/ref
-                    :db/cardinality :db.cardinality/many}})
+                    :db/cardinality :db.cardinality/many}
+   :movie/id {:db/unique :db.unique/identity}})
 
 (def data
   [{:person/id "bob"
@@ -67,7 +68,7 @@
     (is (= (->> (with-conn [conn schema]
                   (data/nav-in conn [:rschema]))
                 :db/unique)
-           #{:db/ident :person/id})))
+           #{:db/ident :person/id :movie/id})))
 
   (testing "Navigates in database"
     (is (= (with-conn [conn schema]
@@ -160,7 +161,10 @@
            [::ui/map
             [::ui/map-entry
              [::ui/keyword :person/id]
-             [::ui/string "bob"]]]))))
+             [::ui/string "bob"]]
+            [::ui/map-entry
+             [::ui/keyword :person/name]
+             [::ui/string "Bob"]]]))))
 
 (deftest render-dictionary-test
   (testing "Renders connection as dictionary"
@@ -178,6 +182,19 @@
             ":max-tx"
             ":rschema"
             ":hash"])))
+
+  (testing "Offers entity filters by unique attribute"
+    (is (= (->> (with-conn [conn schema]
+                  (->> data
+                       (concat [{:movie/id "batman"
+                                 :movie/title "Batman Forever"}])
+                       (d/transact! conn))
+                  (h/render-dictionary {:dataspex/inspectee "DB"} conn))
+                lookup/children
+                second
+                (lookup/select :dataspex.ui/enumeration)
+                lookup/text)
+           "All (4) :movie/id  (1) :person/id  (3)")))
 
   (testing "Renders database as dictionary"
     (is (= (->> (with-conn [conn schema]
