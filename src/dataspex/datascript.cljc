@@ -177,10 +177,19 @@
    [::ui/number {::ui/actions [(navigate-to opt [t])]} t]
    [::ui/boolean add?]])
 
+(defrecord Schema [db]
+  dp/IKeyLookup
+  (dp/lookup [_ db]
+    (:schema db))
+
+  dp/IRenderInline
+  (render-inline [_ _]
+    [::ui/symbol "Schema"]))
+
 (defn render-database-dictionary [db opt]
   (hiccup/render-entries-dictionary
    db
-   (into [{:k :schema
+   (into [{:k (->Schema db)
            :label 'Schema
            :v (:schema db)}
           {:label 'Entities
