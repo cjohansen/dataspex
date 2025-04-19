@@ -142,16 +142,24 @@
                     :dataspex/path [:eavt]})))
            [::ui/inline-tuple {::ui/prefix "datom"}
             [::ui/number
-             {::ui/actions [[:dataspex.actions/assoc-in ["DS" :dataspex/path] [:eavt 1]]]}
+             {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
+                             [:eavt (datascript/->EntityId 1)]]]}
              1]
             [::ui/keyword
-             {::ui/actions [[:dataspex.actions/assoc-in ["DS" :dataspex/path] [:eavt :person/id]]]}
+             {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
+                             [:eavt (datascript/->Attr :person/id)]]]}
              :person/id]
             [::ui/string
-             {::ui/actions [[:dataspex.actions/assoc-in ["DS" :dataspex/path] [:eavt 1 :person/id]]]}
+             {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
+                             [:eavt
+                              (datascript/->EntityId 1)
+                              (datascript/->Attr :person/id)
+                              (datascript/->AttrValue :person/id "wendy")]]]}
              "wendy"]
             [::ui/number
-             {::ui/actions [[:dataspex.actions/assoc-in ["DS" :dataspex/path] [:eavt 536870913]]]}
+             {::ui/actions [[::actions/assoc-in
+                             ["DS" :dataspex/path]
+                             [:eavt (datascript/->EntityId 536870913)]]]}
              536870913]
             [::ui/boolean true]])))
 

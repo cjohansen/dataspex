@@ -168,14 +168,45 @@
   (->> (views/path-to opt xs)
        (views/navigate-to opt)))
 
+(defrecord EntityId [id]
+  p/Datafiable
+  (datafy [_]
+    {:db/id id})
+
+  IDatabaseLookup
+  (lookup-in-db [_ db]
+    (d/entity db id)))
+
+(defrecord Attr [a]
+  p/Datafiable
+  (datafy [_]
+    a)
+
+  IDatabaseLookup
+  (lookup-in-db [_ db]
+    (-> db :schema a)))
+
+(defrecord AttrValue [a v]
+  p/Datafiable
+  (datafy [_]
+    v)
+
+  IDatabaseLookup
+  (lookup-in-db [_ db]
+    (if (and (number? v) (-> db :rschema :db.type/ref a))
+      (d/entity db v)
+      v)))
+
 (defn render-datom [[e a v t add?] opt & [{:keys [alias]}]]
-  [(or alias ::ui/inline-tuple) {::ui/prefix "datom"}
-   [::ui/number {::ui/actions [(navigate-to opt [e])]} e]
-   [::ui/keyword {::ui/actions [(navigate-to opt [a])]} a]
-   (-> (hiccup/render-inline v)
-       (hiccup/add-attr ::ui/actions [(navigate-to opt [e a])]))
-   [::ui/number {::ui/actions [(navigate-to opt [t])]} t]
-   [::ui/boolean add?]])
+  (let [e-k (->EntityId e)
+        a-k (->Attr a)]
+    [(or alias ::ui/inline-tuple) {::ui/prefix "datom"}
+     [::ui/number {::ui/actions [(navigate-to opt [e-k])]} e]
+     [::ui/keyword {::ui/actions [(navigate-to opt [a-k])]} a]
+     (-> (hiccup/render-inline v)
+         (hiccup/add-attr ::ui/actions [(navigate-to opt [e-k a-k (->AttrValue a v)])]))
+     [::ui/number {::ui/actions [(navigate-to opt [(->EntityId t)])]} t]
+     [::ui/boolean add?]]))
 
 (defrecord Schema [db]
   dp/IKeyLookup
