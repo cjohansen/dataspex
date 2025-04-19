@@ -320,6 +320,10 @@
   [:output.alert attrs
    content])
 
+(defalias enumeration [attrs content]
+  (into [:span attrs]
+        (interpose ", " content)))
+
 (defalias card [attrs content]
   [:article.card attrs content])
 
@@ -350,6 +354,12 @@
    (cond-> attrs
      (::actions attrs) (assoc-in [:on :click] (::actions attrs)))
    [:code.code text]])
+
+(defalias clickable [attrs text]
+  [:button.clickable
+   (cond-> attrs
+     (::actions attrs) (assoc-in [:on :click] (::actions attrs)))
+   text])
 
 (defalias button [{::keys [title actions selected?] :as attrs} content]
   [:button.button

@@ -46,6 +46,13 @@
    defined with defalias), make sure to require the namespace. If it's
    not globally defined, pass the definition to dataspex."]])
 
+(defscene enumeration
+  [ui/enumeration
+   [ui/link "All (3)"]
+   [:span.clickable [ui/keyword :user/id] [::ui/code " (3)"]]
+   [:span.clickable [ui/keyword :movie/id] [::ui/code " (5)"]]
+   [:span.clickable [ui/keyword :review/id] [::ui/code " (2)"]]])
+
 (defscene path
   [ui/path
    [ui/crumb {::ui/actions []} "."]
