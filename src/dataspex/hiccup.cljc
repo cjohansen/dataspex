@@ -134,18 +134,23 @@
 
 (declare render-inline)
 
-(defn ^{:indent 1} render-paginated-sequential [tag s opt & [get-entries]]
+(defn ^{:indent 1} render-paginated-sequential [tag s opt & {:keys [get-entries
+                                                                    element-width]}]
   (if (summarize? s opt)
     (let [[l r] (tag->brackets tag)]
       [::ui/link (str l (summarize s) r)])
     (let [{:keys [page-size offset]} (views/get-pagination opt)
           current-end (+ offset page-size)
           more (- (bounded-count (+ current-end 1001) s) current-end)
-          attrs (select-keys opt [::ui/prefix])]
+          attrs (select-keys opt [::ui/prefix])
+          element-width (or element-width
+                            (when (< 0 (or (:dataspex/summarize-above-w opt) 120))
+                              20))]
       (into
        (cond-> [tag]
          (not-empty attrs) (conj attrs))
-       (let [opt (dissoc opt ::ui/prefix)]
+       (let [opt (cond-> (dissoc opt ::ui/prefix)
+                   element-width (assoc :dataspex/summarize-above-w element-width))]
          (cond-> []
            (< 0 offset)
            (conj [::ui/link
@@ -165,13 +170,16 @@
                   (str (if (< 1000 more) "1000+" more) " more")])))))))
 
 (defn render-inline-seq [s opt]
-  (render-paginated-sequential ::ui/list s opt data/get-indexed-entries))
+  (->> {:get-entries data/get-indexed-entries}
+       (render-paginated-sequential ::ui/list s opt)))
 
 (defn render-inline-set [s opt]
-  (render-paginated-sequential ::ui/set s opt data/get-set-entries))
+  (->> {:get-entries data/get-set-entries}
+       (render-paginated-sequential ::ui/set s opt)))
 
 (defn render-inline-array [a opt]
-  (render-paginated-sequential ::ui/vector a (assoc opt ::ui/prefix "#js") data/get-js-array-entries))
+  (->> {:get-entries data/get-js-array-entries}
+       (render-paginated-sequential ::ui/vector a (assoc opt ::ui/prefix "#js"))))
 
 (defn render-inline-map [m entries opt]
   (let [prefix (::ui/prefix opt)
@@ -464,7 +472,8 @@
                 :clj clojure.lang.PersistentVector)
   dp/IRenderInline
   (render-inline [v opt]
-    (render-paginated-sequential ::ui/vector v opt data/get-indexed-entries)))
+    (->> {:get-entries data/get-indexed-entries}
+         (render-paginated-sequential ::ui/vector v opt))))
 
 (extend-type #?(:cljs cljs.core/List
                 :clj clojure.lang.PersistentList)
