@@ -23,11 +23,7 @@
    {:v add?}])
 
 (defn get-index-entries [index]
-  (map-indexed
-   (fn [i v]
-     {:k i
-      :v v})
-   index))
+  (mapv (fn [v] {:v v}) index))
 
 (defn get-entities [db]
   (->> (:eavt db)
