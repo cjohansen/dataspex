@@ -146,11 +146,17 @@
              [::ui/keyword :users]]
             [::ui/crumb [::ui/number 0]]])))
 
-  (testing "Rendes path elements inline"
+  (testing "Renders path elements inline"
     (is (= (->> (panel/render-path [(->CustomPathSegment)] {})
                 (lookup/select ::ui/crumb)
                 (mapv lookup/text))
-           ["." "Ay, caramba!"]))))
+           ["." "Ay, caramba!"])))
+
+  (testing "Truncates long path"
+    (is (= (->> (panel/render-path [:reviews :review/id 1001 :review/movie :review/_movie 1002] {})
+                (lookup/select ::ui/crumb)
+                (mapv lookup/text))
+           ["." ":reviews" "..." ":review/movie" ":review/_movie" "1002"]))))
 
 (deftest render-pagination-bar
   (testing "Does not paginate strings"

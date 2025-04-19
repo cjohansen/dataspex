@@ -83,7 +83,21 @@
 
 (defn render-path [path opt]
   (let [n (count path)
-        opt (assoc opt :dataspex/view views/inline)]
+        opt (assoc opt
+                   :dataspex/view views/inline
+                   :dataspex/summarize-above-w 20)
+        path-elements (->> (butlast path)
+                           (reduce
+                            (fn [{:keys [curr res]} e]
+                              (let [curr (conj curr e)]
+                                {:curr curr
+                                 :res (conj res
+                                            [::ui/crumb
+                                             {::ui/actions [(views/navigate-to opt curr)]}
+                                             (render-path-k e opt)])}))
+                            {:curr []
+                             :res []})
+                           :res)]
     (cond-> [::ui/path
              [::ui/crumb
               (cond-> {}
@@ -91,20 +105,14 @@
                 (assoc ::ui/actions [(views/navigate-to opt [])]))
               "."]]
 
-      (< 1 n)
+      (< 4 n)
       (into
-       (->> (butlast path)
-            (reduce
-             (fn [{:keys [curr res]} e]
-               (let [curr (conj curr e)]
-                 {:curr curr
-                  :res (conj res
-                             [::ui/crumb
-                              {::ui/actions [(views/navigate-to opt curr)]}
-                              (render-path-k e opt)])}))
-             {:curr []
-              :res []})
-            :res))
+       [(first path-elements)
+        [::ui/crumb [::ui/code "..."]]
+        (take-last 2 path-elements)])
+
+      (< 1 n 5)
+      (into path-elements)
 
       (< 0 n)
       (conj [::ui/crumb (render-path-k (last path) opt)]))))
