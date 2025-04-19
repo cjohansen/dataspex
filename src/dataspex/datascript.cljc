@@ -273,6 +273,13 @@
 (defn make-entity-key [e]
   (EntityKey. (:db/id e) (summarize-entity e)))
 
+(defn get-entity-primitives-map [entity]
+  (let [rschema (:rschema (d/entity-db entity))
+        unwanted (into (:db.type/ref rschema) (:db.cardinality/many rschema))]
+    (->> (keys entity)
+         (remove unwanted)
+         (select-keys entity))))
+
 (extend-type datascript.impl.entity.Entity
   dp/IKey
   (to-key [e]
@@ -280,7 +287,10 @@
 
   dp/IRenderInline
   (render-inline [entity opt]
-    (hiccup/render-inline (summarize-entity entity) opt))
+    (let [entity-m (get-entity-primitives-map entity)]
+      (if (hiccup/summarize? entity-m opt)
+        (hiccup/render-inline (summarize-entity entity) opt)
+        (hiccup/render-inline entity-m opt))))
 
   dp/IRenderDictionary
   (render-dictionary [entity opt]
