@@ -16,6 +16,7 @@
                :db/unique :db.unique/identity}
    :person/friends {:db/valueType :db.type/ref
                     :db/cardinality :db.cardinality/many}
+   :person/boss {:db/valueType :db.type/ref}
    :movie/id {:db/unique :db.unique/identity}})
 
 (def data
@@ -24,6 +25,7 @@
     :person/friends ["alice" "wendy"]}
    {:db/id "alice"
     :person/id "alice"
+    :person/boss "wendy"
     :person/name "Alice"}
    {:db/id "wendy"
     :person/id "wendy"
@@ -47,13 +49,13 @@
                   (d/transact! conn data)
                   (data/nav-in conn [:eavt]))
                 count)
-           8))
+           9))
 
     (is (= (->> (with-conn [conn schema]
                   (d/transact! conn data)
                   (data/nav-in conn [:aevt]))
                 count)
-           8))
+           9))
 
     (is (= (with-conn [conn schema]
              (d/transact! conn data)
@@ -74,6 +76,18 @@
     (is (= (with-conn [conn schema]
              (data/nav-in (d/db conn) [:schema]))
            schema)))
+
+  (testing "Navigates complicated path"
+    (is (= (with-conn [conn schema]
+             (d/transact! conn data)
+             (->> [(datascript/->EntitiesByAttrKey :person/id)
+                   (datascript/->EntityKey 2 {})
+                   :person/boss
+                   :person/_boss]
+                  (data/nav-in (d/db conn))
+                  first
+                  :db/id))
+           2)))
 
   (testing "Makes entities keyable"
     (is (= (->> (with-conn [conn schema]
@@ -111,13 +125,13 @@
     (is (= (with-conn [conn schema]
              (d/transact! conn data)
              (h/render-inline conn))
-           [::ui/code "#datascript/Conn [3 entities, 8 datoms]"])))
+           [::ui/code "#datascript/Conn [3 entities, 9 datoms]"])))
 
   (testing "Renders database inline"
     (is (= (with-conn [conn schema]
              (d/transact! conn data)
              (h/render-inline (d/db conn)))
-           [::ui/code "#datascript/DB [3 entities, 8 datoms]"])))
+           [::ui/code "#datascript/DB [3 entities, 9 datoms]"])))
 
   (testing "Renders datom inline"
     (is (= (with-conn [conn schema]
@@ -152,7 +166,7 @@
     (is (= (with-conn [conn schema]
              (d/transact! conn data)
              (h/render-inline (:eavt @conn)))
-           [::ui/link "#{8 Datoms}"])))
+           [::ui/link "#{9 Datoms}"])))
 
   (testing "Renders entity inline"
     (is (= (with-conn [conn schema]
@@ -236,7 +250,7 @@
                        (h/render-dictionary {:dataspex/path [:eavt]})))
                 (lookup/select ::ui/tuple)
                 count)
-           8)))
+           9)))
 
   (testing "Renders entity as dictionary"
     (is (= (->> (with-conn [conn schema]
@@ -257,15 +271,15 @@
                     (h/render-dictionary
                      {:dataspex/inspectee "DB"})
                     (lookup/select '[::ui/entry])
-                    first
+                    second
                     lookup/attrs
                     ::ui/actions
                     first
                     last
                     (data/nav-in data)
                     (into {}))))
-           {:person/id "alice"
-            :person/name "Alice"})))
+           {:person/id "wendy"
+            :person/name "Wendy"})))
 
   (testing "Renders reverse refs to entity below regular keys"
     (is (= (->> (with-conn [conn schema]
@@ -276,6 +290,7 @@
                 (mapv lookup/text))
            [":person/id"
             ":person/name"
+            ":person/boss"
             ":person/_friends"]))))
 
 (deftest render-source-test
@@ -285,7 +300,7 @@
                   (h/render-source conn))
                 (lookup/select ::ui/tuple)
                 count)
-           8)))
+           9)))
 
   (testing "Renders database as source"
     (is (= (->> (with-conn [conn schema]
@@ -293,7 +308,7 @@
                   (h/render-source (d/db conn)))
                 (lookup/select ::ui/tuple)
                 count)
-           8))))
+           9))))
 
 (deftest diff-test
   (testing "Diffs two datascript databases"
@@ -305,3 +320,6 @@
                    (diff/diff a (d/db conn))))
                h/undatom-diff)
            [[[0] :+ [1 :person/alias "Notorious B-O-B" 536870914 true]]]))))
+
+
+;; "+2/-1 entities, +2/-3 attributes in 4 entities"

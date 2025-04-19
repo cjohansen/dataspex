@@ -12,6 +12,9 @@
             [dataspex.views :as views])
   #?(:clj (:import (me.tonsky.persistent_sorted_set PersistentSortedSet))))
 
+(defprotocol IDatabaseLookup
+  (lookup-in-db [x db]))
+
 (defn get-datom-entries [[e a v t add?]]
   [{:k e, :v e}
    {:k a, :v a}
@@ -78,14 +81,19 @@
           (into {} e))
         (select-keys e [:db/id]))))
 
-(defn nav-in-db [db p path]
-  (data/nav-in
-   (if (satisfies? dp/IKeyLookup p)
-     (dp/lookup p db)
-     (case p
-       ::entities (get-entities db)
-       (get db p)))
-   path))
+(defn nav-in-db [db path]
+  (loop [[p & ps] (reverse path)
+         rest-path ()]
+    (if (nil? p)
+      (let [[p & ps] path]
+        (data/nav-in
+         (if (satisfies? dp/IKeyLookup p)
+           (dp/lookup p db)
+           (get db p))
+         ps))
+      (if (satisfies? IDatabaseLookup p)
+        (data/nav-in (lookup-in-db p db) rest-path)
+        (recur ps (conj rest-path p))))))
 
 (defn get-last-tx [db]
   (d/entity db (:max-tx db)))
@@ -197,8 +205,8 @@
 
 (extend-type datascript.conn.Conn
   dp/INavigatable
-  (nav-in [conn [p & path]]
-    (nav-in-db (d/db conn) p path))
+  (nav-in [conn path]
+    (nav-in-db (d/db conn) path))
 
   dp/IRenderInline
   (render-inline [conn _]
@@ -214,8 +222,8 @@
 
 (extend-type datascript.db.DB
   dp/INavigatable
-  (nav-in [db [p & path]]
-    (nav-in-db db p path))
+  (nav-in [db path]
+    (nav-in-db db path))
 
   dp/IDiffable
   (->diffable [db]
@@ -268,7 +276,11 @@
 
   dp/IKeyLookup
   (lookup [_ coll]
-    (get-entity-k coll id)))
+    (get-entity-k coll id))
+
+  IDatabaseLookup
+  (lookup-in-db [_ db]
+    (d/entity db id)))
 
 (defn make-entity-key [e]
   (EntityKey. (:db/id e) (summarize-entity e)))
