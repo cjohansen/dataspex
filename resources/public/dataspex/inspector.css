@@ -526,7 +526,7 @@ a.clickable:hover,
 
 /* Dictionary tables */
 
-.dictionary:not(.table-auto) th {
+.dictionary:not(.table-auto):not(.keyless) th {
   width: 15em;
 }
 
