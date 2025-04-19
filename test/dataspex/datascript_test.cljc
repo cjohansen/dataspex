@@ -291,6 +291,20 @@
            [":person/id"
             ":person/name"
             ":person/boss"
+            ":person/_friends"])))
+
+  (testing "Doesn't treat any occurrence of entity id in value position as a reverse ref"
+    (is (= (->> (with-conn [conn schema]
+                  (d/transact! conn (conj data
+                                          {:person/id 5
+                                           :person/luls 2}))
+                  (h/render-dictionary (d/entity (d/db conn) 2)))
+                (lookup/select '[::ui/dictionary > ::ui/entry])
+                (mapv (comp first lookup/children))
+                (mapv lookup/text))
+           [":person/id"
+            ":person/name"
+            ":person/boss"
             ":person/_friends"]))))
 
 (deftest render-source-test

@@ -48,9 +48,9 @@
 
 (defn find-reverse-refs [db e]
   (->> (d/q '[:find ?a ?r
-              :in $ ?e
+              :in $ [?a ...] ?e
               :where [?r ?a ?e]]
-            db (:db/id e))
+            db (-> db :rschema :db.type/ref) (:db/id e))
        (group-by first)
        (sort-by #(attr-sort-val db (first %)))
        (mapv
