@@ -31,7 +31,8 @@
        (mapv first)
        set
        sort
-       (mapv #(d/entity db %))))
+       (mapv #(d/entity db %))
+       set))
 
 (defn attr-sort-val [{:keys [rschema]} a]
   [(if (contains? (:db/unique rschema) a)
