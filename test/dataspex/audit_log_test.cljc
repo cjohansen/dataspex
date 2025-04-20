@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [dataspex.actions :as-alias actions]
             [dataspex.audit-log :as audit-log]
+            [dataspex.helper :as h]
             [dataspex.icons :as-alias icons]
             [dataspex.time :as time]
             [dataspex.ui :as-alias ui]
@@ -52,12 +53,13 @@
                     :dataspex/path []}))
                 (lookup/select-one ::ui/card-header)
                 lookup/children
-                second)
-           [:div {:class #{"flex" "grow"}}
+                second
+                h/strip-attrs)
+           [:div
             [::ui/vector
              [::ui/keyword :actions]
              [::ui/keyword :make-it-go-boom]]
-            [:div {:class #{"tag"}}
+            [:div
              [::ui/success "+2"] " "
              [::ui/error "-1"]]])))
 
@@ -102,8 +104,9 @@
            [:div.grow [::ui/error "1"] " deletion" " in " [::ui/keyword :movie/director]])))
 
   (testing "Renders diff for one longer path"
-    (is (= (audit-log/render-diff-summary {}
-             [[[:movies :movie/director] :-]])
+    (is (= (->> [[[:movies :movie/director] :-]]
+                (audit-log/render-diff-summary {})
+                h/strip-attrs)
            [:div.grow
             [::ui/error "1"] " deletion" " in "
             [::ui/vector
@@ -151,7 +154,8 @@
   (testing "Renders diff in card body"
     (is (= (->> (render-expanded)
                 (lookup/select-one [::ui/card-body :article.diff])
-                lookup/children)
+                lookup/children
+                (h/strip-attrs #{:dataspex.ui/actions}))
            [[::ui/source
              [::ui/vector [::ui/keyword :movie/director]]]
             [::ui/source {::ui/prefix "-"
@@ -161,7 +165,8 @@
   (testing "Orders diffs by path"
     (is (= (->> (render-expanded)
                 (lookup/select-one [::ui/card-body :article.diff])
-                lookup/children)
+                lookup/children
+                (h/strip-attrs #{::ui/actions}))
            [[::ui/source
              [::ui/vector [::ui/keyword :movie/director]]]
             [::ui/source {::ui/prefix "-"

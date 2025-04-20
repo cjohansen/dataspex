@@ -1,5 +1,6 @@
 (ns dataspex.helper
-  (:require [datascript.core :as d]
+  (:require [clojure.walk :as walk]
+            [datascript.core :as d]
             [dataspex.data :as data]
             [dataspex.hiccup :as hiccup]
             [dataspex.views :as views])
@@ -51,3 +52,19 @@
      (cond-> [(mapv undatom path) op]
        v (conj (undatom v))))
    diffs))
+
+(defn strip-attrs [hiccup & [attrs]]
+  (let [[hiccup attrs] (if (set? hiccup)
+                         [attrs hiccup]
+                         [hiccup attrs])
+        f (if attrs
+            #(empty? (apply dissoc % attrs))
+            (constantly true))]
+    (walk/postwalk
+     (fn [x]
+       (if (and (hiccup/hiccup? x)
+                (map? (second x))
+                (f (second x)))
+         (into [(first x)] (drop 2 x))
+         x))
+     hiccup)))

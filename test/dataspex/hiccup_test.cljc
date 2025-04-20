@@ -102,7 +102,8 @@
             [::ui/string "2025-04-05T00:00:00.000-00:00"]])))
 
   (testing "Renders short vector"
-    (is (= (h/render-inline [:hello])
+    (is (= (-> (h/render-inline [:hello])
+               h/strip-attrs)
            [::ui/vector
             [::ui/keyword :hello]])))
 
@@ -123,7 +124,8 @@
            [::ui/link "[19 items]"])))
 
   (testing "Renders short list"
-    (is (= (h/render-inline (list :hello))
+    (is (= (-> (h/render-inline (list :hello))
+               h/strip-attrs)
            [::ui/list
             [::ui/keyword :hello]])))
 
@@ -146,7 +148,8 @@
            [::ui/link "(19 items)"])))
 
   (testing "Renders short seq"
-    (is (= (h/render-inline (range 0 5))
+    (is (= (-> (h/render-inline (range 0 5))
+               h/strip-attrs)
            [::ui/list
             [::ui/number 0]
             [::ui/number 1]
@@ -167,7 +170,8 @@
            [::ui/link "(1000+ items)"])))
 
   (testing "Renders short set"
-    (is (= (h/render-inline #{:hello})
+    (is (= (-> (h/render-inline #{:hello})
+               h/strip-attrs)
            [::ui/set
             [::ui/keyword :hello]])))
 
@@ -186,7 +190,8 @@
 
   #?(:cljs
      (testing "Renders short JS array"
-       (is (= (h/render-inline #js ["hello"])
+       (is (= (-> (h/render-inline #js ["hello"])
+                  (h/strip-attrs #{::ui/actions}))
               [::ui/vector
                {:dataspex.ui/prefix "#js"}
                [::ui/string "hello"]]))))
@@ -246,7 +251,8 @@
                 [::ui/string "There"]]]))))
 
   (testing "Renders inline atom"
-    (is (= (h/render-inline (atom {}))
+    (is (= (-> (h/render-inline (atom {}))
+               (h/strip-attrs #{:dataspex.ui/actions}))
            [::ui/vector {::ui/prefix "#atom"}
             [::ui/map]]))))
 
@@ -552,7 +558,8 @@
            [::ui/source [::ui/symbol 'sym/bol]])))
 
   (testing "Renders vector"
-    (is (= (h/render-source {:dataspex/path [:fruits]} ["Apples" "Bananas"])
+    (is (= (-> (h/render-source ["Apples" "Bananas"])
+               h/strip-attrs)
            [::ui/source
             [::ui/vector
              [::ui/string "Apples"]
@@ -580,7 +587,8 @@
             "Kiwi" "Litchi" "Durian"])))
 
   (testing "Renders list"
-    (is (= (h/render-source (list "Apples" "Bananas"))
+    (is (= (-> (h/render-source (list "Apples" "Bananas"))
+               h/strip-attrs)
            [::ui/source
             [::ui/list
              [::ui/string "Apples"]
@@ -608,7 +616,8 @@
             "Kiwi" "Litchi" "Durian"])))
 
   (testing "Renders seq"
-    (is (= (h/render-source (map identity '("Apples" "Bananas")))
+    (is (= (-> (h/render-source (map identity '("Apples" "Bananas")))
+               h/strip-attrs)
            [::ui/source
             [::ui/list
              [::ui/string "Apples"]
@@ -649,7 +658,8 @@
            ["2 more" "2" "3" "4" "1000+ more"])))
 
   (testing "Renders set"
-    (is (= (h/render-source #{"Apples" "Bananas"})
+    (is (= (-> (h/render-source #{"Apples" "Bananas"})
+               h/strip-attrs)
            [::ui/source
             [::ui/set
              [::ui/string "Apples"]
@@ -677,8 +687,9 @@
             "Litchi" "Orange" "Pear"])))
 
   (testing "Renders atom source"
-    (is (= (h/render-source
-            (atom {:name "Dataspex"}))
+    (is (= (-> (atom {:name "Dataspex"})
+               h/render-source
+               (h/strip-attrs #{::ui/actions}))
            [::ui/source
             [::ui/vector
              {::ui/prefix "#atom"}
