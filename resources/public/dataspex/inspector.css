@@ -592,3 +592,7 @@ a.clickable:hover,
 .panel + .panel {
   margin-top: 3em;
 }
+
+.panel > .source {
+  padding: 2em 2em 0;
+}
