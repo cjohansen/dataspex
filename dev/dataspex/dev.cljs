@@ -66,7 +66,7 @@
  client
  (fn [actions]
    (prn 'Actions actions)
-   (actions/handle-actions store actions)))
+   (actions/act! store actions)))
 
 (defn dark-mode? []
   (.-matches (js/window.matchMedia "(prefers-color-scheme: dark)")))

@@ -13,12 +13,12 @@
            {:k "V"
             :o 12}))))
 
-(deftest handle-actions-test
+(deftest act!-test
   (testing "Updates store once with assoc-in*"
     (is (= (let [store (atom {})
                  res (atom [])]
              (add-watch store ::remember #(swap! res conj %4))
-             (actions/handle-actions store
+             (actions/act! store
                [[::actions/assoc-in [:path-1] "Val 1"]
                 [::actions/assoc-in [:path-2] "Val 2"]])
              @res)
@@ -27,14 +27,14 @@
 
   (testing "Uninspects value"
     (is (= (let [store (atom {"Store" {:val 42}})]
-             (actions/handle-actions store
+             (actions/act! store
                [[::actions/uninspect "Store"]])
              @store)
            {}))))
 
 (deftest inspect-revision-test
   (testing "Inspects revision of other value"
-    (is (= (actions/handle-action
+    (is (= (actions/plan
             {"Store"
              {:rev 2
               :val {:my "New data"}
@@ -44,7 +44,7 @@
                         {:created-at #inst "2025-04-16T16:19:58"
                          :rev 1
                          :val {:my "Data"}}]}}
-            [::actions/inspect-revision "Store" 1])
+            [[::actions/inspect-revision "Store" 1]])
            [[:effect/inspect "Store@18:19:58"
              nil
              {:my "Data"}

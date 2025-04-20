@@ -3,7 +3,7 @@
             [dataspex.inspector :as inspector]
             [dataspex.time :as time]))
 
-(defn to-clipboard [#?(:cljs text :clj _)]
+(defn copy-to-clipboard [#?(:cljs text :clj _)]
   #?(:cljs
      (let [text-area (js/document.createElement "textarea")]
        (set! (.-textContent text-area) text)
@@ -13,7 +13,7 @@
        (.blur text-area)
        (js/document.body.removeChild text-area))))
 
-(defn handle-action [state [action & args]]
+(defn action->effects [state [action & args]]
   (case action
     ::assoc-in
     [(into [:effect/assoc-in] args)]
@@ -42,28 +42,44 @@
   (reduce (fn [m [path v]]
             (assoc-in m path v)) m kvs))
 
-(defn process-effects [store effects]
-  (case (ffirst effects)
+(defn execute-batched-effect! [store {:keys [effect args]}]
+  (case effect
     :effect/assoc-in
-    (swap! store assoc-in* (mapv #(drop 1 %) effects))
+    (swap! store assoc-in* args)
 
     :effect/copy
-    (doseq [[_ text] effects]
-      (to-clipboard text))
+    (doseq [[text] args]
+      (copy-to-clipboard text))
 
     :effect/inspect
-    (doseq [[_ label current value opts] effects]
+    (doseq [[label current value opts] args]
       (->> (inspector/inspect-val current value opts)
            (swap! store assoc label)))
 
     :effect/uninspect
-    (doseq [[_ label] effects]
+    (doseq [[label] args]
       (inspector/uninspect store label))
 
-    (println "Unknown effect" effects)))
+    (println "Unknown effect" effect args)))
 
-(defn ^{:indent 1} handle-actions [store actions]
-  (let [state @store]
-    (->> (mapcat #(handle-action state %) actions)
-         (group-by first)
-         (run! #(process-effects store (second %))))))
+(defn batch-effects [effects]
+  (->> (group-by first effects)
+       (mapv
+        (fn [[effect xs]]
+          {:effect effect
+           :args (mapv #(drop 1 %) xs)}))))
+
+(defn ^:export execute-sequentially [store effects]
+  (doseq [[effect & args] effects]
+    (execute-batched-effect! store {:effect effect :args [args]})))
+
+(defn ^:export execute-batched! [store effects]
+  (->> (batch-effects effects)
+       (run! #(execute-batched-effect! store %))))
+
+(defn plan [state actions]
+  (mapcat #(action->effects state %) actions))
+
+(defn ^{:indent 1} act! [store actions]
+  (->> (plan @store actions)
+       (execute-batched! store)))
