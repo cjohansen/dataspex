@@ -97,7 +97,7 @@
   (render-collection "(" ")" attrs elements))
 
 (defalias map [attrs elements]
-  [:span attrs
+  [:span (actions->click-handler attrs)
    [:code.code.strong
     (str (when-let [prefix (::prefix attrs)]
            (str prefix " "))) "{"]
