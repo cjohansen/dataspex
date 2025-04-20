@@ -6,6 +6,11 @@
    :modules {:main {:init-fn dataspex.dev/main}}
    :dev {:output-dir "resources/public/app"}}
 
+  :remote-inspector
+  {:target :browser
+   :modules {:inspector {:init-fn dataspex.remote-inspector/main}}
+   :dev {:output-dir "resources/public/dataspex"}}
+
   :portfolio
   {:target :browser
    :modules {:main {:init-fn dataspex.scenes/main}}
