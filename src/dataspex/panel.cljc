@@ -175,3 +175,10 @@
             (-> (render-data data opt)
                 (possibly-scroll opt))
             pagination]))))))
+
+(defn render-inspector [state]
+  (some->> (keys state)
+           (filterv string?)
+           sort
+           (mapv #(render-panel state %))
+           (into [:div])))

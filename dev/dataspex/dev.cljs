@@ -76,13 +76,7 @@
     (.add (.-classList js/document.documentElement) "dark")))
 
 (defn render [state]
-  (dp/render
-   client
-   (->> (keys state)
-        (filter string?)
-        sort
-        (mapv #(panel/render-panel state %))
-        (into [:div]))))
+  (dp/render client (panel/render-inspector state)))
 
 (inspector/inspect store "App state" (assoc app-state :app/title "Movie Explorer!"))
 (inspector/inspect store "DB" demo-data/conn)
