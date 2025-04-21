@@ -26,9 +26,10 @@
   --la-palma: #25a711;
 }
 
-:root, .light {
+:root, .light, .dark .light {
   background: var(--white);
   color: var(--mine-shaft);
+  --fg: var(--mine-shaft);
   --subtle-color: var(--dove-gray);
   --code-background: var(--gallery);
   --code-text-shadow-color: var(--white);
@@ -56,6 +57,7 @@
   --navbar-border: var(--selago);
   --toolbar-bg: var(--wild-sand);
   --active-tab-border: var(--malibu);
+  --tab-fg: var(--fg);
   --tab-hover-bg: var(--mercury);
   --code-bg: var(--wild-sand);
   --disabled-icon-button-color: var(--dusty);
@@ -73,6 +75,7 @@
 .dark {
   background: var(--woodsmoke);
   color: var(--mercury);
+  --fg: var(--mercury);
   --subtle-color: var(--selago);
   --code-background: var(--mine-shaft);
   --code-text-shadow-color: var(--black);
@@ -126,7 +129,7 @@ html {
 }
 
 .dark button {
-  color: var(--mercury);
+  color: var(--fg);
 }
 
 button {
@@ -589,8 +592,8 @@ a.clickable:hover,
 
 /* Panels */
 
-.panel + .panel {
-  margin-top: 3em;
+.panel {
+  padding-bottom: 3em;
 }
 
 .panel > .source {

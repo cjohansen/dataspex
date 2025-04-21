@@ -9,6 +9,11 @@
 (defn prefers-dark-mode? []
   (.-matches (js/window.matchMedia "(prefers-color-scheme: dark)")))
 
+(defn get-preferred-theme []
+  (if (prefers-dark-mode?)
+    :dark
+    :light))
+
 (defn set-dispatch! [f]
   (r/set-dispatch!
    (fn [{:replicant/keys [^js dom-event]} actions]
@@ -20,7 +25,3 @@
 
 (defn render [hiccup]
   (r/render js/document.body hiccup))
-
-(defn init-element [el]
-  (when (prefers-dark-mode?)
-    (.add (.-classList el) "dark")))

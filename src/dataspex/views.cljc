@@ -40,6 +40,7 @@
 (defn get-view-options [state inspectee]
   (let [inspector-state (get state inspectee)]
     (merge {:dataspex/inspectee inspectee}
+           (select-keys state [:dataspex/theme])
            (select-keys inspector-state
                         (->> (keys inspector-state)
                              (filter (comp #{"dataspex"} namespace)))))))

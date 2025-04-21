@@ -20,12 +20,27 @@
              [::ui/tab {::ui/actions [[::actions/assoc-in ["Store" :dataspex/activity] panel/audit]]}
               "Audit"]]
             [::ui/button-bar
+             [::ui/button {::ui/title "Switch to light mode"
+                           ::ui/actions [[::actions/assoc-in ["Store" :dataspex/theme] :light]]}
+              [::icons/sun]]
              [::ui/button {::ui/title "Minimize"
                            ::ui/actions [[::actions/assoc-in ["Store" :dataspex/render?] false]]}
               [::icons/arrows-in-simple]]
              [::ui/button {::ui/title "Close"
                            ::ui/actions [[::actions/uninspect "Store"]]}
               [::icons/x]]]])))
+
+  (testing "Offers dark mode when currently in light mode"
+    (is (= (->> (panel/render-title-bar
+                 {:dataspex/path ["Store"]
+                  :dataspex/inspectee "Store"
+                  :dataspex/theme :light})
+                (lookup/select-one [::ui/button-bar ":first-child"]))
+           [::ui/button
+            {::ui/title "Switch to dark mode"
+             ::ui/actions
+             [[::actions/assoc-in ["Store" :dataspex/theme] :dark]]}
+            [::icons/moon]])))
 
   (testing "Cannot audit value that isn't auditable"
     (is (= (->> (panel/render-title-bar
@@ -42,10 +57,10 @@
                   :dataspex/inspectee "Store@12:27:06"
                   :dataspex/activity panel/audit})
                 (lookup/select ::ui/tab))
-           [[:dataspex.ui/tab {:class #{"strong"}} "Store@12:27:06"]
-            [:dataspex.ui/tab {::ui/actions [[::actions/assoc-in ["Store@12:27:06" :dataspex/activity] panel/browse]]}
+           [[::ui/tab {:class #{"strong"}} "Store@12:27:06"]
+            [::ui/tab {::ui/actions [[::actions/assoc-in ["Store@12:27:06" :dataspex/activity] panel/browse]]}
              "Browse"]
-            [:dataspex.ui/tab {::ui/selected? true} "Audit"]])))
+            [::ui/tab {::ui/selected? true} "Audit"]])))
 
   (testing "Renders minimized title bar"
     (is (= (panel/render-title-bar
@@ -238,4 +253,16 @@
                          :val {}
                          :history [{:rev 1 :val {}}]}}
                "Store")
-              (lookup/select ::ui/card-list))))))
+              (lookup/select ::ui/card-list)))))
+
+  (testing "Renders panel with selected theme"
+    (is (contains?
+         (->> (panel/render-panel
+               {"Store" {:dataspex/path []
+                         :dataspex/inspectee "Store"
+                         :dataspex/theme :dark}}
+               "Store")
+              (lookup/select-one [:div.panel])
+              lookup/attrs
+              :class)
+         "dark"))))

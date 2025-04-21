@@ -48,3 +48,9 @@
 
 (defalias caret-right [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/caret-right)))
+
+(defalias sun [attrs _]
+  (render-icon attrs (icons/icon :phosphor.regular/sun)))
+
+(defalias moon [attrs _]
+  (render-icon attrs (icons/icon :phosphor.regular/moon)))

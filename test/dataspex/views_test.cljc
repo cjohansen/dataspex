@@ -29,6 +29,14 @@
             :dataspex/sorting {[:users] {:key :user/id}}
             :dataspex/folding {[:users :user/friends] {:folded? false}}})))
 
+  (testing "Uses default theme"
+    (is (= (-> (views/get-view-options
+                {"Store" {:dataspex/path [:users]}
+                 :dataspex/theme :dark}
+                "Store")
+               :dataspex/theme)
+           :dark)))
+
   (testing "Ignores technical data"
     (is (= (let [dataspex-store (atom {})]
              (with-redefs [time/now (constantly #inst "2025-04-16T16:19:58")]

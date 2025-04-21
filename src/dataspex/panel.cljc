@@ -21,8 +21,16 @@
      {::ui/actions [[::actions/assoc-in [inspectee :dataspex/activity] tab-activity]]})
    (str/capitalize (name tab-activity))])
 
+(def other-theme
+  {:light :dark
+   :dark :light})
+
+(defn get-theme [opt]
+  (or (:dataspex/theme opt) :dark))
+
 (defn render-title-bar [{:dataspex/keys [inspectee] :as opt}]
-  (let [rendering? (render? opt)]
+  (let [rendering? (render? opt)
+        theme (get-theme opt)]
     [::ui/toolbar
      (cond-> [::ui/tabs [::ui/tab.strong inspectee]]
        rendering?
@@ -30,17 +38,26 @@
 
        (and rendering? (get opt :dataspex/auditable? true))
        (conj (render-tab opt audit)))
-     [::ui/button-bar
-      (if rendering?
-        [::ui/button {::ui/title "Minimize"
-                      ::ui/actions [[::actions/assoc-in [inspectee :dataspex/render?] false]]}
-         [::icons/arrows-in-simple]]
-        [::ui/button {::ui/title "Maximize"
-                      ::ui/actions [[::actions/assoc-in [inspectee :dataspex/render?] true]]}
-         [::icons/arrows-out-simple]])
-      [::ui/button {::ui/title "Close"
-                    ::ui/actions [[::actions/uninspect inspectee]]}
-       [::icons/x]]]]))
+     (cond-> [::ui/button-bar]
+       rendering? (conj [::ui/button
+                         {::ui/title (str "Switch to " (name (other-theme theme)) " mode")
+                          ::ui/actions [[::actions/assoc-in [inspectee :dataspex/theme]
+                                         (other-theme theme)]]}
+                         (if (= theme :light)
+                           [::icons/moon]
+                           [::icons/sun])])
+
+       :then
+       (into [(if rendering?
+                [::ui/button {::ui/title "Minimize"
+                              ::ui/actions [[::actions/assoc-in [inspectee :dataspex/render?] false]]}
+                 [::icons/arrows-in-simple]]
+                [::ui/button {::ui/title "Maximize"
+                              ::ui/actions [[::actions/assoc-in [inspectee :dataspex/render?] true]]}
+                 [::icons/arrows-out-simple]])
+              [::ui/button {::ui/title "Close"
+                            ::ui/actions [[::actions/uninspect inspectee]]}
+               [::icons/x]]]))]))
 
 (def views
   [{:view views/dictionary
@@ -157,7 +174,8 @@
 (defn render-panel [state label]
   (let [opt (views/get-view-options state label)]
     (into
-     [:div.panel (render-title-bar opt)]
+     [:div.panel {:class (name (get-theme opt))}
+      (render-title-bar opt)]
      (when (render? opt)
        (if (= audit (:dataspex/activity opt))
          [(-> (get state label)
