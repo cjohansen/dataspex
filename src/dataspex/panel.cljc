@@ -102,7 +102,7 @@
   (let [n (count path)
         opt (assoc opt
                    :dataspex/view views/inline
-                   :dataspex/summarize-above-w 20)
+                   :dataspex/summarize-above-w 40)
         path-elements (->> (butlast path)
                            (reduce
                             (fn [{:keys [curr res]} e]
