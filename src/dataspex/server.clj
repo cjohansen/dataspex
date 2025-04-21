@@ -1,15 +1,55 @@
 (ns dataspex.server
-  (:require [dataspex.actions :as actions]
+  (:require [clojure.walk :as walk]
+            [cognitect.transit :as transit]
+            [dataspex.actions :as actions]
+            [dataspex.inspector :as inspector]
             [dataspex.panel :as panel]
+            [dataspex.protocols :as dp]
             [ring.adapter.jetty :as jetty]
             [ring.core.protocols :as protocols]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.util.response :as response])
-  (:import (java.nio.charset StandardCharsets)))
+  (:import (java.io ByteArrayInputStream ByteArrayOutputStream)
+           (java.nio.charset StandardCharsets)))
+
+(defn generate-transit [data]
+  (let [out (ByteArrayOutputStream.)]
+    (transit/write (transit/writer out :json) data)
+    (.toString out)))
+
+(defn parse-transit [s]
+  (let [in (ByteArrayInputStream. (.getBytes s StandardCharsets/UTF_8))
+        reader (transit/reader in :json)]
+    (transit/read reader)))
+
+(def path-cache (atom {}))
+
+(defn strip-opaque-keys [data]
+  (walk/postwalk
+   (fn [x]
+     (if (or (satisfies? dp/IKeyLookup x)
+             (record? x))
+       (let [id (hash x)]
+         (swap! path-cache assoc id x)
+         [:dataspex/key id])
+       x))
+   data))
+
+(defn revive-keys [data]
+  (walk/postwalk
+   (fn [x]
+     (if (and (vector? x) (= :dataspex/key (first x)))
+       (get @path-cache (second x))
+       x))
+   data))
 
 (defn write-state [store id out state]
   (try
-    (.write out (-> (str "data: " (pr-str (panel/render-inspector state)) "\n\n")
+    (.write out (-> (str "data: "
+                         (->> (panel/render-inspector state)
+                              strip-opaque-keys
+                              generate-transit)
+                         "\n\n")
                     (.getBytes StandardCharsets/UTF_8)))
     (.flush out)
     (catch java.io.IOException _
@@ -30,12 +70,13 @@
                 (write-state store id out @store))))}))
 
 (defn process-actions [respond req]
-  (let [effects (->> (read-string (slurp (:body req)))
+  (let [effects (->> (parse-transit (slurp (:body req)))
+                     revive-keys
                      (actions/plan @(:store req)))]
     (->> (remove (comp #{:effect/copy} first) effects)
          (actions/execute-batched! (:store req)))
     (respond {:status 200
-              :body (pr-str (filterv (comp #{:effect/copy} first) effects))})))
+              :body (generate-transit (filterv (comp #{:effect/copy} first) effects))})))
 
 (defn app [req respond _raise]
   (cond
@@ -74,6 +115,8 @@
   (inspector/inspect store "Map" {:hello "World!"
                                   :runtime "JVM, baby!"
                                   :numbers (range 1500)})
+
+  (inspector/inspect store "Bob" dataspex.datomic/bob)
 
   (swap! store update :num (fnil inc 0))
 

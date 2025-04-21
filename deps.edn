@@ -5,6 +5,9 @@
   {:extra-paths ["dev" "test" "dev-resources" "portfolio"]
    :extra-deps
    {org.clojure/clojure {:mvn/version "1.12.0"}
+    com.cognitect/transit-clj {:mvn/version "1.0.333"}
+    com.cognitect/transit-cljs {:mvn/version "0.8.280"}
+    com.datomic/peer {:mvn/version "1.0.6726"}
     thheller/shadow-cljs {:mvn/version "2.28.23"}
     no.cjohansen/lookup {:mvn/version "2025.04.12"}
     no.cjohansen/phosphor-clj {:mvn/version "2025.04.16"}
