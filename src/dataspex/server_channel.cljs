@@ -1,5 +1,6 @@
 (ns dataspex.server-channel
-  (:require [dataspex.render-client :as rc]))
+  (:require [dataspex.codec :as codec]
+            [dataspex.render-client :as rc]))
 
 (defn connect-event-source [host render]
   (let [event-source (js/EventSource. (str host "/renders"))]
@@ -7,7 +8,7 @@
      event-source "message"
      (fn [e]
        (println "Render")
-       (render (rc/parse-string (.-data e)))))
+       (render (codec/parse-string (.-data e)))))
 
     (.addEventListener
      event-source "error"
@@ -18,9 +19,9 @@
   (-> (js/fetch (str host "/actions")
                 (clj->js {:method "POST"
                           :headers {"Content-Type" "application/edn"}
-                          :body (rc/generate-string actions)}))
+                          :body (codec/generate-string actions)}))
       (.then (fn [res] (.text res)))
-      (.then (fn [text] (rc/parse-string text)))))
+      (.then (fn [text] (codec/parse-string text)))))
 
 (defrecord ServerChannel [host]
   rc/HostChannel

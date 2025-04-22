@@ -1,43 +1,16 @@
 (ns dataspex.server
-  (:require [clojure.walk :as walk]
-            [dataspex.actions :as actions]
+  (:require [dataspex.codec :as codec]
             [dataspex.inspector :as inspector]
-            [dataspex.panel :as panel]
-            [dataspex.protocols :as dp]
+            [dataspex.render-host :as rh]
             [ring.adapter.jetty :as jetty]
             [ring.core.protocols :as protocols]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.util.response :as response])
   (:import (java.nio.charset StandardCharsets)))
 
-(def path-cache (atom {}))
-
-(defn strip-opaque-keys [data]
-  (walk/postwalk
-   (fn [x]
-     (if (or (satisfies? dp/IKeyLookup x)
-             (record? x))
-       (let [id (hash x)]
-         (swap! path-cache assoc id x)
-         [:dataspex/key id])
-       x))
-   data))
-
-(defn revive-keys [data]
-  (walk/postwalk
-   (fn [x]
-     (if (and (vector? x) (= :dataspex/key (first x)))
-       (get @path-cache (second x))
-       x))
-   data))
-
 (defn write-state [store id out state]
   (try
-    (.write out (-> (str "data: "
-                         (->> (panel/render-inspector state)
-                              strip-opaque-keys
-                              pr-str)
-                         "\n\n")
+    (.write out (-> (str "data: " (codec/generate-string (rh/render-inspector state)) "\n\n")
                     (.getBytes StandardCharsets/UTF_8)))
     (.flush out)
     (catch java.io.IOException _
@@ -58,13 +31,11 @@
                 (write-state store id out @store))))}))
 
 (defn process-actions [req]
-  (let [effects (->> (read-string (slurp (:body req)))
-                     revive-keys
-                     (actions/plan @(:store req)))]
-    (->> (remove (comp #{:effect/copy} first) effects)
-         (actions/execute-batched! (:store req)))
-    {:status 200
-     :body (pr-str (filterv (comp #{:effect/copy} first) effects))}))
+  {:status 200
+   :body (->> (slurp (:body req))
+              codec/parse-string
+              (rh/process-actions (:store req))
+              codec/generate-string)})
 
 (defn app [req respond _raise]
   (cond

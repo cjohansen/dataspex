@@ -1,6 +1,5 @@
 (ns dataspex.render-client
-  (:require [cljs.reader :as reader]
-            [dataspex.actions :as actions]
+  (:require [dataspex.actions :as actions]
             [dataspex.icons :as icons]
             [dataspex.ui :as ui]
             [replicant.dom :as r]))
@@ -11,12 +10,6 @@
 (defprotocol HostChannel
   (initialize! [host-channel render-f])
   (process-actions [host-channel actions]))
-
-(defn parse-string [data-string]
-  (reader/read-string data-string))
-
-(defn generate-string [data]
-  (pr-str data))
 
 (defn prefers-dark-mode? []
   (.-matches (js/window.matchMedia "(prefers-color-scheme: dark)")))
