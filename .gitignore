@@ -2,6 +2,9 @@
 .cpcache
 .lsp
 .shadow-cljs
+/browser-extension/extension.js
+/browser-extension/inspector.css
+/browser-extension/manifest.edn
 node_modules
 dev-resources/public/portfolio/
 /out/

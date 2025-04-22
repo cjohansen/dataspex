@@ -11,6 +11,12 @@
    :modules {:inspector {:init-fn dataspex.remote-inspector/main}}
    :dev {:output-dir "resources/public/dataspex"}}
 
+  :browser-extension
+  {:target :browser
+   :modules {:extension {:init-fn dataspex.browser-extension/main}}
+   :dev {:output-dir "browser-extension"}
+   :release {:output-dir "browser-extension"}}
+
   :portfolio
   {:target :browser
    :modules {:main {:init-fn dataspex.scenes/main}}
