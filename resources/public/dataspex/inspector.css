@@ -123,9 +123,13 @@ html {
   font-family: helvetica neue, lucida grande, sans-serif;
 }
 
+body {
+  font-size: 0.8rem;
+}
+
 .code, [data-type], .source {
   font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .dark button {
