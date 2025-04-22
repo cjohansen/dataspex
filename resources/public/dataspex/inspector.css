@@ -600,6 +600,10 @@ a.clickable:hover,
   padding-bottom: 3em;
 }
 
+.panel[data-folded=folded] {
+  padding-bottom: 0;
+}
+
 .panel > .source {
   padding: 2em 2em 0;
 }

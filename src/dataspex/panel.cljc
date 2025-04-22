@@ -172,11 +172,13 @@
                          :overflow-y "scroll"}}])))
 
 (defn render-panel [state label]
-  (let [opt (views/get-view-options state label)]
+  (let [opt (views/get-view-options state label)
+        rendering? (render? opt)]
     (into
-     [:div.panel {:class (name (get-theme opt))}
+     [:div.panel (cond-> {:class (name (get-theme opt))}
+                   (not rendering?) (assoc :data-folded "folded"))
       (render-title-bar opt)]
-     (when (render? opt)
+     (when rendering?
        (if (= audit (:dataspex/activity opt))
          [(-> (get state label)
               (audit-log/render-log opt)
