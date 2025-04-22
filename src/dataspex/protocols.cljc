@@ -46,8 +46,3 @@
 
 (defprotocol IRenderDiff
   (render-diff [self diff]))
-
-(defprotocol IClient
-  :extend-via-metadata true
-  (set-action-handler ^{:indent 1} [_ handler])
-  (render [_ hiccup]))

@@ -1,13 +1,12 @@
 (ns dataspex.dev
-  (:require [dataspex.actions :as actions]
-            [dataspex.client.local :as local-client]
+  (:require [dataspex.core :as dataspex]
             [dataspex.data :as data]
             [dataspex.datascript :as datascript]
             [dataspex.demo-data :as demo-data]
+            [dataspex.in-process-channel :as in-process-channel]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
-            [dataspex.panel :as panel]
-            [dataspex.protocols :as dp]))
+            [dataspex.render-client :as rc]))
 
 ::datascript/keep
 
@@ -57,34 +56,17 @@
            :raw-js-array (js/Array. 1 2 3 "four" true {:x 5})
            :raw-js-object (js-obj "a" 1 "b" (clj->js {:nested [1 2 3]}))}})
 
-(defonce client (local-client/create-client js/document.body))
 (defonce store (atom {}))
-
 (data/add-string-inspector! jwt/inspect-jwt)
-
-(dp/set-action-handler
- client
- (fn [actions]
-   (prn 'Actions actions)
-   (actions/act! store actions)))
-
-(defn dark-mode? []
-  (.-matches (js/window.matchMedia "(prefers-color-scheme: dark)")))
-
-(defonce set-color-scheme
-  (when (dark-mode?)
-    (.add (.-classList js/document.documentElement) "dark")))
-
-(defn render [state]
-  (dp/render client (panel/render-inspector state)))
-
-(inspector/inspect store "App state" (assoc app-state :app/title "Movie Explorer!"))
-(inspector/inspect store "DB" demo-data/conn)
 
 (defonce txes
   (demo-data/add-data demo-data/conn))
 
-(add-watch store ::render (fn [_ _ _ state] (render state)))
+(rc/start-render-client
+ {:channels {:process (in-process-channel/create-channel store)}})
 
 (defn ^:dev/after-load main []
   (swap! store assoc ::loaded (.getTime (js/Date.))))
+
+(inspector/inspect store "App state" (assoc app-state :stuff "Magnar"))
+(inspector/inspect store "DB" demo-data/conn)

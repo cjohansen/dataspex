@@ -1,6 +1,5 @@
 (ns dataspex.server
   (:require [clojure.walk :as walk]
-            [cognitect.transit :as transit]
             [dataspex.actions :as actions]
             [dataspex.inspector :as inspector]
             [dataspex.panel :as panel]
@@ -9,18 +8,7 @@
             [ring.core.protocols :as protocols]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.util.response :as response])
-  (:import (java.io ByteArrayInputStream ByteArrayOutputStream)
-           (java.nio.charset StandardCharsets)))
-
-(defn generate-transit [data]
-  (let [out (ByteArrayOutputStream.)]
-    (transit/write (transit/writer out :json) data)
-    (.toString out)))
-
-(defn parse-transit [s]
-  (let [in (ByteArrayInputStream. (.getBytes s StandardCharsets/UTF_8))
-        reader (transit/reader in :json)]
-    (transit/read reader)))
+  (:import (java.nio.charset StandardCharsets)))
 
 (def path-cache (atom {}))
 
@@ -48,7 +36,7 @@
     (.write out (-> (str "data: "
                          (->> (panel/render-inspector state)
                               strip-opaque-keys
-                              generate-transit)
+                              pr-str)
                          "\n\n")
                     (.getBytes StandardCharsets/UTF_8)))
     (.flush out)
@@ -69,34 +57,46 @@
                                       (write-state store id out new-state)))
                 (write-state store id out @store))))}))
 
-(defn process-actions [respond req]
-  (let [effects (->> (parse-transit (slurp (:body req)))
+(defn process-actions [req]
+  (let [effects (->> (read-string (slurp (:body req)))
                      revive-keys
                      (actions/plan @(:store req)))]
     (->> (remove (comp #{:effect/copy} first) effects)
          (actions/execute-batched! (:store req)))
-    (respond {:status 200
-              :body (generate-transit (filterv (comp #{:effect/copy} first) effects))})))
+    {:status 200
+     :body (pr-str (filterv (comp #{:effect/copy} first) effects))}))
 
 (defn app [req respond _raise]
   (cond
-    (= "/" (:uri req))
-    (respond (response/file-response "resources/public/dataspex/remote-inspector.html"))
-
-    (= "/renders" (:uri req))
+    (= "/jvm/renders" (:uri req))
     (events-handler respond (:store req))
 
-    (= "/actions" (:uri req))
-    (process-actions respond req)
-
     :else
-    (respond {:status 200
-              :body "Hello!"})))
+    (respond
+     (cond
+       (= "/" (:uri req))
+       (response/file-response "resources/public/dataspex/remote-inspector.html")
+
+       (= "/jvm/actions" (:uri req))
+       (process-actions req)))))
+
+(defn wrap-cors [handler]
+  (fn [req respond raise]
+    (let [respond-with-cors
+          (fn [res]
+            (-> res
+                (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
+                (assoc-in [:headers "Access-Control-Allow-Methods"] "GET, PUT, POST, DELETE, HEAD, OPTIONS")
+                respond))]
+      (if (= :options (:request-method req))
+        (respond-with-cors {:status 200})
+        (handler req respond-with-cors raise)))))
 
 (defn ^:export start-server [store & [{:keys [port]}]]
   (-> (fn [req respond raise]
         (app (assoc req :store store) respond raise))
       (wrap-resource "public")
+      (wrap-cors)
       (jetty/run-jetty
        {:port (or port 7117)
         :async? true
@@ -116,7 +116,13 @@
                                   :runtime "JVM, baby!"
                                   :numbers (range 1500)})
 
+  (inspector/inspect store "Map" {:greeting {:hello "World"}
+                                  :runtime "JVM, baby!"
+                                  :numbers (range 1500)})
+
   (inspector/inspect store "Bob" dataspex.datomic/bob)
+
+  (reset! store {})
 
   (swap! store update :num (fnil inc 0))
 
