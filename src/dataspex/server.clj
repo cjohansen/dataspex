@@ -63,40 +63,17 @@
         (respond-with-cors {:status 200})
         (handler req respond-with-cors raise)))))
 
+(def default-port 7117)
+
 (defn ^:export start-server [store & [{:keys [port]}]]
   (-> (fn [req respond raise]
         (app (assoc req :store store) respond raise))
       (wrap-resource "public")
       (wrap-cors)
       (jetty/run-jetty
-       {:port (or port 7117)
+       {:port (or port default-port)
         :async? true
         :join? false})))
 
 (defn ^:export stop-server [^org.eclipse.jetty.server.Server server]
   (.stop server))
-
-(comment
-
-  (def store (atom {}))
-  (def server (start-server store))
-
-  (require '[dataspex.inspector :as inspector])
-
-  (inspector/inspect store "Map" {:hello "World!"
-                                  :runtime "JVM, baby!"
-                                  :numbers (range 1500)})
-
-  (inspector/inspect store "Map" {:greeting {:hello "World"}
-                                  :runtime "JVM, baby!"
-                                  :numbers (range 1500)})
-
-  (inspector/inspect store "Bob" dataspex.datomic/bob)
-
-  (reset! store {})
-
-  (swap! store update :num (fnil inc 0))
-
-  (stop-server server)
-
-)
