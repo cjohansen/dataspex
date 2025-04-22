@@ -68,5 +68,8 @@
 (defn ^:dev/after-load main []
   (swap! store assoc ::loaded (.getTime (js/Date.))))
 
+(dataspex/inspect "App state" app-state)
+(dataspex/inspect "DB" demo-data/conn)
+
 (inspector/inspect store "App state" (assoc app-state :stuff "Magnar"))
 (inspector/inspect store "DB" demo-data/conn)
