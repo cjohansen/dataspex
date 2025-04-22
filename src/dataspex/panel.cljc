@@ -28,7 +28,7 @@
 (defn get-theme [opt]
   (or (:dataspex/theme opt) :dark))
 
-(defn render-title-bar [{:dataspex/keys [inspectee] :as opt}]
+(defn render-title-bar [{:keys [history]} {:dataspex/keys [inspectee] :as opt}]
   (let [rendering? (render? opt)
         theme (get-theme opt)]
     [::ui/toolbar
@@ -36,7 +36,7 @@
        rendering?
        (conj (render-tab opt browse))
 
-       (and rendering? (get opt :dataspex/auditable? true))
+       (and rendering? (get opt :dataspex/auditable? true) (< 1 (count (or history []))))
        (conj (render-tab opt audit)))
      (cond-> [::ui/button-bar]
        rendering? (conj [::ui/button
@@ -177,7 +177,7 @@
     (into
      [:div.panel (cond-> {:class (name (get-theme opt))}
                    (not rendering?) (assoc :data-folded "folded"))
-      (render-title-bar opt)]
+      (render-title-bar (get state label) opt)]
      (when rendering?
        (if (= audit (:dataspex/activity opt))
          [(-> (get state label)

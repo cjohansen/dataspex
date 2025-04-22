@@ -11,14 +11,13 @@
 (deftest render-title-bar
   (testing "Renders title bar"
     (is (= (panel/render-title-bar
+            {}
             {:dataspex/path ["Store"]
              :dataspex/inspectee "Store"})
            [::ui/toolbar
             [::ui/tabs
              [::ui/tab.strong "Store"]
-             [::ui/tab {::ui/selected? true} "Browse"]
-             [::ui/tab {::ui/actions [[::actions/assoc-in ["Store" :dataspex/activity] panel/audit]]}
-              "Audit"]]
+             [::ui/tab {::ui/selected? true} "Browse"]]
             [::ui/button-bar
              [::ui/button {::ui/title "Switch to light mode"
                            ::ui/actions [[::actions/assoc-in ["Store" :dataspex/theme] :light]]}
@@ -32,6 +31,7 @@
 
   (testing "Offers dark mode when currently in light mode"
     (is (= (->> (panel/render-title-bar
+                 {}
                  {:dataspex/path ["Store"]
                   :dataspex/inspectee "Store"
                   :dataspex/theme :light})
@@ -42,8 +42,21 @@
              [[::actions/assoc-in ["Store" :dataspex/theme] :dark]]}
             [::icons/moon]])))
 
+  (testing "Renders audit tab when there are more than one version"
+    (is (= (->> (panel/render-title-bar
+                 {:history [{} {}]}
+                 {:dataspex/path []
+                  :dataspex/inspectee "Store"})
+                (lookup/select ::ui/tab)
+                last)
+           [::ui/tab
+            {::ui/actions
+             [[::actions/assoc-in ["Store" :dataspex/activity] :dataspex.activity/audit]]}
+            "Audit"])))
+
   (testing "Cannot audit value that isn't auditable"
     (is (= (->> (panel/render-title-bar
+                 {}
                  {:dataspex/path []
                   :dataspex/inspectee "Store@12:27:06"
                   :dataspex/auditable? false})
@@ -53,6 +66,7 @@
 
   (testing "Selects audit tab when auditing"
     (is (= (->> (panel/render-title-bar
+                 {:history [{} {}]}
                  {:dataspex/path []
                   :dataspex/inspectee "Store@12:27:06"
                   :dataspex/activity panel/audit})
@@ -64,6 +78,7 @@
 
   (testing "Renders minimized title bar"
     (is (= (panel/render-title-bar
+            {}
             {:dataspex/inspectee "Store"
              :dataspex/render? false})
            [::ui/toolbar
@@ -241,7 +256,7 @@
                            :val {:data "Here"}}}
                  "Store")
                 (lookup/select [::ui/dictionary ::ui/string]))
-           [[:dataspex.ui/string "Here"]])))
+           [[::ui/string "Here"]])))
 
   (testing "Renders audit log"
     (is (not-empty
