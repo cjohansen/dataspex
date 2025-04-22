@@ -39,6 +39,10 @@
 (defn render-inspector [state]
   (strip-opaque-keys (panel/render-inspector state)))
 
+(defn tick [f]
+  #?(:cljs (js/requestAnimationFrame f)
+     :clj (f)))
+
 (defn ^{:indent 1} start-render-host [store {:keys [channels]}]
   (doseq [channel channels]
     (initialize!
@@ -48,6 +52,7 @@
   (add-watch
    store ::render
    (fn [_ _ _ new-state]
-     (let [hiccup (render-inspector new-state)]
-       (doseq [channel channels]
-         (render channel hiccup))))))
+     (tick
+      #(let [hiccup (render-inspector new-state)]
+         (doseq [channel channels]
+           (render channel hiccup)))))))
