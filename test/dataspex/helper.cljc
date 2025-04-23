@@ -62,7 +62,7 @@
             (constantly true))]
     (walk/postwalk
      (fn [x]
-       (if (and (hiccup/hiccup? x)
+       (if (and (data/hiccup? x)
                 (map? (second x))
                 (f (second x)))
          (into [(first x)] (drop 2 x))

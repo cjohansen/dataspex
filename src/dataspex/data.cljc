@@ -10,6 +10,11 @@
 (defn js-object? [#?(:cljs v :clj _)]
   #?(:cljs (and (not (array? v)) (object? v))))
 
+(defn hiccup? [data]
+  (and (vector? data)
+       (not (map-entry? data))
+       (keyword? (first data))))
+
 (def string-inspectors (atom []))
 
 (defn ^:export add-string-inspector!

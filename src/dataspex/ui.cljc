@@ -1,6 +1,6 @@
 (ns dataspex.ui
-  (:require [replicant.alias :refer [defalias]]
-            [replicant.hiccup :as hiccup])
+  (:require [dataspex.data :as data]
+            [replicant.alias :refer [defalias]])
   (:refer-clojure :exclude [keyword boolean symbol vector set map list]))
 
 (defn actions->click-handler [attrs]
@@ -112,7 +112,7 @@
      [:code.code [:strong prefix " "]])
    [:code.code.strong "["]
    (for [value values]
-     (let [actions (when (hiccup/hiccup? value)
+     (let [actions (when (data/hiccup? value)
                      (-> value second ::actions))]
        [(if actions :a.tuple-item.clickable :span.tuple-item)
         {:on {:click actions}}
@@ -129,7 +129,7 @@
    (let [last-idx (dec (count values))]
      (map-indexed
       (fn [idx value]
-        (let [actions (when (hiccup/hiccup? value)
+        (let [actions (when (data/hiccup? value)
                         (-> value second ::actions))]
           [(if actions :td.clickable :td)
            {:on {:click actions}
@@ -375,7 +375,7 @@
      :button.clickable.pill.pill-big
      :span.pill.pill-ph)
    (assoc attrs :on {:click actions})
-   (if (hiccup/hiccup? (first content))
+   (if (data/hiccup? (first content))
      content
      [:code.code content])])
 

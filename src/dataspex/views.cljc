@@ -31,10 +31,12 @@
     (not= :dataspex.activity/browse (:dataspex/activity opt))
     (conj [:dataspex.actions/assoc-in [(:dataspex/inspectee opt) :dataspex/activity] :dataspex.activity/browse])))
 
-(defn get-current-view [v {:dataspex/keys [path view default-view] :as opt}]
+(defn ^{:indent 1} get-current-view [v {:dataspex/keys [path view default-view] :as opt}]
   (or (get view path)
       (when (data/supports-view? v default-view opt)
         default-view)
+      (when (data/hiccup? v)
+        source)
       dictionary))
 
 (defn get-view-options [state inspectee]

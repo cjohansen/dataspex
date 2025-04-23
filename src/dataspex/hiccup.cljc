@@ -78,11 +78,6 @@
 (defn string-label [s]
   (StringLabel. s))
 
-(defn hiccup? [data]
-  (and (vector? data)
-       (not (map-entry? data))
-       (keyword? (first data))))
-
 (defn add-attr [hiccup k v]
   (if (map? (second hiccup))
     (assoc-in hiccup [1 k] v)

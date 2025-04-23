@@ -45,3 +45,38 @@
            {:dataspex/inspectee "Store"
             :dataspex/path []
             :dataspex/activity :dataspex.activity/browse}))))
+
+(deftest get-current-view
+  (testing "Defaults to dictionary"
+    (is (= (views/get-current-view {} {}) views/dictionary)))
+
+  (testing "Uses data's view"
+    (is (= (views/get-current-view {}
+             {:dataspex/view {[] views/source}
+              :dataspex/path []})
+           views/source)))
+
+  (testing "Uses default view"
+    (is (= (views/get-current-view {}
+             {:dataspex/default-view views/source
+              :dataspex/path []})
+           views/source)))
+
+  (testing "Prefers path specific view over default view"
+    (is (= (views/get-current-view {}
+             {:dataspex/default-view views/source
+              :dataspex/view {[:users] views/dictionary}
+              :dataspex/path [:users]})
+           views/dictionary)))
+
+  (testing "Does not use default view when not supported"
+    (is (= (views/get-current-view {}
+             {:dataspex/default-view views/table
+              :dataspex/path [:users]})
+           views/dictionary)))
+
+  (testing "Defaults to source view for hiccup"
+    (is (= (views/get-current-view [:h1 "Hello"]
+             {:dataspex/default-view views/table
+              :dataspex/path [:users]})
+           views/source))))
