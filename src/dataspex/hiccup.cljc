@@ -319,15 +319,15 @@
   (let [{:keys [folded? ident]} (get-in opt [:dataspex/folding (into path node-path)])]
     (if (and ident (= ident (get-ident v)))
       folded?
-      (when (or (hiccup? v)
-                (every? hiccup? v))
+      (when (or (data/hiccup? v)
+                (every? data/hiccup? v))
         (< folding-level 0)))))
 
 (declare render-hiccup-node)
 
 (defn render-hiccup-child [node opt path idx]
   (cond
-    (hiccup? node)
+    (data/hiccup? node)
     (let [node-path (conj path idx)]
       (if (folded? node opt node-path)
         [::ui/vector
@@ -410,7 +410,7 @@
 
 (defn render-source [data opt]
   (let [opt (assoc opt :dataspex/summarize-above-w -1)]
-    (if (hiccup? data)
+    (if (data/hiccup? data)
       [::ui/hiccup
        (if (satisfies? dp/IRenderHiccup data)
          (dp/render-hiccup data opt)
