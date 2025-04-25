@@ -830,6 +830,21 @@
               {:folded? true
                :ident [:main]}]]})))
 
+  (testing "Does not fold empty nodes"
+    (is (= (->> [:div]
+                (h/render-source {:dataspex/inspectee "Page hiccup"
+                                  :dataspex/path []}))
+           [::ui/hiccup
+            [::ui/vector
+             [::ui/hiccup-tag :div]]]))
+
+    (is (= (->> [:div [:h2]]
+                (h/render-source {:dataspex/inspectee "Page hiccup"
+                                  :dataspex/path []})
+                (lookup/select-one [::ui/vector ::ui/vector]))
+           [::ui/vector
+            [::ui/hiccup-tag :h2]])))
+
   (testing "Does not display explicitly expanded node when ident has changed"
     ;; Avoids associating state with the node solely on the basis of position,
     ;; which means we can avoid the most glaring cases of state leakage when the

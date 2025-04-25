@@ -226,8 +226,7 @@
          (count (str (first children)))))))
 
 (defn render-map-source [{::keys [prefix] :as attrs} map-entries indent]
-  (let [indent-s (indent-str (+ indent 1 (if prefix (inc (count prefix)) 0))
-                             )]
+  (let [indent-s (indent-str (+ indent 1 (if prefix (inc (count prefix)) 0)))]
     (into [:span attrs
            [::code.strong
             (when-let [prefix prefix]

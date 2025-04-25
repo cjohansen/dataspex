@@ -315,6 +315,10 @@
 (defn get-ident [hiccup]
   [(first hiccup)])
 
+(defn empty-node? [v]
+  (let [len (count v)]
+    (or (= 1 len) (and (= 2 len) (map? (second v))))))
+
 (defn folded? [v {:dataspex/keys [folding-level path] :as opt} node-path]
   (let [{:keys [folded? ident]} (get-in opt [:dataspex/folding (into path node-path)])]
     (if (and ident (= ident (get-ident v)))
@@ -329,7 +333,8 @@
   (cond
     (data/hiccup? node)
     (let [node-path (conj path idx)]
-      (if (folded? node opt node-path)
+      (if (and (not (empty-node? node))
+               (folded? node opt node-path))
         [::ui/vector
          {::ui/actions
           [(views/update-folding opt node-path
@@ -337,6 +342,7 @@
               :ident (get-ident node)})]}
          [::ui/hiccup-tag {:data-folded "true"} (first node)]
          [::ui/code "..."]]
+
         (render-hiccup-node node (update opt :dataspex/folding-level dec) node-path)))
 
     (list? node)
@@ -354,15 +360,17 @@
         [tag attrs children] (if (map? (:v (second xs)))
                                [(first xs) (second xs) (drop 2 xs)]
                                [(first xs) nil (next xs)])
-        folded? (folded? hiccup opt path)]
+        empty? (empty-node? hiccup)
+        folded? (and (not empty?) (folded? hiccup opt path))]
     (cond-> [::ui/vector
-             [::ui/hiccup-tag
-              {:data-folded (str folded?)
-               ::ui/actions
-               [(views/update-folding opt path
-                  {:folded? (not folded?)
-                   :ident (get-ident [(:v tag)])})]}
-              (:v tag)]]
+             (cond-> [::ui/hiccup-tag]
+               (not empty?)
+               (conj {:data-folded (str folded?)
+                      ::ui/actions
+                      [(views/update-folding opt path
+                         {:folded? (not folded?)
+                          :ident (get-ident [(:v tag)])})]})
+               :then (conj (:v tag)))]
       (and attrs (not folded?))
       (conj (cond-> (render-inline (:v attrs) opt)
               (< (bounded-size 21 (:v tag)) 20)
