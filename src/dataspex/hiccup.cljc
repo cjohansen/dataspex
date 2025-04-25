@@ -360,7 +360,7 @@
               {:data-folded (str folded?)
                ::ui/actions
                [(views/update-folding opt path
-                  {:folded? true
+                  {:folded? (not folded?)
                    :ident (get-ident [(:v tag)])})]}
               (:v tag)]]
       (and attrs (not folded?))

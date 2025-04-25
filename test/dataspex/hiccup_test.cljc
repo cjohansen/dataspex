@@ -744,7 +744,7 @@
                 (h/render-source {:dataspex/inspectee "Page hiccup"
                                   :dataspex/path []})
                 (lookup/select '[::ui/vector ::ui/vector ::ui/vector ::ui/vector])
-                (mapv (juxt lookup/text (comp ::ui/actions lookup/attrs))))
+                (mapv (juxt lookup/text (comp ::ui/actions lookup/attrs first lookup/children))))
            [[":section ..."
              [[::actions/assoc-in
                ["Page hiccup" :dataspex/folding [0 0 0 0]]
@@ -781,7 +781,7 @@
                ::ui/actions
                [[::actions/assoc-in
                  ["Page hiccup" :dataspex/folding [0]]
-                 {:folded? true
+                 {:folded? false
                   :ident [:div]}]]}
               :div]
              [::ui/code "..."]]])))
