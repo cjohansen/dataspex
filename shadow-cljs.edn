@@ -4,7 +4,8 @@
  {:app
   {:target :browser
    :modules {:main {:init-fn dataspex.dev/main}}
-   :dev {:output-dir "resources/public/app"}}
+   :dev {:output-dir "resources/public/app"}
+   :release {:output-dir "target"}}
 
   :remote-inspector
   {:target :browser
