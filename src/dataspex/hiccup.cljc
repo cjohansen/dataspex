@@ -315,12 +315,13 @@
 (defn get-ident [hiccup]
   [(first hiccup)])
 
-(defn unfolded? [v {:dataspex/keys [folding-level path] :as opt} node-path]
-  (or (< 0 folding-level)
-      (not (hiccup? v))
-      (every? #(not (hiccup? %)) v)
-      (let [{:keys [folded? ident]} (get-in opt [:dataspex/folding (into path node-path)])]
-        (and (false? folded?) (= ident (get-ident v))))))
+(defn folded? [v {:dataspex/keys [folding-level path] :as opt} node-path]
+  (let [{:keys [folded? ident]} (get-in opt [:dataspex/folding (into path node-path)])]
+    (if (and ident (= ident (get-ident v)))
+      folded?
+      (when (or (hiccup? v)
+                (every? hiccup? v))
+        (< folding-level 0)))))
 
 (declare render-hiccup-node)
 
@@ -328,15 +329,15 @@
   (cond
     (hiccup? node)
     (let [node-path (conj path idx)]
-      (if (unfolded? node opt node-path)
-        (render-hiccup-node node (update opt :dataspex/folding-level dec) node-path)
+      (if (folded? node opt node-path)
         [::ui/vector
          {::ui/actions
           [(views/update-folding opt node-path
              {:folded? false
               :ident (get-ident node)})]}
          [::ui/hiccup-tag {:data-folded "true"} (first node)]
-         [::ui/code "..."]]))
+         [::ui/code "..."]]
+        (render-hiccup-node node (update opt :dataspex/folding-level dec) node-path)))
 
     (list? node)
     (into
@@ -352,24 +353,28 @@
   (let [xs (data/get-indexed-entries hiccup opt)
         [tag attrs children] (if (map? (:v (second xs)))
                                [(first xs) (second xs) (drop 2 xs)]
-                               [(first xs) nil (next xs)])]
+                               [(first xs) nil (next xs)])
+        folded? (folded? hiccup opt path)]
     (cond-> [::ui/vector
              [::ui/hiccup-tag
-              {:data-folded "false"
+              {:data-folded (str folded?)
                ::ui/actions
                [(views/update-folding opt path
                   {:folded? true
                    :ident (get-ident [(:v tag)])})]}
               (:v tag)]]
-      attrs
+      (and attrs (not folded?))
       (conj (cond-> (render-inline (:v attrs) opt)
               (< (bounded-size 21 (:v tag)) 20)
               (add-attr ::ui/inline? true)))
 
-      (seq children)
+      (and (seq children) (not folded?))
       (into (map-indexed
              (fn [idx {:keys [v]}]
-               (render-hiccup-child v opt path idx)) children)))))
+               (render-hiccup-child v opt path idx)) children))
+
+      folded?
+      (conj [::ui/code "..."]))))
 
 (defn render-inline [data & [opt]]
   (if (satisfies? dp/IRenderInline data)

@@ -761,6 +761,51 @@
                {:folded? false
                 :ident [:main]}]]]])))
 
+  (testing "Explicitly collapses root hiccup node"
+    (is (= (->> [:div
+                 [:div
+                  [:div
+                   [:section [:h1 "Hello"]]
+                   [:section.text [:p "Aight?"]]
+                   [:main
+                    [:h2 "More stuff"]]]]]
+                (h/render-source {:dataspex/inspectee "Page hiccup"
+                                  :dataspex/path []
+                                  :dataspex/folding {[0]
+                                                     {:folded? true
+                                                      :ident [:div]}}}))
+           [::ui/hiccup
+            [::ui/vector
+             [::ui/hiccup-tag
+              {:data-folded "true"
+               ::ui/actions
+               [[::actions/assoc-in
+                 ["Page hiccup" :dataspex/folding [0]]
+                 {:folded? true
+                  :ident [:div]}]]}
+              :div]
+             [::ui/code "..."]]])))
+
+  (testing "Explicitly collapses hiccup node"
+    (is (= (->> [:div
+                 [:div
+                  [:div
+                   [:section [:h1 "Hello"]]
+                   [:section.text [:p "Aight?"]]
+                   [:main
+                    [:h2 "More stuff"]]]]]
+                (h/render-source {:dataspex/inspectee "Page hiccup"
+                                  :dataspex/path []
+                                  :dataspex/folding {[0 0]
+                                                     {:folded? true
+                                                      :ident [:div]}}})
+                (lookup/select '[::ui/vector ::ui/vector])
+                (mapv (juxt lookup/text (comp ::ui/actions lookup/attrs))))
+           [[":div ..."
+             [[:dataspex.actions/assoc-in
+               ["Page hiccup" :dataspex/folding [0 0]]
+               {:folded? false, :ident [:div]}]]]])))
+
   (testing "Displays explicitly expanded node"
     (is (= (->> [:div
                  [:div
@@ -773,18 +818,17 @@
                   :dataspex/folding {[:body 0 0 0 0]
                                      {:folded? false
                                       :ident [:main]}}})
-                (lookup/select '[::ui/vector ::ui/vector ::ui/vector ::ui/vector])
-                last)
-           [::ui/vector
-            [::ui/hiccup-tag
-             {:data-folded "false"
-              ::ui/actions
-              [[::actions/assoc-in
-                ["Page hiccup" :dataspex/folding [:body 0 0 0 0 0]]
-                {:folded? true
-                 :ident [:h2]}]]}
-             :h2]
-            [::ui/string "More stuff"]])))
+                (lookup/select '[:dataspex.ui/hiccup > ::ui/vector >
+                                 ::ui/vector > ::ui/vector > ::ui/vector >
+                                 :dataspex.ui/hiccup-tag])
+                last
+                lookup/attrs)
+           {:data-folded "false"
+            ::ui/actions
+            [[::actions/assoc-in
+              ["Page hiccup" :dataspex/folding [:body 0 0 0 0]]
+              {:folded? true
+               :ident [:main]}]]})))
 
   (testing "Does not display explicitly expanded node when ident has changed"
     ;; Avoids associating state with the node solely on the basis of position,
