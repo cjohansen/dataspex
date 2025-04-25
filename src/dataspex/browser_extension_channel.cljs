@@ -28,7 +28,7 @@
     (subscribe-to-messages render-f)
     (post-message {:event :extension-loaded}))
 
-  (process-actions [_ actions]
+  (process-actions [_ _ actions]
     (post-actions actions)))
 
 (defn create-channel []

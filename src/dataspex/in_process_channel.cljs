@@ -9,7 +9,7 @@
     (add-watch store ::render (fn [_ _ _ state]
                                 (render-f (panel/render-inspector state)))))
 
-  (process-actions [_ actions]
+  (process-actions [_ _ actions]
     (actions/act! store actions)
     (js/Promise.resolve [])))
 

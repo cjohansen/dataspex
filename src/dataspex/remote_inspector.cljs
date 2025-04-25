@@ -5,4 +5,5 @@
 (defn ^:export main []
   (rc/start-render-client
    {:channels
-    {:jvm (server-channel/create-channel "/jvm")}}))
+    {:jvm (server-channel/create-channel "/jvm")
+     :remotes (server-channel/create-channel "/relay")}}))

@@ -1,16 +1,19 @@
 (ns dataspex.core
   (:require [dataspex.data :as data]
-            [dataspex.in-process-host :as iph]
+            [dataspex.in-process-host :as in-process-host]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
+            [dataspex.remote-host :as remote-host]
             [dataspex.render-host :as rh]))
 
 (data/add-string-inspector! jwt/inspect-jwt)
 
-(defonce store (atom {}))
-
-(rh/start-render-host store
-  {:channels [(iph/create-channel)]})
+(defonce store
+  (let [store (atom {})]
+    (rh/start-render-host store
+      {:channels [(in-process-host/create-channel)
+                  (remote-host/create-channel "http://localhost:7117")]})
+    store))
 
 (defn ^:export inspect
   {:arglists '[[label x]

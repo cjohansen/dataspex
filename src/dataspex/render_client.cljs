@@ -9,7 +9,7 @@
 
 (defprotocol HostChannel
   (initialize! [host-channel render-f])
-  (process-actions [host-channel actions]))
+  (process-actions [host-channel node actions]))
 
 (defn prefers-dark-mode? []
   (.-matches (js/window.matchMedia "(prefers-color-scheme: dark)")))
@@ -35,7 +35,7 @@
      (let [channel (keyword (.getAttribute (.closest node "[data-channel]") "data-channel"))]
        (doseq [action actions]
          (apply prn channel action))
-       (-> (process-actions (get channels channel) actions)
+       (-> (process-actions (get channels channel) node actions)
            (.then execute-effects))))))
 
 (defn ensure-element [id]
@@ -57,4 +57,5 @@
     (set-dispatch! channels)
     (doseq [[id channel] channels]
       (initialize! channel #(render id %))
-      (process-actions channel [[:dataspex.actions/assoc-in [:dataspex/theme] theme]]))))
+      (->> [[:dataspex.actions/assoc-in [:dataspex/theme] theme]]
+           (process-actions channel js/document.documentElement)))))

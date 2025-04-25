@@ -15,21 +15,24 @@
      (fn [e]
        (js/console.error "EventSource error:" e)))))
 
-(defn post-actions [host actions]
-  (-> (js/fetch (str host "/actions")
-                (clj->js {:method "POST"
-                          :headers {"Content-Type" "application/edn"}
-                          :body (codec/generate-string actions)}))
-      (.then (fn [res] (.text res)))
-      (.then (fn [text] (codec/parse-string text)))))
+(defn post-actions [host node actions]
+  (let [host-id (some-> node
+                        (.closest "[data-host]")
+                        (.getAttribute "data-host"))]
+    (-> (js/fetch (str host (when host-id (str "/" host-id)) "/actions")
+                  (clj->js {:method "POST"
+                            :headers {"Content-Type" "application/edn"}
+                            :body (codec/generate-string actions)}))
+        (.then (fn [res] (.text res)))
+        (.then (fn [text] (codec/parse-string text))))))
 
 (defrecord ServerChannel [host]
   rc/HostChannel
   (initialize! [_ render-f]
     (connect-event-source host render-f))
 
-  (process-actions [_ actions]
-    (post-actions host actions)))
+  (process-actions [_ node actions]
+    (post-actions host node actions)))
 
 (defn create-channel [& [host]]
   (ServerChannel. host))
