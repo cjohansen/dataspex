@@ -74,16 +74,29 @@
     (d/transact! conn data)
     conn))
 
-(defn add-data [conn]
-  (d/transact! conn
-               [{:movie/id 104
-                 :movie/title "Flåklypa Grand Prix"
-                 :movie/year 1970}
-                {:db/id :db/current-tx
-                 :dataspex.audit/summary [:actions/add-movie "Flåklypa Grand Prix"]}])
+(defn later [f ms]
+  #?(:cljs (js/setTimeout f ms)
+     :clj (do
+            ms
+            (f))))
 
-  (d/transact! conn
-               [{:movie/id 105
-                 :movie/title "Fjolls til fjells"}
-                {:db/id :db/current-tx
-                 :dataspex.audit/summary [:actions/add-movie "Fjolls til fjells"]}]))
+(defn add-data [conn]
+  (later
+   (fn []
+     (d/transact! conn
+                  [{:movie/id 104
+                    :movie/title "Batman Begins"
+                    :movie/year 2005}
+                   {:db/id :db/current-tx
+                    :dataspex.audit/summary [:actions/add-movie "Batman Begins"]}]))
+   5000)
+
+  (later
+   (fn []
+     (d/transact! conn
+                  [{:movie/id 105
+                    :movie/title "The Dark Knight"
+                    :movie/year 2008}
+                   {:db/id :db/current-tx
+                    :dataspex.audit/summary [:actions/add-movie "The Dark Knight"]}]))
+   12000))
