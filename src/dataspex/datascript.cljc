@@ -5,15 +5,12 @@
             [datascript.core :as d]
             [datascript.db]
             [datascript.impl.entity]
-            [dataspex.data :as data]
+            [dataspex.datalog :as datalog]
             [dataspex.hiccup :as hiccup]
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
             [dataspex.views :as views])
   #?(:clj (:import (me.tonsky.persistent_sorted_set PersistentSortedSet))))
-
-(defprotocol IDatabaseLookup
-  (lookup-in-db [x db]))
 
 (defn get-datom-entries [[e a v t add?]]
   [{:k e, :v e}
@@ -33,71 +30,8 @@
        (mapv #(d/entity db %))
        set))
 
-(defn attr-sort-val [{:keys [rschema]} a]
-  [(if (contains? (:db/unique rschema) a)
-     0 1)
-   (if (contains? (:db.type/ref rschema) a)
-     1 0)
-   (if (contains? (:db.cardinality/many rschema) a)
-     1 0)
-   a])
-
-(defn find-reverse-refs [db e]
-  (->> (d/q '[:find ?a ?r
-              :in $ [?a ...] ?e
-              :where [?r ?a ?e]]
-            db (-> db :rschema :db.type/ref) (:db/id e))
-       (group-by first)
-       (sort-by #(attr-sort-val db (first %)))
-       (mapv
-        (fn [[a es]]
-          (let [attr (keyword (namespace a) (str "_" (name a)))]
-            {:k attr
-             :label attr
-             :v (set (mapv #(d/entity db (second %)) es))})))))
-
-(defn get-entity-entries [entity]
-  (let [db (d/entity-db entity)]
-    (into
-     (->> (keys entity)
-          (sort-by (partial attr-sort-val db))
-          (mapv (fn [k]
-                  {:k k
-                   :label k
-                   :v (get entity k)})))
-     (find-reverse-refs db entity))))
-
-(defn summarize-entity [e]
-  (let [ks (keys e)]
-    (or (when-let [ident (:db/ident e)]
-          ident)
-        (when-let [uniq (some (:db/unique (:rschema (d/entity-db e))) (keys e))]
-          (select-keys e [uniq]))
-        (when (< (count ks) 5)
-          (into {} e))
-        (select-keys e [:db/id]))))
-
-(defn nav-in-db [db path]
-  (loop [[p & ps] (reverse path)
-         rest-path ()]
-    (if (nil? p)
-      (let [[p & ps] path]
-        (data/nav-in
-         (if (satisfies? dp/IKeyLookup p)
-           (dp/lookup p db)
-           (get db p))
-         ps))
-      (if (satisfies? IDatabaseLookup p)
-        (data/nav-in (lookup-in-db p db) rest-path)
-        (recur ps (conj rest-path p))))))
-
 (defn get-last-tx [db]
   (d/entity db (:max-tx db)))
-
-(defn get-entity-k [coll db-id]
-  (if (map? coll)
-    (val (first (filterv (comp #{db-id} :db/id key) coll)))
-    (first (filterv (comp #{db-id} :db/id) coll))))
 
 (defn get-entities-by-attr [db attr]
   (->> (d/q '[:find [?e ...]
@@ -173,7 +107,7 @@
   (datafy [_]
     {:db/id id})
 
-  IDatabaseLookup
+  datalog/IDatabaseLookup
   (lookup-in-db [_ db]
     (d/entity db id)))
 
@@ -182,7 +116,7 @@
   (datafy [_]
     a)
 
-  IDatabaseLookup
+  datalog/IDatabaseLookup
   (lookup-in-db [_ db]
     (-> db :schema a)))
 
@@ -191,7 +125,7 @@
   (datafy [_]
     v)
 
-  IDatabaseLookup
+  datalog/IDatabaseLookup
   (lookup-in-db [_ db]
     (if (and (number? v) (-> db :rschema :db.type/ref a))
       (d/entity db v)
@@ -242,7 +176,7 @@
 (extend-type datascript.conn.Conn
   dp/INavigatable
   (nav-in [conn path]
-    (nav-in-db (d/db conn) path))
+    (datalog/nav-in-db (d/db conn) path))
 
   dp/IRenderInline
   (render-inline [conn _]
@@ -257,9 +191,22 @@
     (render-db-source (d/db conn) opt)))
 
 (extend-type datascript.db.DB
+  datalog/Database
+  (entity [db entity-ref]
+    (d/entity db entity-ref))
+
+  (get-attr-sort-val [{:keys [rschema]} a]
+    [(if (contains? (:db/unique rschema) a)
+       0 1)
+     (if (contains? (:db.type/ref rschema) a)
+       1 0)
+     (if (contains? (:db.cardinality/many rschema) a)
+       1 0)
+     a])
+
   dp/INavigatable
   (nav-in [db path]
-    (nav-in-db db path))
+    (datalog/nav-in-db db path))
 
   dp/IDiffable
   (->diffable [db]
@@ -305,41 +252,69 @@
       (render-index-dictionary pss opt)
       (hiccup/render-entries-dictionary pss (get-index-entries pss) opt))))
 
-(defrecord EntityKey [id summary]
-  p/Datafiable
-  (datafy [_]
-    summary)
-
-  dp/IKeyLookup
-  (lookup [_ coll]
-    (get-entity-k coll id))
-
-  IDatabaseLookup
-  (lookup-in-db [_ db]
-    (d/entity db id)))
-
-(defn make-entity-key [e]
-  (EntityKey. (:db/id e) (summarize-entity e)))
-
-(defn get-entity-primitives-map [entity]
-  (let [rschema (:rschema (d/entity-db entity))
-        unwanted (into (:db.type/ref rschema) (:db.cardinality/many rschema))]
-    (->> (keys entity)
-         (remove unwanted)
-         (select-keys entity))))
-
 (extend-type datascript.impl.entity.Entity
+  datalog/Entity
+  (entity-db [entity]
+    (d/entity-db entity))
+
+  (get-ref-attrs [e]
+    (->> (keys e)
+         (filterv (:db/unique (:rschema (d/entity-db e))))
+         not-empty))
+
+  (get-primitive-attrs [e]
+    (let [rschema (:rschema (d/entity-db e))
+          unwanted (into (:db.type/ref rschema) (:db.cardinality/many rschema))]
+      (->> (keys e)
+           (remove unwanted))))
+
+  (get-reverse-ref-attrs [entity]
+    (let [db (d/entity-db entity)]
+      (d/q '[:find [?a ...]
+             :in $ [?a ...] ?e
+             :where [?r ?a ?e]]
+           db (-> db :rschema :db.type/ref) (:db/id entity))))
+
   dp/IKey
   (to-key [e]
-    (make-entity-key e))
+    (datalog/make-entity-key e))
 
   dp/IRenderInline
   (render-inline [entity opt]
-    (let [entity-m (get-entity-primitives-map entity)]
-      (if (hiccup/summarize? entity-m opt)
-        (hiccup/render-inline (summarize-entity entity) opt)
-        (hiccup/render-inline entity-m opt))))
+    (datalog/render-inline-entity entity opt))
 
   dp/IRenderDictionary
   (render-dictionary [entity opt]
-    (hiccup/render-entries-dictionary entity (get-entity-entries entity) opt)))
+    (hiccup/render-entries-dictionary entity (datalog/get-entity-entries entity) opt)))
+
+(comment
+
+  (def conn (d/create-conn {:person/id {:db/unique :db.unique/identity}
+                            :person/friends {:db/valueType :db.type/ref
+                                             :db/cardinality :db.cardinality/many}}))
+
+  (d/transact! conn [{:person/id "bob"
+                      :person/name "Bob"
+                      :person/friends ["alice" "wendy"]}
+                     {:db/id "alice"
+                      :person/id "alice"
+                      :person/name "Alice"}
+                     {:db/id "wendy"
+                      :person/id "wendy"
+                      :person/name "Wendy"}])
+
+  (def db (d/db conn))
+
+  (datalog/get-primitive-attrs bob)
+  (def bob (datalog/entity db [:person/id "bob"]))
+  (def alice (datalog/entity db [:person/id "alice"]))
+
+  (satisfies? dp/IKeyLookup (datalog/make-entity-key bob))
+  (hash (datalog/make-entity-key bob))
+  (hash (datalog/make-entity-key bob))
+
+  (datalog/get-entity-entries bob)
+  (datalog/get-reverse-ref-attrs alice)
+
+  (datalog/find-reverse-refs db alice)
+)

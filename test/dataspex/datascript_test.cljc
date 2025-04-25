@@ -3,6 +3,7 @@
             [datascript.core :as d]
             [dataspex.actions :as-alias actions]
             [dataspex.data :as data]
+            [dataspex.datalog :as datalog]
             [dataspex.datascript :as datascript]
             [dataspex.diff :as diff]
             [dataspex.helper :as h :refer [with-conn]]
@@ -81,7 +82,7 @@
     (is (= (with-conn [conn schema]
              (d/transact! conn data)
              (->> [(datascript/->EntitiesByAttrKey :person/id)
-                   (datascript/->EntityKey 2 {})
+                   (datalog/->EntityKey 2 {})
                    :person/boss
                    :person/_boss]
                   (data/nav-in (d/db conn))
