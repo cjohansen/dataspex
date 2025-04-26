@@ -505,7 +505,7 @@
   (render-dictionary [s opt]
     (render-entries-dictionary s (data/get-set-entries s opt) opt)))
 
-(extend-type #?(:cljs cljs.core/Atom
+(extend-type #?(:cljs cljs.core/IAtom
                 :clj clojure.lang.IAtom)
   dp/IRenderInline
   (render-inline [r opt]
