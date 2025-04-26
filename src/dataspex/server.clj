@@ -76,10 +76,9 @@
         (events-handler respond (:relay-actions req) #(get-relayed-actions host-id %) {:stream-current? false})))))
 
 (defn app [req respond _raise]
-  (println (:request-method req) (:uri req))
   (cond
     (= "/jvm/renders" (:uri req))
-    (events-handler respond (:store req) rh/render-inspector)
+    (events-handler respond (:store req) #'rh/render-inspector)
 
     (str/starts-with? (:uri req) "/relay/")
     (relay-request req respond)
