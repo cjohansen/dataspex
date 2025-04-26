@@ -81,7 +81,7 @@
   (testing "Navigates complicated path"
     (is (= (with-conn [conn schema]
              (d/transact! conn data)
-             (->> [(datascript/->EntitiesByAttrKey :person/id)
+             (->> [(datalog/->EntitiesByAttrKey :person/id)
                    (datalog/->EntityKey 2 {})
                    :person/boss
                    :person/_boss]
@@ -145,23 +145,23 @@
            [::ui/inline-tuple {::ui/prefix "datom"}
             [::ui/number
              {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
-                             [:eavt (datascript/->EntityId 1)]]]}
+                             [:eavt (datalog/->EntityId 1)]]]}
              1]
             [::ui/keyword
              {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
-                             [:eavt (datascript/->Attr :person/id)]]]}
+                             [:eavt (datalog/->Attr :person/id)]]]}
              :person/id]
             [::ui/string
              {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
                              [:eavt
-                              (datascript/->EntityId 1)
-                              (datascript/->Attr :person/id)
-                              (datascript/->AttrValue :person/id "wendy")]]]}
+                              (datalog/->EntityId 1)
+                              (datalog/->Attr :person/id)
+                              (datalog/->AttrValue :person/id "wendy")]]]}
              "wendy"]
             [::ui/number
              {::ui/actions [[::actions/assoc-in
                              ["DS" :dataspex/path]
-                             [:eavt (datascript/->EntityId 536870913)]]]}
+                             [:eavt (datalog/->EntityId 536870913)]]]}
              536870913]
             [::ui/boolean true]])))
 

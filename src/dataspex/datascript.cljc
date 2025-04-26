@@ -1,6 +1,5 @@
 (ns dataspex.datascript
   (:require #?(:cljs [me.tonsky.persistent-sorted-set :as pss])
-            [clojure.core.protocols :as p]
             [datascript.conn]
             [datascript.core :as d]
             [datascript.db]
@@ -33,58 +32,12 @@
 (defn get-last-tx [db]
   (d/entity db (:max-tx db)))
 
-(defn get-entities-by-attr [db attr]
-  (->> (d/q '[:find [?e ...]
-              :in $ ?a
-              :where [?e ?a]]
-            db attr)
-       (mapv #(d/entity db %))
-       set))
-
 (defn count-entities-by-attr [db attr]
   (or (d/q '[:find (count ?e) .
              :in $ ?a
              :where [?e ?a]]
-           db attr) 0))
-
-(defrecord EntitiesByAttrKey [attr]
-  dp/IRenderInline
-  (render-inline [_ _]
-    (if attr
-      [:span.code "Entities by " [::ui/keyword attr]]
-      [:span.code "Entities"]))
-
-  dp/IKeyLookup
-  (lookup [_ x]
-    (if attr
-      (get-entities-by-attr (if (d/conn? x) (d/db x) x) attr)
-      (get-entities (if (d/conn? x) (d/db x) x)))))
-
-(defn render-entity-index [db opt]
-  (let [entities (get-entities db)]
-    (if (= 0 (count entities))
-      [::ui/code "No entities, better get to it!"]
-      (into
-       [::ui/enumeration
-        [::ui/link
-         {::ui/actions (->> (views/path-to opt [(->EntitiesByAttrKey nil)])
-                            (views/navigate-to opt))}
-         (str "All (" (count entities) ")")]]
-       (->> db :rschema :db/unique sort
-            (mapv (juxt identity #(count-entities-by-attr db %)))
-            (remove (comp #{0} second))
-            (mapv
-             (fn [[attr n]]
-               [::ui/clickable
-                {::ui/actions (->> (views/path-to opt [(->EntitiesByAttrKey attr)])
-                                   (views/navigate-to opt))}
-                [::ui/keyword attr]
-                [::ui/code (str " (" n ")")]])))))))
-
-(defrecord EntityIndex [db]
-  dp/IRenderInline
-  (render-inline [_ opt]
-    (render-entity-index db opt)))
+           db
+           attr) 0))
 
 (defn summarize-contents [db]
   (str (count (set (mapv first (:eavt db))))
@@ -97,50 +50,6 @@
 
 (defn render-database-inline [db]
   [::ui/code (str "#datascript/DB [" (summarize-contents db) "]")])
-
-(defn navigate-to [opt xs]
-  (->> (views/path-to opt xs)
-       (views/navigate-to opt)))
-
-(defrecord EntityId [id]
-  p/Datafiable
-  (datafy [_]
-    {:db/id id})
-
-  datalog/IDatabaseLookup
-  (lookup-in-db [_ db]
-    (d/entity db id)))
-
-(defrecord Attr [a]
-  p/Datafiable
-  (datafy [_]
-    a)
-
-  datalog/IDatabaseLookup
-  (lookup-in-db [_ db]
-    (-> db :schema a)))
-
-(defrecord AttrValue [a v]
-  p/Datafiable
-  (datafy [_]
-    v)
-
-  datalog/IDatabaseLookup
-  (lookup-in-db [_ db]
-    (if (and (number? v) (-> db :rschema :db.type/ref a))
-      (d/entity db v)
-      v)))
-
-(defn render-datom [[e a v t add?] opt & [{:keys [alias]}]]
-  (let [e-k (->EntityId e)
-        a-k (->Attr a)]
-    [(or alias ::ui/inline-tuple) {::ui/prefix "datom"}
-     [::ui/number {::ui/actions (navigate-to opt [e-k])} e]
-     [::ui/keyword {::ui/actions (navigate-to opt [a-k])} a]
-     (-> (hiccup/render-inline v)
-         (hiccup/add-attr ::ui/actions (navigate-to opt [e-k a-k (->AttrValue a v)])))
-     [::ui/number {::ui/actions (navigate-to opt [(->EntityId t)])} t]
-     [::ui/boolean add?]]))
 
 (defrecord Schema [db]
   dp/IKeyLookup
@@ -158,7 +67,7 @@
            :label 'Schema
            :v (:schema db)}
           {:label 'Entities
-           :v (->EntityIndex db)}
+           :v (datalog/->EntityIndex db)}
           {:k :eavt
            :label (hiccup/string-label "Datoms by entity (eavt)")
            :v (:eavt db)}]
@@ -168,10 +77,23 @@
 
 (defn render-index-dictionary [index opt]
   (into [::ui/dictionary {:class :table-auto}]
-        (mapv #(render-datom % opt {:alias ::ui/tuple}) index)))
+        (mapv #(datalog/render-datom % opt {:alias ::ui/tuple}) index)))
 
 (defn render-db-source [db opt]
   (dp/render-dictionary (:eavt db) opt))
+
+(extend-type dataspex.datalog.Attr
+  datalog/IDatabaseLookup
+  (lookup-in-db [attr db]
+    (get-in db [:schema (:a attr)])))
+
+(extend-type dataspex.datalog.AttrValue
+  datalog/IDatabaseLookup
+  (lookup-in-db [attr-val db]
+    (let [{:keys [a v]} attr-val]
+      (if (and (number? v) (-> db :rschema :db.type/ref a))
+        (d/entity db v)
+        v))))
 
 (extend-type datascript.conn.Conn
   dp/INavigatable
@@ -192,8 +114,14 @@
 
 (extend-type datascript.db.DB
   datalog/Database
+  (count-entities-by-attr [db attr]
+    (count-entities-by-attr db attr))
+
   (entity [db entity-ref]
     (d/entity db entity-ref))
+
+  (get-entities [db]
+    (get-entities db))
 
   (get-attr-sort-val [{:keys [rschema]} a]
     [(if (contains? (:db/unique rschema) a)
@@ -203,6 +131,12 @@
      (if (contains? (:db.cardinality/many rschema) a)
        1 0)
      a])
+
+  (get-unique-attrs [db]
+    (-> db :rschema :db/unique))
+
+  (q [db query args]
+    (apply d/q query db args))
 
   dp/INavigatable
   (nav-in [db path]
@@ -234,7 +168,7 @@
 (extend-type datascript.db.Datom
   dp/IRenderInline
   (render-inline [datom opt]
-    (render-datom datom opt))
+    (datalog/render-datom datom opt))
 
   dp/IRenderDictionary
   (render-dictionary [datom opt]
