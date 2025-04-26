@@ -23,13 +23,41 @@
 (defprotocol IDatabaseLookup
   (lookup-in-db [x db]))
 
+(declare render-entity-index)
+
 (defn get-entities-by-attr [db attr]
   (->> (q db '[:find [?e ...]
                :in $ ?a
                :where [?e ?a]]
           [attr])
-       (mapv #(entity db %))
-       set))
+       (map #(entity db %))))
+
+(defn ->entity-entry [entity]
+  {:k (data/as-key entity)
+   :label (:db/id entity)
+   :v entity})
+
+(defrecord EntityIndex [db]
+  dp/IRenderInline
+  (render-inline [_ opt]
+    (render-entity-index db opt))
+
+  dp/IRenderDictionary
+  (render-dictionary [_ opt]
+    (->> (get-entities db)
+         (map ->entity-entry)
+         (hiccup/render-entries-dictionary db opt))))
+
+(defrecord EntitiesByAttrIndex [db attr]
+  p/Datafiable
+  (datafy [_]
+    (get-entities-by-attr db attr))
+
+  dp/IRenderDictionary
+  (render-dictionary [_ opt]
+    (->> (get-entities-by-attr db attr)
+         (map ->entity-entry)
+         (hiccup/render-entries-dictionary db opt))))
 
 (defrecord EntitiesByAttrKey [attr]
   dp/IRenderInline
@@ -41,8 +69,8 @@
   dp/IKeyLookup
   (lookup [_ db]
     (if attr
-      (get-entities-by-attr db attr)
-      (get-entities db))))
+      (->EntitiesByAttrIndex db attr)
+      (->EntityIndex db))))
 
 (defn nav-in-db [db path]
   (loop [[p & ps] (reverse path)
@@ -174,8 +202,3 @@
                                    (views/navigate-to opt))}
                 [::ui/keyword attr]
                 [::ui/code (str " (" n ")")]])))))))
-
-(defrecord EntityIndex [db]
-  dp/IRenderInline
-  (render-inline [_ opt]
-    (render-entity-index db opt)))

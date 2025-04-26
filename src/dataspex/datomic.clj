@@ -3,7 +3,6 @@
             [dataspex.data :as data]
             [dataspex.datalog :as datalog]
             [dataspex.hiccup :as hiccup]
-            [dataspex.inspector :as inspector]
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
             [datomic.api :as d]))
@@ -64,10 +63,12 @@
 
 (defn render-schema-dictionary [db opt]
   (let [schema (load-schema db)]
-    (hiccup/render-entries-dictionary
-     schema
-     (mapv (fn [attr] {:k attr :v attr}) schema)
-     opt)))
+    (->> (mapv (fn [attr]
+                 {:k (:db/ident attr)
+                  :label (:db/ident attr)
+                  :v attr})
+               schema)
+         (hiccup/render-entries-dictionary schema opt))))
 
 (defrecord Schema [db]
   p/Datafiable
@@ -98,14 +99,12 @@
   [::ui/code (str "#datomic.db.Db [" (:datoms (d/db-stats db)) " datoms]")])
 
 (defn render-database-dictionary [db opt]
-  (hiccup/render-entries-dictionary
-   db
-   [{:k (->SchemaKey db)
-     :label 'Schema
-     :v (->Schema db)}
-    {:label 'Entities
-     :v (datalog/->EntityIndex db)}]
-   opt))
+  (->> [{:k (->SchemaKey db)
+         :label 'Schema
+         :v (mapv :db/ident (load-schema db))}
+        {:label 'Entities
+         :v (datalog/->EntityIndex db)}]
+       (hiccup/render-entries-dictionary db opt)))
 
 (defn tx-data->diff [tx-data]
   (mapv (fn [datom]
@@ -154,7 +153,10 @@
   (get-entities [db]
     (->> (d/datoms db :eavt)
          (map :e)
-         distinct))
+         distinct
+         (map #(d/entity db %))
+         (remove :db/txInstant)
+         (remove #(< (:db/id %) 1000))))
 
   (get-attr-sort-val [db a]
     (attr-sort-val (d/entity db a)))
@@ -241,60 +243,4 @@
 
   dp/IRenderDictionary
   (render-dictionary [entity opt]
-    (hiccup/render-entries-dictionary entity (datalog/get-entity-entries entity) opt)))
-
-(comment
-
-  (let [uri "datomic:mem://dataspex"]
-    (d/create-database uri)
-    (let [conn (d/connect uri)]
-      (d/transact conn [{:db/ident :person/id
-                         :db/valueType :db.type/string
-                         :db/unique :db.unique/identity
-                         :db/cardinality :db.cardinality/one}
-                        {:db/ident :person/name
-                         :db/valueType :db.type/string
-                         :db/cardinality :db.cardinality/one}
-                        {:db/ident :person/friends
-                         :db/valueType :db.type/ref
-                         :db/cardinality :db.cardinality/many}])
-
-      (d/transact conn [{:person/id "bob"
-                         :person/name "Bob"
-                         :person/friends ["alice" "wendy"]}
-                        {:db/id "alice"
-                         :person/id "alice"
-                         :person/name "Alice"}
-                        {:db/id "wendy"
-                         :person/id "wendy"
-                         :person/name "Wendy"}])))
-
-  (def conn (d/connect "datomic:mem://dataspex"))
-  (def db (d/db conn))
-  (def bob (d/entity db [:person/id "bob"]))
-
-  (inspector/inspect dataspex.server/store "Bob" bob)
-
-  (def alice (d/entity db [:person/id "alice"]))
-
-  (datalog/get-ref-attrs bob)
-  (datalog/get-primitive-attrs bob)
-
-  (type (d/entity db [:person/id "bob"]))
-  datomic.query.EntityMap
-
-  (datalog/get-attr-sort-val db :person/id)
-  (datalog/get-attr-sort-val db :person/friends)
-  (datalog/get-attr-sort-val db :person/name)
-
-  (into {} (d/entity db :person/id))
-
-  (datalog/get-reverse-ref-attrs alice)
-
-  (type db)
-
-  datomic.db.Db
-
-  (set! *print-namespace-maps* false)
-
-)
+    (hiccup/render-entries-dictionary entity opt (datalog/get-entity-entries entity))))

@@ -189,7 +189,7 @@
                 second
                 (lookup/select :dataspex.ui/enumeration)
                 lookup/text)
-           "All (82) :movie/id  (1) :person/id  (3)")))
+           "All (4) :movie/id  (1) :person/id  (3)")))
 
   (testing "Renders database as dictionary"
     (is (= (->> (with-conn [conn schema]
