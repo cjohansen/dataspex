@@ -61,19 +61,17 @@
     [::ui/symbol "Schema"]))
 
 (defn render-database-dictionary [db opt]
-  (hiccup/render-entries-dictionary
-   db
-   (into [{:k (->Schema db)
-           :label 'Schema
-           :v (:schema db)}
-          {:label 'Entities
-           :v (datalog/->EntityIndex db)}
-          {:k :eavt
-           :label (hiccup/string-label "Datoms by entity (eavt)")
-           :v (:eavt db)}]
-         (->> [:aevt :avet :max-eid :max-tx :rschema :hash]
-              (mapv (fn [k] {:k k, :label k, :v (k db)}))))
-   opt))
+  (->> [:aevt :avet :max-eid :max-tx :rschema :hash]
+       (mapv (fn [k] {:k k, :label k, :v (k db)}))
+       (into [{:k (->Schema db)
+               :label 'Schema
+               :v (:schema db)}
+              {:label 'Entities
+               :v (datalog/->EntityIndex db)}
+              {:k :eavt
+               :label (hiccup/string-label "Datoms by entity (eavt)")
+               :v (:eavt db)}])
+       (hiccup/render-entries-dictionary db opt)))
 
 (defn render-index-dictionary [index opt]
   (into [::ui/dictionary {:class :table-auto}]
@@ -172,7 +170,7 @@
 
   dp/IRenderDictionary
   (render-dictionary [datom opt]
-    (hiccup/render-entries-dictionary datom (get-datom-entries datom) opt)))
+    (hiccup/render-entries-dictionary datom opt (get-datom-entries datom))))
 
 (extend-type #?(:clj PersistentSortedSet
                 :cljs pss/BTSet)
@@ -184,7 +182,7 @@
   (render-dictionary [pss opt]
     (if (instance? datascript.db.Datom (first pss))
       (render-index-dictionary pss opt)
-      (hiccup/render-entries-dictionary pss (get-index-entries pss) opt))))
+      (hiccup/render-entries-dictionary pss opt (get-index-entries pss)))))
 
 (extend-type datascript.impl.entity.Entity
   datalog/Entity
@@ -219,7 +217,7 @@
 
   dp/IRenderDictionary
   (render-dictionary [entity opt]
-    (hiccup/render-entries-dictionary entity (datalog/get-entity-entries entity) opt)))
+    (hiccup/render-entries-dictionary entity opt (datalog/get-entity-entries entity))))
 
 (comment
 

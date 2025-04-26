@@ -11,10 +11,8 @@
 (def re-jwt #"^[A-Za-z0-9-_=]{4,}\.[A-Za-z0-9-_=]{4,}\.?[A-Za-z0-9-_.+/=]*$")
 
 (defn render-jwt-dictionary [jwt opt]
-  (hiccup/render-entries-dictionary
-   jwt
-   (data/get-map-entries jwt opt {:ks [:headers :data :sig :token]})
-   opt))
+  (->> (data/get-map-entries jwt opt {:ks [:headers :data :sig :token]})
+       (hiccup/render-entries-dictionary jwt opt)))
 
 (defrecord TokenString [token]
   clojure.core.protocols/Datafiable
