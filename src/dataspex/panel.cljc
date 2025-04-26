@@ -76,13 +76,12 @@
                       (vector? v) [::icons/brackets-square]
                       (map? v) [::icons/brackets-curly]
                       (seq? v) [::icons/brackets-round]
-                      :else [::icons/brackets-curly])
-        current (views/get-current-view v opt)]
+                      :else [::icons/brackets-curly])]
     (into
      [::ui/button-bar]
      (mapv
       (fn [{:keys [view label icon]}]
-        (if (= view current)
+        (if (= view (:dataspex/view opt))
           [::ui/button
            {::ui/title (str "Viewing " label)
             ::ui/selected? true}
@@ -155,7 +154,7 @@
 
 (defn render-data [x opt]
   (when (render? opt)
-    (case (views/get-current-view x opt)
+    (case (:dataspex/view opt)
       :dataspex.views/inline
       (hiccup/render-inline x opt)
 

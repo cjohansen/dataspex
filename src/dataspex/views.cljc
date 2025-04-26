@@ -40,9 +40,10 @@
       dictionary))
 
 (defn get-view-options [state inspectee]
-  (let [inspector-state (get state inspectee)]
-    (merge {:dataspex/inspectee inspectee}
-           (select-keys state [:dataspex/theme])
-           (select-keys inspector-state
-                        (->> (keys inspector-state)
-                             (filter (comp #{"dataspex"} namespace)))))))
+  (let [inspector-state (get state inspectee)
+        opt (merge {:dataspex/inspectee inspectee}
+                   (select-keys state [:dataspex/theme])
+                   (select-keys inspector-state
+                                (->> (keys inspector-state)
+                                     (filter (comp #{"dataspex"} namespace)))))]
+    (assoc opt :dataspex/view (get-current-view (get-in state [inspectee :val]) opt))))
