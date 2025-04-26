@@ -98,12 +98,39 @@
 (defn render-db-inline [db]
   [::ui/code (str "#datomic.db.Db [" (:datoms (d/db-stats db)) " datoms]")])
 
+(defrecord TxIndex [db]
+  dp/IRenderInline
+  (render-inline [_ _]
+    (let [n (bounded-count 1001 (datalog/get-entities-by-attr db :db/txInstant))]
+      [::ui/code
+       (if (< 1000 n)
+         "1000+ transactions"
+         (str n " transactions"))]))
+
+  dp/IRenderDictionary
+  (render-dictionary [_ opt]
+    (->> (datalog/get-entities-by-attr db :db/txInstant)
+         (map datalog/->entity-entry)
+         (hiccup/render-entries-dictionary db opt))))
+
+(defrecord TransactionsKey [db]
+  dp/IKeyLookup
+  (dp/lookup [_ db]
+    (->TxIndex db))
+
+  dp/IRenderInline
+  (render-inline [_ _]
+    [::ui/symbol "Transactions"]))
+
 (defn render-database-dictionary [db opt]
   (->> [{:k (->SchemaKey db)
          :label 'Schema
          :v (mapv :db/ident (load-schema db))}
         {:label 'Entities
-         :v (datalog/->EntityIndex db)}]
+         :v (datalog/->EntityIndex db)}
+        {:label 'Transactions
+         :v (->TxIndex db)
+         :k (->TransactionsKey db)}]
        (hiccup/render-entries-dictionary db opt)))
 
 (defn tx-data->diff [tx-data]

@@ -30,6 +30,7 @@
                :in $ ?a
                :where [?e ?a]]
           [attr])
+       (sort)
        (map #(entity db %))))
 
 (defn ->entity-entry [entity]

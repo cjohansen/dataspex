@@ -175,7 +175,8 @@
                 (mapv (comp first lookup/children))
                 (mapv lookup/text))
            ["Schema"
-            "Entities"])))
+            "Entities"
+            "Transactions"])))
 
   (testing "Offers entity filters by unique attribute"
     (is (= (->> (with-conn [conn schema]
@@ -198,7 +199,8 @@
                 (mapv (comp first lookup/children))
                 (mapv lookup/text))
            ["Schema"
-            "Entities"])))
+            "Entities"
+            "Transactions"])))
 
   (testing "Renders entity as dictionary"
     (is (= (->> (with-conn [conn schema]
