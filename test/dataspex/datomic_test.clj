@@ -5,6 +5,8 @@
             [dataspex.datalog :as datalog]
             [dataspex.datomic :as datomic]
             [dataspex.helper :as h]
+            [dataspex.inspector :as inspector]
+            [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
             [datomic.api :as d]
             [lookup.core :as lookup]))
@@ -254,3 +256,31 @@
                 h/undatom-diff)
            [[[13194139534317] :+ [13194139534317 50 #inst "2025-04-26T16:02:00.000-00:00" 13194139534317 true]]
             [[17592186045418] :+ [17592186045418 75 "Notorious B-O-B" 13194139534317 true]]]))))
+
+(deftest inspect-test
+  (testing "Inspect watches Datomic conn for updates"
+    (is (= (with-conn [conn schema]
+             (let [dataspex-store (atom {})]
+               @(d/transact conn (into [{:db/id "datomic.tx"
+                                         :db/txInstant #inst "2025-04-26T16:01:00"}]
+                                       data))
+               (inspector/inspect dataspex-store "Datomic conn" conn)
+               @(d/transact conn [{:db/id "datomic.tx"
+                                   :db/txInstant #inst "2025-04-26T16:02:00"}
+                                  {:person/id "bob"
+                                   :person/alias "Notorious B-O-B"}])
+               (Thread/sleep 50)
+               (let [{:keys [ref subscription history]} (get-in @dataspex-store ["Datomic conn"])]
+                 (dp/unwatch ref subscription)
+                 (for [v history]
+                   (-> v
+                       (dissoc :created-at)
+                       (update :val (comp :datoms d/db-stats))
+                       (update :diff h/undatom-diff))))))
+           [{:rev 2
+             :val 311
+             :diff [[[13194139534317] :+ [13194139534317 50 #inst "2025-04-26T16:02:00" 13194139534317 true]]
+                    [[17592186045418] :+ [17592186045418 75 "Notorious B-O-B" 13194139534317 true]]]}
+            {:rev 1
+             :val 309
+             :diff []}]))))

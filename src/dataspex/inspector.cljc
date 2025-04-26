@@ -3,42 +3,43 @@
             [dataspex.protocols :as dp])
   #?(:clj (:import (java.util Date))))
 
-(defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit host-str
-                                              now ref label auditable? max-height]}]
+(defn get-dataspex-opts [current {:keys [host-str label auditable? max-height]}]
+  (cond-> {:dataspex/path []
+           :dataspex/activity :dataspex.activity/browse}
+    host-str (assoc :dataspex/host-str host-str)
+    label (assoc :dataspex/inspectee label)
+    (not= nil auditable?) (assoc :dataspex/auditable? auditable?)
+    (number? max-height) (assoc :dataspex/max-height max-height)
+    :then
+    (into (->> (keys current)
+               (filter (comp #{"dataspex"} namespace))
+               (select-keys current)))))
+
+(defn ^:no-doc inspect-val [current x opt & [diff]]
   (if (= x (:val current))
     current
-    (let [prev (first (:history current))
-          rev (inc (or (:rev current) 0))]
+    (let [rev (inc (or (:rev current) 0))]
       (merge
-       {:dataspex/path []
-        :dataspex/activity :dataspex.activity/browse}
-       (when (not= nil auditable?)
-         {:dataspex/auditable? auditable?})
-       (when label
-         {:dataspex/inspectee label})
-       (when host-str
-         {:dataspex/host-str host-str})
-       (when (number? max-height)
-         {:dataspex/max-height max-height})
-       (->> (keys current)
-            (filter (comp #{"dataspex"} namespace))
-            (select-keys current))
+       current
+       (get-dataspex-opts current opt)
        (cond-> {:rev rev
                 :val x}
-         ref (assoc :ref ref)
+         (:subscription opt) (assoc :subscription (:subscription opt))
+         (:ref opt) (assoc :ref (:ref opt))
 
-         track-changes?
+         (:track-changes? opt)
          (assoc :history
                 (let [summary (dp/get-audit-summary x)
-                      details (dp/get-audit-details x)]
-                  (->> (cond-> {:created-at now
+                      details (dp/get-audit-details x)
+                      diff (or diff (some-> (:history current) first :val (diff/diff x)))]
+                  (->> (cond-> {:created-at (:now opt)
                                 :rev rev
                                 :val x}
-                         prev (assoc :diff (diff/diff (:val prev) x))
+                         diff (assoc :diff diff)
                          summary (assoc :dataspex.audit/summary summary)
                          details (assoc :dataspex.audit/details details))
                        (conj (:history current))
-                       (take history-limit)))))))))
+                       (take (:history-limit opt))))))))))
 
 (defn- now []
   #?(:cljs (js/Date.)
@@ -52,27 +53,39 @@
     (not (number? (:history-limit opt)))
     (assoc :history-limit 25)))
 
-(defn- ref? [x]
-  (when x
-    #?(:clj (instance? clojure.lang.IDeref x)
-       :cljs (satisfies? cljs.core/IDeref x))))
+(extend-type #?(:cljs cljs.core/IAtom
+                :clj clojure.lang.IAtom)
+  dp/Watchable
+  (get-val [ref]
+    @ref)
+
+  (watch [ref k f]
+    (add-watch ref k (fn [_ _ old-data new-data] (f old-data new-data nil)))
+    k)
+
+  (unwatch [ref k]
+    (remove-watch ref k)))
 
 (defn inspect
   {:arglists '[[store label x]
                [store label x {:keys [track-changes? history-limit max-height]}]]}
   [store label x & [opt]]
-  (let [[val ref] (if (ref? x) [@x x] [x])]
-    (->> (assoc (get-opts opt)
-                :ref ref
-                :label label
-                :host-str (:dataspex/host-str @store))
-         (swap! store update label inspect-val val))
-    (when ref
-      (add-watch ref ::inspect
-       (fn [_ _ _ new-val]
-         (swap! store update label inspect-val new-val (get-opts opt)))))))
+  (let [[val subscription]
+        (if (satisfies? dp/Watchable x)
+          [(dp/get-val x)
+           (dp/watch x ::inspect
+                     (fn [_ new-val diff]
+                       (swap! store update label inspect-val new-val (get-opts opt) diff)))]
+          [x])]
+    (->> (cond-> (assoc (get-opts opt)
+                        :label label
+                        :host-str (:dataspex/host-str @store))
+           subscription (assoc :subscription subscription
+                               :ref x))
+         (swap! store update label inspect-val val))))
 
 (defn uninspect [store label]
-  (when-let [ref (get-in @store [label :ref])]
-    (remove-watch ref ::inspect))
+  (let [{:keys [ref subscription]} (get @store label)]
+    (when subscription
+      (dp/unwatch ref subscription)))
   (swap! store dissoc label))

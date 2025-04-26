@@ -135,6 +135,7 @@
              :dataspex/activity :dataspex.activity/browse
              :rev 1
              :val {:my "Data"}
+             :subscription :dataspex.inspector/inspect
              :ref app-store
              :history [{:created-at #inst "2025-04-16T16:19:58"
                         :rev 1

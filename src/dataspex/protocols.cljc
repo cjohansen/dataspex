@@ -46,3 +46,8 @@
 
 (defprotocol IRenderDiff
   (render-diff [self diff]))
+
+(defprotocol Watchable
+  (get-val [watchable])
+  (watch [watchable k f])
+  (unwatch [watchable watcher]))

@@ -102,10 +102,14 @@
    db
    [{:k (->SchemaKey db)
      :label 'Schema
-     :v (:schema db)}
+     :v (->Schema db)}
     {:label 'Entities
      :v (datalog/->EntityIndex db)}]
    opt))
+
+(defn tx-data->diff [tx-data]
+  (mapv (fn [datom]
+          [[(:e datom)] :+ datom]) tx-data))
 
 (extend-type datomic.Connection
   dp/INavigatable
@@ -118,11 +122,23 @@
 
   dp/IRenderDictionary
   (render-dictionary [conn opt]
-    (render-database-dictionary (d/db conn) opt)))
+    (render-database-dictionary (d/db conn) opt))
 
-(defn tx-data->diff [tx-data]
-  (mapv (fn [datom]
-          [[(:e datom)] :+ datom]) tx-data))
+  dp/Watchable
+  (get-val [conn]
+    (d/db conn))
+
+  (watch [conn _ f]
+    (let [queue (d/tx-report-queue conn)
+          watching? (volatile! true)]
+      (future
+        (while @watching?
+          (let [{:keys [db-before db-after tx-data]} (.take queue)]
+            (f db-before db-after (tx-data->diff tx-data)))))
+      watching?))
+
+  (unwatch [_ subscription]
+    (vreset! subscription false)))
 
 (extend-type datomic.db.Db
   datalog/Database
@@ -226,3 +242,59 @@
   dp/IRenderDictionary
   (render-dictionary [entity opt]
     (hiccup/render-entries-dictionary entity (datalog/get-entity-entries entity) opt)))
+
+(comment
+
+  (let [uri "datomic:mem://dataspex"]
+    (d/create-database uri)
+    (let [conn (d/connect uri)]
+      (d/transact conn [{:db/ident :person/id
+                         :db/valueType :db.type/string
+                         :db/unique :db.unique/identity
+                         :db/cardinality :db.cardinality/one}
+                        {:db/ident :person/name
+                         :db/valueType :db.type/string
+                         :db/cardinality :db.cardinality/one}
+                        {:db/ident :person/friends
+                         :db/valueType :db.type/ref
+                         :db/cardinality :db.cardinality/many}])
+
+      (d/transact conn [{:person/id "bob"
+                         :person/name "Bob"
+                         :person/friends ["alice" "wendy"]}
+                        {:db/id "alice"
+                         :person/id "alice"
+                         :person/name "Alice"}
+                        {:db/id "wendy"
+                         :person/id "wendy"
+                         :person/name "Wendy"}])))
+
+  (def conn (d/connect "datomic:mem://dataspex"))
+  (def db (d/db conn))
+  (def bob (d/entity db [:person/id "bob"]))
+
+  (inspector/inspect dataspex.server/store "Bob" bob)
+
+  (def alice (d/entity db [:person/id "alice"]))
+
+  (datalog/get-ref-attrs bob)
+  (datalog/get-primitive-attrs bob)
+
+  (type (d/entity db [:person/id "bob"]))
+  datomic.query.EntityMap
+
+  (datalog/get-attr-sort-val db :person/id)
+  (datalog/get-attr-sort-val db :person/friends)
+  (datalog/get-attr-sort-val db :person/name)
+
+  (into {} (d/entity db :person/id))
+
+  (datalog/get-reverse-ref-attrs alice)
+
+  (type db)
+
+  datomic.db.Db
+
+  (set! *print-namespace-maps* false)
+
+)
