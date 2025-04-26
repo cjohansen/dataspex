@@ -90,13 +90,13 @@
 (defscene toolbar
   [ui/toolbar
    [ui/tabs
-    [ui/tab "Store"]
     [ui/tab
      {::ui/selected? true}
      "Browse"]
     [ui/tab
      {::ui/actions []}
-     "Changes"]]
+     "Audit"]]
+   [:h2 [:strong "Store"] [:span.subtle.ml-4 "localhost:9090 Chrome macOS"]]
    [ui/button-bar
     [ui/button {::ui/title "Minimize"
                 ::ui/actions []}
@@ -105,16 +105,28 @@
                 ::ui/actions []}
      [icons/x]]]])
 
+(defscene toolbar-minimized
+  [ui/toolbar
+   [ui/tabs]
+   [:h2 [:strong "Store"] [:span.subtle.ml-4 "localhost:9090 Chrome macOS"]]
+   [ui/button-bar
+    [ui/button {::ui/title "Maximize"
+                ::ui/actions []}
+     [icons/arrows-out-simple]]
+    [ui/button {::ui/title "Close"
+                ::ui/actions []}
+     [icons/x]]]])
+
 (def toolbar
   [ui/toolbar
    [ui/tabs
-    [ui/tab "Store"]
     [ui/tab
      {::ui/selected? true}
      "Browse"]
     [ui/tab
      {::ui/actions []}
-     "Changes"]]
+     "Audit"]]
+   [:h2 [:strong "Store"] [:span.subtle.ml-4 "localhost:9090 Chrome macOS"]]
    [ui/button-bar
     [ui/button {::ui/title "Minimize"
                 ::ui/actions []}

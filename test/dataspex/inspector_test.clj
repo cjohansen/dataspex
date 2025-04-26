@@ -208,4 +208,11 @@
                  (get-in ["DB" :history])
                  first
                  :dataspex.audit/summary))
-           [:db/transact [:person/id "christian"]]))))
+           [:db/transact [:person/id "christian"]])))
+
+  (testing "Extracts audit metadata from Datascript transaction"
+    (is (= (let [dataspex-store (atom {:dataspex/host-str "My machine"})]
+             (inspector/inspect dataspex-store "DB" {})
+             (-> @dataspex-store
+                 (get-in ["DB" :dataspex/host-str])))
+           "My machine"))))

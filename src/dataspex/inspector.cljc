@@ -3,7 +3,7 @@
             [dataspex.protocols :as dp])
   #?(:clj (:import (java.util Date))))
 
-(defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit
+(defn ^:no-doc inspect-val [current x {:keys [track-changes? history-limit host-str
                                               now ref label auditable? max-height]}]
   (if (= x (:val current))
     current
@@ -16,6 +16,8 @@
          {:dataspex/auditable? auditable?})
        (when label
          {:dataspex/inspectee label})
+       (when host-str
+         {:dataspex/host-str host-str})
        (when (number? max-height)
          {:dataspex/max-height max-height})
        (->> (keys current)
@@ -60,9 +62,11 @@
                [store label x {:keys [track-changes? history-limit max-height]}]]}
   [store label x & [opt]]
   (let [[val ref] (if (ref? x) [@x x] [x])]
-    (swap! store update label inspect-val val (assoc (get-opts opt)
-                                                     :ref ref
-                                                     :label label))
+    (->> (assoc (get-opts opt)
+                :ref ref
+                :label label
+                :host-str (:dataspex/host-str @store))
+         (swap! store update label inspect-val val))
     (when ref
       (add-watch ref ::inspect
        (fn [_ _ _ new-val]

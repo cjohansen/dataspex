@@ -6,7 +6,15 @@
 
 (data/add-string-inspector! jwt/inspect-jwt)
 
-(defonce store (atom {}))
+(defn- get-host-str []
+  (str (-> (System/getProperty "user.dir")
+           java.io.File.
+           .getName)
+       (if-let [port (slurp ".nrepl-port")]
+         (str " nrepl:" port)
+         " JVM")))
+
+(defonce store (atom {:dataspex/host-str (get-host-str)}))
 (defonce server (atom nil))
 
 (defn stop-server! []
@@ -31,3 +39,11 @@
   (when (and (nil? @server) (not (false? (:start-server? opt))))
     (start-server!))
   nil)
+
+(comment
+
+  (stop-server!)
+  (start-server!)
+  (get-host-str)
+
+)

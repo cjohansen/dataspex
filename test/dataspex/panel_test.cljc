@@ -16,8 +16,8 @@
              :dataspex/inspectee "Store"})
            [::ui/toolbar
             [::ui/tabs
-             [::ui/tab.strong "Store"]
              [::ui/tab {::ui/selected? true} "Browse"]]
+            [:h2 [:strong "Store"]]
             [::ui/button-bar
              [::ui/button {::ui/title "Switch to light mode"
                            ::ui/actions [[::actions/assoc-in ["Store" :dataspex/theme] :light]]}
@@ -28,6 +28,16 @@
              [::ui/button {::ui/title "Close"
                            ::ui/actions [[::actions/uninspect "Store"]]}
               [::icons/x]]]])))
+
+  (testing "Includes host information"
+    (is (= (->> {:dataspex/path ["Store"]
+                 :dataspex/inspectee "Store"
+                 :dataspex/host-str "localhost:9090 Chrome macOS"}
+                (panel/render-title-bar {})
+                (lookup/select-one :h2))
+           [:h2
+            [:strong "Store"]
+            [:span {:class #{"ml-4" "subtle"}} "localhost:9090 Chrome macOS"]])))
 
   (testing "Offers dark mode when currently in light mode"
     (is (= (->> (panel/render-title-bar
@@ -62,7 +72,7 @@
                   :dataspex/auditable? false})
                 (lookup/select ::ui/tab)
                 (map lookup/text))
-           ["Store@12:27:06" "Browse"])))
+           ["Browse"])))
 
   (testing "Selects audit tab when auditing"
     (is (= (->> (panel/render-title-bar
@@ -71,8 +81,7 @@
                   :dataspex/inspectee "Store@12:27:06"
                   :dataspex/activity panel/audit})
                 (lookup/select ::ui/tab))
-           [[::ui/tab {:class #{"strong"}} "Store@12:27:06"]
-            [::ui/tab {::ui/actions [[::actions/assoc-in ["Store@12:27:06" :dataspex/activity] panel/browse]]}
+           [[::ui/tab {::ui/actions [[::actions/assoc-in ["Store@12:27:06" :dataspex/activity] panel/browse]]}
              "Browse"]
             [::ui/tab {::ui/selected? true} "Audit"]])))
 
@@ -82,8 +91,8 @@
             {:dataspex/inspectee "Store"
              :dataspex/render? false})
            [::ui/toolbar
-            [::ui/tabs
-             [::ui/tab.strong "Store"]]
+            [::ui/tabs]
+            [:h2 [:strong "Store"]]
             [::ui/button-bar
              [::ui/button {::ui/title "Maximize"
                            ::ui/actions [[::actions/assoc-in ["Store" :dataspex/render?] true]]}

@@ -30,7 +30,7 @@
   background: var(--white);
   color: var(--mine-shaft);
   --fg: var(--mine-shaft);
-  --subtle-color: var(--dove-gray);
+  --subtle-color: var(--dusty);
   --code-background: var(--gallery);
   --code-text-shadow-color: var(--white);
   --string-color: var(--san-felix);
@@ -76,7 +76,7 @@
   background: var(--woodsmoke);
   color: var(--mercury);
   --fg: var(--mercury);
-  --subtle-color: var(--selago);
+  --subtle-color: var(--dusty);
   --code-background: var(--mine-shaft);
   --code-text-shadow-color: var(--black);
   --string-color: var(--apricot);
@@ -171,6 +171,14 @@ body, pre {
 
 .gap-2 {
   gap: 0.5em;
+}
+
+.ml-4 {
+  margin-left: 1em;
+}
+
+.subtle {
+  color: var(--subtle-color);
 }
 
 /* Color schemes */
@@ -348,12 +356,33 @@ a.clickable:hover,
 .toolbar {
   background: var(--toolbar-bg);
   border-bottom: 1px solid var(--navbar-border);
-  display: flex;
+  container-type: inline-size;
+  height: 40px;
   padding: 0 12px 0 0;
+  position: relative;
+}
+
+.toolbar > nav {
+  flex-basis: 120px;
+}
+
+.toolbar > nav:last-child {
+  justify-content: end;
 }
 
 .toolbar a {
   text-decoration: none;
+}
+
+.toolbar h2 {
+  font-size: 1em;
+  font-weight: normal;
+}
+
+@container (max-width: 500px) {
+  .toolbar h2 .subtle {
+    display: none;
+  }
 }
 
 /* Tabs */

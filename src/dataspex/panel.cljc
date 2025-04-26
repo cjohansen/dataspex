@@ -28,16 +28,18 @@
 (defn get-theme [opt]
   (or (:dataspex/theme opt) :dark))
 
-(defn render-title-bar [{:keys [history]} {:dataspex/keys [inspectee] :as opt}]
+(defn render-title-bar [{:keys [history]} {:dataspex/keys [inspectee host-str] :as opt}]
   (let [rendering? (render? opt)
         theme (get-theme opt)]
     [::ui/toolbar
-     (cond-> [::ui/tabs [::ui/tab.strong inspectee]]
+     (cond-> [::ui/tabs]
        rendering?
        (conj (render-tab opt browse))
 
        (and rendering? (get opt :dataspex/auditable? true) (< 1 (count (or history []))))
        (conj (render-tab opt audit)))
+     (cond-> [:h2 [:strong inspectee]]
+       host-str (conj [:span.subtle.ml-4 host-str]))
      (cond-> [::ui/button-bar]
        rendering? (conj [::ui/button
                          {::ui/title (str "Switch to " (name (other-theme theme)) " mode")
