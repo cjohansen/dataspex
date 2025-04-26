@@ -25,3 +25,6 @@
                [label x {:keys [track-changes? history-limit max-height]}]]}
   [label x & [opt]]
   (inspector/inspect store label x opt))
+
+(defn ^:export uninspect [label]
+  (inspector/uninspect store label))

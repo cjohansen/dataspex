@@ -40,6 +40,10 @@
     (start-server!))
   nil)
 
+(defn ^:export uninspect [label]
+  (inspector/uninspect store label)
+  nil)
+
 (comment
 
   (stop-server!)
