@@ -10,7 +10,8 @@
   :remote-inspector
   {:target :browser
    :modules {:inspector {:init-fn dataspex.remote-inspector/main}}
-   :dev {:output-dir "resources/public/dataspex"}}
+   :dev {:output-dir "dev-resources/public/dataspex"}
+   :release {:output-dir "resources/public/dataspex"}}
 
   :browser-extension
   {:target :browser
