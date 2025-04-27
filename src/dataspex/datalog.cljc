@@ -183,7 +183,7 @@
     (if (= 0 n)
       [::ui/code "No entities, better get to it!"]
       (into
-       [::ui/enumeration
+       [::ui/ul
         [::ui/link
          {::ui/actions (->> (views/path-to opt [(->EntitiesByAttrKey nil)])
                             (views/navigate-to opt))}

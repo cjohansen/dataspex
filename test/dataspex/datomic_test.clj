@@ -188,7 +188,7 @@
                   (h/render-dictionary {:dataspex/inspectee "DB"} conn))
                 lookup/children
                 second
-                (lookup/select :dataspex.ui/enumeration)
+                (lookup/select :dataspex.ui/ul)
                 lookup/text)
            "All (4) :movie/id  (1) :person/id  (3)")))
 
