@@ -205,7 +205,7 @@
     (is (nil? (panel/render-pagination-bar "String" {}))))
 
   (testing "Does not paginate collection that fits on one page"
-    (is (nil? (panel/render-pagination-bar (range 200) {}))))
+    (is (nil? (panel/render-pagination-bar (range 100) {}))))
 
   (testing "Can go to next page"
     (is (= (panel/render-pagination-bar

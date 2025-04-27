@@ -167,7 +167,7 @@
 
   (testing "Renders indefinite seq"
     (is (= (h/render-inline (range))
-           [::ui/link "(1000+ items)"])))
+           [::ui/link "(100+ items)"])))
 
   (testing "Renders short set"
     (is (= (-> (h/render-inline #{:hello})
@@ -655,7 +655,7 @@
                 (lookup/select-one ::ui/list)
                 lookup/children
                 (mapv lookup/text))
-           ["2 more" "2" "3" "4" "1000+ more"])))
+           ["2 more" "2" "3" "4" "100+ more"])))
 
   (testing "Renders set"
     (is (= (-> (h/render-source #{"Apples" "Bananas"})

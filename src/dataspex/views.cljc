@@ -6,10 +6,12 @@
 (def table ::table)
 (def source ::source)
 
+(def max-items 100)
+
 (defn get-pagination [{:dataspex/keys [pagination path]}]
   {:page-size (or (get-in pagination [path :page-size])
                   (:page-size pagination)
-                  1000)
+                  max-items)
    :offset (or (get-in pagination [path :offset]) 0)})
 
 (defn offset-pagination [opt n]

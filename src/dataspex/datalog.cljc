@@ -174,7 +174,7 @@
 
 (defn render-entity-index [db opt]
   (let [entities (get-entities db)
-        n (bounded-count 1001 entities)]
+        n (bounded-count (inc views/max-items) entities)]
     (if (= 0 n)
       [::ui/code "No entities, better get to it!"]
       (into
@@ -182,8 +182,8 @@
         [::ui/link
          {::ui/actions (->> (views/path-to opt [(->EntitiesByAttrKey nil)])
                             (views/navigate-to opt))}
-         (if (< 1000 n)
-           "All (1000+)"
+         (if (< views/max-items n)
+           (str "All (" views/max-items "+)")
            (str "All (" n ")"))]]
        (->> (get-unique-attrs db)
             (sort)

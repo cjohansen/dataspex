@@ -5,6 +5,7 @@
             [dataspex.hiccup :as hiccup]
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
+            [dataspex.views :as views]
             [datomic.api :as d]))
 
 (defn attr-sort-val [attribute]
@@ -101,10 +102,10 @@
 (defrecord TxIndex [db]
   dp/IRenderInline
   (render-inline [_ _]
-    (let [n (bounded-count 1001 (datalog/get-entities-by-attr db :db/txInstant))]
+    (let [n (bounded-count (inc views/max-items) (datalog/get-entities-by-attr db :db/txInstant))]
       [::ui/code
-       (if (< 1000 n)
-         "1000+ transactions"
+       (if (< views/max-items n)
+         (str views/max-items "+ transactions")
          (str n " transactions"))]))
 
   dp/IRenderDictionary

@@ -135,10 +135,12 @@
       (< 0 n)
       (conj [::ui/crumb (render-path-k (last path) opt)]))))
 
+(def max-count 1000)
+
 (defn render-pagination-bar [v opt]
-  (when (coll? v)
+  (when (counted? v)
     (let [{:keys [page-size offset]} (views/get-pagination opt)
-          n (bounded-count (+ offset 1001) v)]
+          n (bounded-count (+ offset (inc max-count)) v)]
       (when (< page-size n)
         (let [prev-n (- offset page-size)
               next-n (+ offset page-size)]
@@ -147,7 +149,7 @@
              (<= 0 prev-n) (conj {::ui/actions [(views/offset-pagination opt prev-n)]})
              :then (conj [::icons/caret-left]))
            [:span.code.text-smaller.subtle
-            (str offset "-" (dec next-n) " of " (if (< 1000 n) "1000+" n) "")]
+            (str offset "-" (dec next-n) " of " (if (< max-count n) (str max-count "+") n) "")]
            (cond-> [::ui/button]
              (< next-n n) (conj {::ui/actions [(views/offset-pagination opt next-n)]})
              :then (conj [::icons/caret-right]))])))))

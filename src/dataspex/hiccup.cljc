@@ -107,8 +107,8 @@
       (< (dec w) (bounded-size w v)))))
 
 (defn summarize [xs & [{:keys [kind]}]]
-  (if (< 1000 (bounded-count 1001 xs))
-    "1000+ items"
+  (if (< views/max-items (bounded-count (inc views/max-items) xs))
+    (str views/max-items "+ items")
     (let [types (set (mapv type-name xs))]
       (enumerate
        (count xs)
@@ -136,7 +136,7 @@
       [::ui/link (str l (summarize s) r)])
     (let [{:keys [page-size offset]} (views/get-pagination opt)
           current-end (+ offset page-size)
-          more (- (bounded-count (+ current-end 1001) s) current-end)
+          more (- (bounded-count (+ current-end (inc views/max-items)) s) current-end)
           attrs (select-keys opt [::ui/prefix])
           element-width (or element-width
                             (when (< 0 (or (:dataspex/summarize-above-w opt) 120))
@@ -162,7 +162,7 @@
            (conj [::ui/link
                   {::ui/actions
                    (views/offset-pagination opt (+ offset page-size))}
-                  (str (if (< 1000 more) "1000+" more) " more")])))))))
+                  (str (if (< views/max-items more) (str views/max-items "+") more) " more")])))))))
 
 (defn render-inline-seq [s opt]
   (->> {:get-entries data/get-indexed-entries}
