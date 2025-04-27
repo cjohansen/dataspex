@@ -393,21 +393,24 @@
     (render-inline-object data opt)))
 
 (defn render-dictionary [data & [opt]]
-  (cond
-    (satisfies? dp/IRenderDictionary data)
-    (dp/render-dictionary data opt)
+  (try
+    (cond
+      (satisfies? dp/IRenderDictionary data)
+      (dp/render-dictionary data opt)
 
-    (map? data)
-    (render-entries-dictionary data opt (data/get-map-entries data opt))
+      (map? data)
+      (render-entries-dictionary data opt (data/get-map-entries data opt))
 
-    (coll? data)
-    (render-entries-dictionary data opt (data/get-indexed-entries data opt))
+      (coll? data)
+      (render-entries-dictionary data opt (data/get-indexed-entries data opt))
 
-    (data/js-array? data)
-    (render-entries-dictionary data opt (data/get-js-array-entries data opt))
+      (data/js-array? data)
+      (render-entries-dictionary data opt (data/get-js-array-entries data opt))
 
-    (data/js-object? data)
-    (render-entries-dictionary data opt (data/get-js-object-entries data opt))))
+      (data/js-object? data)
+      (render-entries-dictionary data opt (data/get-js-object-entries data opt)))
+    (catch #?(:clj Exception :cljs :default) e
+      [::ui/code #?(:clj (.getMessage e) :cljs (.-message e))])))
 
 (defn render-table [data opt]
   (cond
