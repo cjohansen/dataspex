@@ -18,8 +18,7 @@
   (get-entities [db])
   (get-entities-by-attr [db attr])
   (get-unique-attrs [db])
-  (get-attr-sort-val [db a])
-  (q [db query args]))
+  (get-attr-sort-val [db a]))
 
 (defprotocol IDatabaseLookup
   (lookup-in-db [x db]))

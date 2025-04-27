@@ -144,9 +144,6 @@
   (get-unique-attrs [db]
     (-> db :rschema :db/unique))
 
-  (q [db query args]
-    (apply d/q query db args))
-
   dp/INavigatable
   (nav-in [db path]
     (datalog/nav-in-db db path))

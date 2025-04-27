@@ -6,6 +6,7 @@
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
             [dataspex.views :as views]
+            [datomic-type-extensions.api :as dte]
             [datomic.api :as d]))
 
 (defn attr-sort-val [attribute]
@@ -54,11 +55,22 @@
     :dte/valueType ;; datomic-type-extensions
     :fressian/tag})
 
+(defn db [conn]
+  (let [db (d/db conn)]
+    (if (d/entity db :dte/valueType)
+      (dte/db conn)
+      db)))
+
+(defn entity [db e-ref]
+  (if (::dte/attr->attr-info db)
+    (dte/entity db e-ref)
+    (d/entity db e-ref)))
+
 (defn load-schema [db]
   (->> (d/q '[:find [?attr ...]
               :where [?attr :db/valueType]]
             db)
-       (mapv #(d/entity db %))
+       (mapv #(entity db %))
        (remove (comp builtin-attrs :db/ident))
        (sort-by attr-sort-val)
        (mapv #(into {} %))))
@@ -79,7 +91,7 @@
 
   dp/INavigatable
   (nav-in [_ [attr & path]]
-    (data/nav-in (into {} (d/entity db attr)) path))
+    (data/nav-in (into {} (entity db attr)) path))
 
   dp/IRenderDictionary
   (render-dictionary [_ opt]
@@ -145,7 +157,7 @@
 (extend-type datomic.Connection
   dp/INavigatable
   (nav-in [conn path]
-    (datalog/nav-in-db (d/db conn) path))
+    (datalog/nav-in-db (db conn) path))
 
   dp/IRenderInline
   (render-inline [conn _]
@@ -153,11 +165,11 @@
 
   dp/IRenderDictionary
   (render-dictionary [conn opt]
-    (render-database-dictionary (d/db conn) opt))
+    (render-database-dictionary (db conn) opt))
 
   dp/Watchable
   (get-val [conn]
-    (d/db conn))
+    (db conn))
 
   (watch [conn _ f]
     (let [queue (d/tx-report-queue conn)
@@ -175,24 +187,24 @@
   (->> (d/datoms db :aevt attr)
        (map :e)
        distinct
-       (map #(d/entity db %))))
+       (map #(entity db %))))
 
 (extend-type datomic.db.Db
   datalog/Database
   (count-entities-by-attr [db attr]
     (let [attr (if (number? attr)
-                 (:db/ident (d/entity db attr))
+                 (:db/ident (entity db attr))
                  attr)]
       (or (get-in (d/db-stats db) [:attrs attr :count]) 0)))
 
   (entity [db entity-ref]
-    (d/entity db entity-ref))
+    (entity db entity-ref))
 
   (get-entities [db]
     (->> (d/datoms db :eavt)
          (map :e)
          distinct
-         (map #(d/entity db %))
+         (map #(entity db %))
          (remove :db/txInstant)
          (remove #(< (:db/id %) 1000))))
 
@@ -200,7 +212,7 @@
     (get-entities-by-attr db attr))
 
   (get-attr-sort-val [db a]
-    (attr-sort-val (d/entity db a)))
+    (attr-sort-val (entity db a)))
 
   (get-unique-attrs [db]
     (->> (d/q '[:find [?attr ...]
@@ -210,9 +222,6 @@
               db)
          (remove builtin-attrs)
          sort))
-
-  (q [db query args]
-    (apply d/q query db args))
 
   dp/INavigatable
   (nav-in [db path]
@@ -229,13 +238,13 @@
 (extend-type dataspex.datalog.Attr
   datalog/IDatabaseLookup
   (lookup-in-db [attr db]
-    (into {} (d/entity db (:a attr)))))
+    (into {} (entity db (:a attr)))))
 
 (extend-type dataspex.datalog.AttrValue
   datalog/IDatabaseLookup
   (lookup-in-db [attr-val db]
-    (if (= :db.type/ref (:db/valueType (d/entity db (:a attr-val))))
-      (d/entity db (:v attr-val))
+    (if (= :db.type/ref (:db/valueType (entity db (:a attr-val))))
+      (entity db (:v attr-val))
       (:v attr-val))))
 
 (extend-type datomic.db.Datum
@@ -243,36 +252,48 @@
   (render-inline [datom opt]
     (datalog/render-datom datom opt)))
 
+(defn get-ref-attrs [e]
+  (d/q '[:find [?a ...]
+         :in $ [?a ...]
+         :where
+         [?attr :db/ident ?a]
+         [?attr :db/unique]]
+       (d/entity-db e) (keys e)))
+
+(defn get-primitive-attrs [e]
+  (d/q '[:find [?a ...]
+         :in $ [?a ...]
+         :where
+         [?attr :db/ident ?a]
+         (not [?attr :db/cardinality :db.cardinality/many])]
+       (d/entity-db e) (keys e)))
+
+(defn get-reverse-ref-attrs [entity]
+  (d/q '[:find [?attr ...]
+         :in $ ?e
+         :where
+         [?a :db/valueType :db.type/ref]
+         [?a :db/ident ?attr]
+         [?r ?a ?e]]
+       (d/entity-db entity)
+       (:db/id entity)))
+
+(defn render-entity-dictionary [entity opt]
+  (hiccup/render-entries-dictionary entity opt (datalog/get-entity-entries entity)))
+
 (extend-type datomic.query.EntityMap
   datalog/Entity
   (entity-db [entity]
     (d/entity-db entity))
 
   (get-ref-attrs [e]
-    (d/q '[:find [?a ...]
-           :in $ [?a ...]
-           :where
-           [?attr :db/ident ?a]
-           [?attr :db/unique]]
-         (d/entity-db e) (keys e)))
+    (get-ref-attrs e))
 
   (get-primitive-attrs [e]
-    (d/q '[:find [?a ...]
-           :in $ [?a ...]
-           :where
-           [?attr :db/ident ?a]
-           (not [?attr :db/cardinality :db.cardinality/many])]
-         (d/entity-db e) (keys e)))
+    (get-primitive-attrs e))
 
-  (get-reverse-ref-attrs [entity]
-    (d/q '[:find [?attr ...]
-           :in $ ?e
-           :where
-           [?a :db/valueType :db.type/ref]
-           [?a :db/ident ?attr]
-           [?r ?a ?e]]
-         (d/entity-db entity)
-         (:db/id entity)))
+  (get-reverse-ref-attrs [e]
+    (get-reverse-ref-attrs e))
 
   dp/IKey
   (to-key [e]
@@ -284,4 +305,30 @@
 
   dp/IRenderDictionary
   (render-dictionary [entity opt]
-    (hiccup/render-entries-dictionary entity opt (datalog/get-entity-entries entity))))
+    (render-entity-dictionary entity opt)))
+
+(extend-type datomic_type_extensions.entity.TypeExtendedEntityMap
+  datalog/Entity
+  (entity-db [entity]
+    (d/entity-db entity))
+
+  (get-ref-attrs [e]
+    (get-ref-attrs e))
+
+  (get-primitive-attrs [e]
+    (get-primitive-attrs e))
+
+  (get-reverse-ref-attrs [e]
+    (get-reverse-ref-attrs e))
+
+  dp/IKey
+  (to-key [e]
+    (datalog/make-entity-key e))
+
+  dp/IRenderInline
+  (render-inline [entity opt]
+    (datalog/render-inline-entity entity opt))
+
+  dp/IRenderDictionary
+  (render-dictionary [entity opt]
+    (render-entity-dictionary entity opt)))
