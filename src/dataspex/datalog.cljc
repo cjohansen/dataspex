@@ -42,10 +42,15 @@
          (map ->entity-entry)
          (hiccup/render-entries-dictionary db opt))))
 
-(defrecord EntitiesByAttrIndex [db attr]
+(deftype EntitiesByAttrIndex [db attr]
   p/Datafiable
   (datafy [_]
     (get-entities-by-attr db attr))
+
+  #?(:clj  clojure.lang.Counted
+     :cljs ICounted)
+  (#?(:clj count :cljs -count) [_]
+    (count (get-entities-by-attr db attr)))
 
   dp/IRenderDictionary
   (render-dictionary [_ opt]
