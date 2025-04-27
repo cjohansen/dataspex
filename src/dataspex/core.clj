@@ -4,6 +4,14 @@
             [dataspex.jwt :as jwt]
             [dataspex.server :as server]))
 
+(try
+  (require 'dataspex.datomic)
+  (catch Throwable _ false))
+
+(try
+  (require 'dataspex.datascript)
+  (catch Throwable _ false))
+
 (data/add-string-inspector! jwt/inspect-jwt)
 
 (defn- get-host-str []
