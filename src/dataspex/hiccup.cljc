@@ -232,28 +232,28 @@
     (render-copy-button opt)]])
 
 (defn render-entries-dictionary [v opt entries]
-  (cond-> [::ui/dictionary]
-    (every? nil? (mapv :label entries))
-    (conj {:class :keyless})
+  (let [rows (into (data/get-meta-entries v)
+                   (-> (views/get-pagination opt)
+                       (paginate entries)))]
+    (cond-> [::ui/dictionary]
+      (every? nil? (mapv :label rows))
+      (conj {:class :keyless})
 
-    :then
-    (into
-     (for [{:keys [k path label v copyable?]}
-           (into (data/get-meta-entries v)
-                 (-> (views/get-pagination opt)
-                     (paginate entries)))]
-       (let [opt (cond-> opt
-                   k (update :dataspex/path conj k)
-                   path (update :dataspex/path into path))]
-         [::ui/entry
-          {::ui/actions
-           (when (or k path)
-             (views/navigate-to opt (views/path-to opt)))}
-          (or (some-> label (render-inline opt)) "")
-          (render-inline v opt)
-          ;; Explicitly compare to false to default to true
-          (when-not (false? copyable?)
-            (render-copy-button opt))])))))
+      :then
+      (into
+       (for [{:keys [k path label v copyable?]} rows]
+         (let [opt (cond-> opt
+                     k (update :dataspex/path conj k)
+                     path (update :dataspex/path into path))]
+           [::ui/entry
+            {::ui/actions
+             (when (or k path)
+               (views/navigate-to opt (views/path-to opt)))}
+            (or (some-> label (render-inline opt)) "")
+            (render-inline v opt)
+            ;; Explicitly compare to false to default to true
+            (when-not (false? copyable?)
+              (render-copy-button opt))]))))))
 
 (defn ^{:indent 2} update-sorting [opt k v]
   [::actions/assoc-in [(:dataspex/inspectee opt) :dataspex/sorting (:dataspex/path opt) k] v])
