@@ -3,14 +3,13 @@
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
             [dataspex.server :as server]
-            [dataspex.tap-inspector :as tap-inspector]))
+            [dataspex.tap-inspector :as tap-inspector]
+            dataspex.datascript))
+
+:dataspex.datascript/keep
 
 (try
   (require 'dataspex.datomic)
-  (catch Throwable _ false))
-
-(try
-  (require 'dataspex.datascript)
   (catch Throwable _ false))
 
 (data/add-string-inspector! jwt/inspect-jwt)

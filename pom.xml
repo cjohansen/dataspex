@@ -8,6 +8,11 @@
   <name>dataspex</name>
   <dependencies>
     <dependency>
+      <groupId>datascript</groupId>
+      <artifactId>datascript</artifactId>
+      <version>1.7.4</version>
+    </dependency>
+    <dependency>
       <groupId>juji</groupId>
       <artifactId>editscript</artifactId>
       <version>0.6.6</version>

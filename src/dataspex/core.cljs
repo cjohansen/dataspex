@@ -7,8 +7,10 @@
             [dataspex.remote-host :as remote-host]
             [dataspex.render-host :as rh]
             [dataspex.tap-inspector :as tap-inspector]
-            [dataspex.user-agent :as ua]))
+            [dataspex.user-agent :as ua]
+            dataspex.datascript))
 
+:dataspex.datascript/keep
 (data/add-string-inspector! jwt/inspect-jwt)
 
 (defn- get-host-str [{:keys [browser os]} origin]
