@@ -51,6 +51,7 @@
     :db/txInstant
     :db/unique
     :db/valueType
+    :dte/valueType ;; datomic-type-extensions
     :fressian/tag})
 
 (defn load-schema [db]
