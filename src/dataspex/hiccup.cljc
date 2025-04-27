@@ -238,9 +238,10 @@
 
     :then
     (into
-     (for [{:keys [k path label v]} (into (data/get-meta-entries v)
-                                          (-> (views/get-pagination opt)
-                                              (paginate entries)))]
+     (for [{:keys [k path label v copyable?]}
+           (into (data/get-meta-entries v)
+                 (-> (views/get-pagination opt)
+                     (paginate entries)))]
        (let [opt (cond-> opt
                    k (update :dataspex/path conj k)
                    path (update :dataspex/path into path))]
@@ -250,7 +251,9 @@
              (views/navigate-to opt (views/path-to opt)))}
           (or (some-> label (render-inline opt)) "")
           (render-inline v opt)
-          (render-copy-button opt)])))))
+          ;; Explicitly compare to false to default to true
+          (when-not (false? copyable?)
+            (render-copy-button opt))])))))
 
 (defn ^{:indent 2} update-sorting [opt k v]
   [::actions/assoc-in [(:dataspex/inspectee opt) :dataspex/sorting (:dataspex/path opt) k] v])

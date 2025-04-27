@@ -142,7 +142,9 @@
 (defalias entry [{::keys [actions]} [k v button]]
   [(if actions :tr.clickable :tr) {:on {:click actions}}
    [:th k]
-   [:td [:span.flex v button]]])
+   [:td (if button
+          [:span.flex v button]
+          v)]])
 
 (defalias dictionary [attrs entries]
   [:table.table.dictionary attrs

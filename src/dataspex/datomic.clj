@@ -127,12 +127,15 @@
 (defn render-database-dictionary [db opt]
   (->> [{:k (->SchemaKey db)
          :label 'Schema
-         :v (mapv :db/ident (load-schema db))}
+         :v (mapv :db/ident (load-schema db))
+         :copyable? false}
         {:label 'Entities
-         :v (datalog/->EntityIndex db)}
+         :v (datalog/->EntityIndex db)
+         :copyable? false}
         {:label 'Transactions
          :v (->TxIndex db)
-         :k (->TransactionsKey db)}]
+         :k (->TransactionsKey db)
+         :copyable? false}]
        (hiccup/render-entries-dictionary db opt)))
 
 (defn tx-data->diff [tx-data]
