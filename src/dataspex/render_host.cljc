@@ -11,7 +11,7 @@
 (def path-cache (atom {}))
 
 (defn strip-opaque-keys [data]
-  (walk/postwalk
+  (walk/prewalk
    (fn [x]
      (if (or (satisfies? dp/IKeyLookup x)
              (record? x))
