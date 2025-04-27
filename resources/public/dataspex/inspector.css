@@ -501,6 +501,7 @@ a.clickable:hover,
   font-weight: normal;
   padding: 6px;
   text-align: left;
+  vertical-align: top;
   white-space: nowrap;
 }
 
@@ -621,6 +622,17 @@ a.clickable:hover,
 
 [data-folded=false]:hover::before {
   opacity: 1;
+}
+
+/* Lists */
+.ul, .ul li {
+  list-style-type: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.ul li {
+  margin-bottom: 6px;
 }
 
 /* Panels */

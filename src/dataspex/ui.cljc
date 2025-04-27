@@ -323,6 +323,10 @@
   (into [:span attrs]
         (interpose ", " content)))
 
+(defalias ul [attrs content]
+  (into [:ul.ul attrs]
+        (mapv (fn [x] [:li x]) content)))
+
 (defalias card [attrs content]
   [:article.card attrs content])
 

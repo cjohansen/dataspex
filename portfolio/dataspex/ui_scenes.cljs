@@ -53,6 +53,13 @@
    [:span.clickable [ui/keyword :movie/id] [::ui/code " (5)"]]
    [:span.clickable [ui/keyword :review/id] [::ui/code " (2)"]]])
 
+(defscene vertical-list
+  [ui/ul
+   [ui/link "All (3)"]
+   [:span.clickable [ui/keyword :user/id] [::ui/code " (3)"]]
+   [:span.clickable [ui/keyword :movie/id] [::ui/code " (5)"]]
+   [:span.clickable [ui/keyword :review/id] [::ui/code " (2)"]]])
+
 (defscene path
   [ui/path
    [ui/crumb {::ui/actions []} "."]

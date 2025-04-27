@@ -75,3 +75,13 @@
     [ui/number 1]
     [ui/number {::ui/actions []} 536870914]
     [ui/boolean true]]])
+
+(defscene tall-rows
+  [ui/dictionary
+   [ui/entry
+    [ui/symbol "Entities"]
+    [ui/ul
+     [ui/link "All (3)"]
+     [:span.clickable [ui/keyword :user/id] [::ui/code " (3)"]]
+     [:span.clickable [ui/keyword :movie/id] [::ui/code " (5)"]]
+     [:span.clickable [ui/keyword :review/id] [::ui/code " (2)"]]]]])
