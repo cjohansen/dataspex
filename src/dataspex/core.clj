@@ -2,7 +2,8 @@
   (:require [dataspex.data :as data]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
-            [dataspex.server :as server]))
+            [dataspex.server :as server]
+            [dataspex.tap-inspector :as tap-inspector]))
 
 (try
   (require 'dataspex.datomic)
@@ -51,6 +52,17 @@
 (defn ^:export uninspect [label]
   (inspector/uninspect store label)
   nil)
+
+(defn ^:export inspect-taps [& [label]]
+  (inspector/inspect
+   store
+   (or label "Taps")
+   (tap-inspector/create-inspector)
+   {:track-changes? false})
+  nil)
+
+(defn ^:export uninspect-taps [& [label]]
+  (uninspect (or label "Taps")))
 
 (comment
 

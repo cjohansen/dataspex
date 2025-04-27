@@ -6,6 +6,7 @@
             [dataspex.jwt :as jwt]
             [dataspex.remote-host :as remote-host]
             [dataspex.render-host :as rh]
+            [dataspex.tap-inspector :as tap-inspector]
             [dataspex.user-agent :as ua]))
 
 (data/add-string-inspector! jwt/inspect-jwt)
@@ -27,4 +28,16 @@
   (inspector/inspect store label x opt))
 
 (defn ^:export uninspect [label]
-  (inspector/uninspect store label))
+  (inspector/uninspect store label)
+  nil)
+
+(defn ^:export inspect-taps [& [label]]
+  (inspector/inspect
+   store
+   (or label "Taps")
+   (tap-inspector/create-inspector)
+   {:track-changes? false})
+  nil)
+
+(defn ^:export uninspect-taps [& [label]]
+  (uninspect (or label "Taps")))
