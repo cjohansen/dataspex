@@ -1,4 +1,4 @@
-(ns dataspex.browser-extension-channel
+(ns dataspex.browser-extension-client
   (:require [dataspex.codec :as codec]
             [dataspex.render-client :as rc]))
 
@@ -22,7 +22,7 @@
              :effects (rc/execute-effects (:data message))
              (js/console.log "Unknown message event" (codec/generate-string message)))))))))
 
-(defrecord BrowserExtensionChannel []
+(defrecord BrowserExtensionClient []
   rc/HostChannel
   (initialize! [_ render-f]
     (subscribe-to-messages render-f)
@@ -32,4 +32,4 @@
     (post-actions actions)))
 
 (defn create-channel []
-  (->BrowserExtensionChannel))
+  (->BrowserExtensionClient))

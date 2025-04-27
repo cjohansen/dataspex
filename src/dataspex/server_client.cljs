@@ -1,4 +1,4 @@
-(ns dataspex.server-channel
+(ns dataspex.server-client
   (:require [dataspex.codec :as codec]
             [dataspex.render-client :as rc]))
 
@@ -26,7 +26,7 @@
         (.then (fn [res] (.text res)))
         (.then (fn [text] (codec/parse-string text))))))
 
-(defrecord ServerChannel [host]
+(defrecord ServerClient [host]
   rc/HostChannel
   (initialize! [_ render-f]
     (connect-event-source host render-f))
@@ -35,4 +35,4 @@
     (post-actions host node actions)))
 
 (defn create-channel [& [host]]
-  (ServerChannel. host))
+  (ServerClient. host))

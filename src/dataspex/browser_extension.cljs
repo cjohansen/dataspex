@@ -1,10 +1,10 @@
 (ns dataspex.browser-extension
-  (:require [dataspex.browser-extension-channel :as extension-channel]
+  (:require [dataspex.browser-extension-client :as extension-client]
             [dataspex.render-client :as rc]
-            [dataspex.server-channel :as server-channel]))
+            [dataspex.server-client :as server-client]))
 
 (defn ^:export main []
   (rc/start-render-client
    {:channels
-    {:server (server-channel/create-channel "http://localhost:7117/jvm")
-     :extension (extension-channel/create-channel)}}))
+    {:server (server-client/create-channel "http://localhost:7117/jvm")
+     :extension (extension-client/create-channel)}}))

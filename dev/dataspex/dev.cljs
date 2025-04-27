@@ -3,7 +3,7 @@
             [dataspex.data :as data]
             [dataspex.datascript :as datascript]
             [dataspex.demo-data :as demo-data]
-            [dataspex.in-process-channel :as in-process-channel]
+            [dataspex.in-process-client :as in-process-client]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
             [dataspex.render-client :as rc]))
@@ -63,7 +63,7 @@
   (demo-data/add-data demo-data/conn))
 
 (rc/start-render-client
- {:channels {:process (in-process-channel/create-channel store)}})
+ {:channels {:process (in-process-client/create-channel store)}})
 
 (defn ^:dev/after-load main []
   (swap! store assoc ::loaded (.getTime (js/Date.))))
