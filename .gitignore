@@ -12,4 +12,6 @@ dev-resources/public/portfolio/
 /.cljs_node_repl/
 /resources/public/app-js/
 /resources/public/app/
-resources/public/dataspex
+/resources/public/dataspex/cljs-runtime
+/resources/public/dataspex/inspector.js
+/resources/public/dataspex/manifest.edn
