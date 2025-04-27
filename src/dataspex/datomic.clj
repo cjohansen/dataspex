@@ -166,6 +166,12 @@
   (unwatch [_ subscription]
     (vreset! subscription false)))
 
+(defn get-entities-by-attr [db attr]
+  (->> (d/datoms db :aevt attr)
+       (map :e)
+       distinct
+       (map #(d/entity db %))))
+
 (extend-type datomic.db.Db
   datalog/Database
   (count-entities-by-attr [db attr]
@@ -184,6 +190,9 @@
          (map #(d/entity db %))
          (remove :db/txInstant)
          (remove #(< (:db/id %) 1000))))
+
+  (get-entities-by-attr [db attr]
+    (get-entities-by-attr db attr))
 
   (get-attr-sort-val [db a]
     (attr-sort-val (d/entity db a)))

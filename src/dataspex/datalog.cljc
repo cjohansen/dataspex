@@ -16,6 +16,7 @@
   (count-entities-by-attr [db attr])
   (entity [db entity-ref])
   (get-entities [db])
+  (get-entities-by-attr [db attr])
   (get-unique-attrs [db])
   (get-attr-sort-val [db a])
   (q [db query args]))
@@ -24,14 +25,6 @@
   (lookup-in-db [x db]))
 
 (declare render-entity-index)
-
-(defn get-entities-by-attr [db attr]
-  (->> (q db '[:find [?e ...]
-               :in $ ?a
-               :where [?e ?a]]
-          [attr])
-       (sort)
-       (map #(entity db %))))
 
 (defn ->entity-entry [entity]
   {:k (data/as-key entity)

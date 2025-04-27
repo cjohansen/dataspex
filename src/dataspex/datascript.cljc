@@ -29,6 +29,14 @@
        (mapv #(d/entity db %))
        set))
 
+(defn get-entities-by-attr [db attr]
+  (->> (d/q '[:find [?e ...]
+              :in $ ?a
+              :where [?e ?a]]
+            db attr)
+       (sort)
+       (map #(d/entity db %))))
+
 (defn get-last-tx [db]
   (d/entity db (:max-tx db)))
 
@@ -120,6 +128,9 @@
 
   (get-entities [db]
     (get-entities db))
+
+  (get-entities-by-attr [db attr]
+    (get-entities-by-attr db attr))
 
   (get-attr-sort-val [{:keys [rschema]} a]
     [(if (contains? (:db/unique rschema) a)
