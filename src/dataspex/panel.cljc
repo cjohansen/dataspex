@@ -204,4 +204,5 @@
            (filterv string?)
            sort
            (mapv #(render-panel state %))
+           not-empty
            (into [:div])))

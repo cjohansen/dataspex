@@ -9,13 +9,12 @@
   (:import (java.nio.charset StandardCharsets)))
 
 (defn write-event [ref id out data]
-  (when data
-    (try
-      (.write out (-> (str "data: " (codec/generate-string data) "\n\n")
-                      (.getBytes StandardCharsets/UTF_8)))
-      (.flush out)
-      (catch java.io.IOException _
-        (remove-watch ref id)))))
+  (try
+    (.write out (-> (str "data: " (codec/generate-string data) "\n\n")
+                    (.getBytes StandardCharsets/UTF_8)))
+    (.flush out)
+    (catch java.io.IOException _
+      (remove-watch ref id))))
 
 (defn ^{:indent 2} stream-changes [ref out f {:keys [stream-current?]}]
   (let [id (random-uuid)]
@@ -26,12 +25,14 @@
       (.flush out))))
 
 (defn render-relayed-renders [state]
-  (->> (sort-by key state)
-       (mapv
-        (fn [[id hiccup]]
-          [:article {:data-host id}
-           hiccup]))
-       (into [:div])))
+  (some->> (sort-by key state)
+           (keep
+            (fn [[id hiccup]]
+              (when hiccup
+                [:article {:data-host id}
+                 hiccup])))
+           not-empty
+           (into [:div])))
 
 (defn get-relayed-actions [host-id data]
   (when (= (:host-id data) host-id)
