@@ -115,7 +115,18 @@
 
   dp/IRenderSource
   (render-source [conn opt]
-    (render-db-source (d/db conn) opt)))
+    (render-db-source (d/db conn) opt))
+
+  dp/Watchable
+  (get-val [ref]
+    @ref)
+
+  (watch [ref k f]
+    (add-watch ref k (fn [_ _ old-data new-data] (f old-data new-data nil)))
+    k)
+
+  (unwatch [ref k]
+    (remove-watch ref k)))
 
 (extend-type datascript.db.DB
   datalog/Database
