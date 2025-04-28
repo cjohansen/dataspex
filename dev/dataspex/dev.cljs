@@ -6,6 +6,7 @@
             [dataspex.in-process-client :as in-process-client]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
+            [dataspex.panel :as panel]
             [dataspex.render-client :as rc]))
 
 ::datascript/keep
@@ -69,7 +70,20 @@
   (swap! store assoc ::loaded (.getTime (js/Date.))))
 
 (dataspex/inspect "App state" app-state)
-(dataspex/inspect "DB" demo-data/conn)
 
-(inspector/inspect store "App state" (assoc app-state :stuff "Magnar"))
-(inspector/inspect store "DB" demo-data/conn)
+(comment
+  (dataspex/inspect "DB" demo-data/conn)
+
+  (inspector/inspect store "App state" app-state)
+  (inspector/inspect store "DB" demo-data/conn)
+  (inspector/inspect store "Hiccup" (panel/render-panel @store "App state"))
+
+  (js/setTimeout
+   #(dataspex/inspect  "App state" (assoc-in app-state [:filters :search-term] "batman"))
+   500)
+
+  (js/setTimeout
+   #(dataspex/inspect  "App state" (-> app-state
+                                       (update-in [:filters :genres] (fn [gs] (vec (next gs))))
+                                       (assoc-in [:filters :search-term] "batman")))
+   2500))
