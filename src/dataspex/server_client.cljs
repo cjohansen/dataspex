@@ -3,7 +3,8 @@
             [dataspex.render-client :as rc]))
 
 (defn connect-event-source [host render]
-  (let [event-source (js/EventSource. (str host "/renders"))]
+  (let [event-source (js/EventSource. (str host "/renders"))
+        attempts (atom 3)]
     (.addEventListener
      event-source "message"
      (fn [e]
@@ -13,7 +14,11 @@
     (.addEventListener
      event-source "error"
      (fn [e]
-       (js/console.error "EventSource error:" e)))))
+       (if (= 0 @attempts)
+         (do
+           (.close event-source)
+           (println "Dataspex couldn't reach the server on localhot:7117 after three attempts, giving up. Refresh page to inspect remotely."))
+         (swap! attempts dec))))))
 
 (defn post-actions [host node actions]
   (let [host-id (some-> node
