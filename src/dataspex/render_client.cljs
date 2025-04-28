@@ -1,5 +1,6 @@
 (ns dataspex.render-client
   (:require [dataspex.actions :as actions]
+            [dataspex.hiccup :as hiccup]
             [dataspex.icons :as icons]
             [dataspex.ui :as ui]
             [replicant.dom :as r]))
@@ -47,13 +48,44 @@
       (.appendChild root el)
       el)))
 
+(defn render-splash []
+  [::ui/card-list#dataspex.code
+   [ui/card-body
+    [:p
+     "Well, it ain't much to look at - yet. "
+     "You can fix that by telling Dataspex to inspect something:"]
+    (hiccup/render-source
+     '(require [dataspex.core :as dataspex])
+     {})
+    (hiccup/render-source
+     '(dataspex/inspect "App state" my-data)
+     {})
+    [:p
+     "Dataspex can inspect pretty much anything you can throw at it: maps,
+     vectors and lists, atoms, Datascript and Datomic databases, and anything
+     that implements Clojure's Datafy. You can also implement Dataspex' own
+     protocols to create custom data browsers. Have fun!"]]])
+
+(defn mount-splash [root]
+  (-> (ensure-element root "dataspex-splash")
+      (r/render (render-splash))))
+
 (defn render [^js el id hiccup]
+  (when hiccup
+    (when-let [splash (.querySelector el "#dataspex-splash")]
+      (r/unmount splash)))
   (-> (ensure-element el (name id))
-      (r/render hiccup)))
+      (r/render hiccup))
+  (when-not hiccup
+    (when (->> (into [] (.-childNodes el))
+               (filterv (comp #{1} #(.-nodeType %)))
+               (every? #(empty? (.-innerHTML %))))
+      (mount-splash el))))
 
 (defn ^{:indent 1} start-render-client [^js root {:keys [channels]}]
   (let [theme (get-preferred-theme)]
     (.add (.-classList js/document.documentElement) (name theme))
+    (mount-splash root)
     (set-dispatch! channels)
     (doseq [[id channel] channels]
       (initialize! channel #(render root id %))
