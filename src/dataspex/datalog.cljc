@@ -114,7 +114,7 @@
   (let [ks (keys e)]
     (or (when-let [ident (:db/ident e)]
           ident)
-        (when-let [uniq (get-ref-attrs e)]
+        (when-let [uniq (seq (get-ref-attrs e))]
           (select-keys e uniq))
         (when (< (count ks) 5)
           (into {} e))
@@ -171,7 +171,8 @@
      [::ui/boolean add?]]))
 
 (defn render-inline-entity [entity opt]
-  (let [entity-m (select-keys entity (get-primitive-attrs entity))]
+  (let [entity-m (select-keys entity (get-primitive-attrs entity))
+        entity-m (if (empty? entity-m) (into {} entity) entity-m)]
     (if (hiccup/summarize? entity-m opt)
       (hiccup/render-inline (summarize-entity entity) opt)
       (hiccup/render-inline entity-m opt))))

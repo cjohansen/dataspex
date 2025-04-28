@@ -165,7 +165,27 @@
              [::ui/string "bob"]]
             [::ui/map-entry
              [::ui/keyword :person/name]
-             [::ui/string "Bob"]]]))))
+             [::ui/string "Bob"]]])))
+
+  (testing "Renders entity with no primitive attributes inline"
+    (is (= (with-conn [conn schema]
+             (->> [{:db/id "alice"
+                    :person/id "alice"
+                    :person/boss
+                    {:db/id "anonymous"
+                     :person/friends
+                     [{:person/id "bob"
+                       :person/name "Bob"}
+                      {:person/id "wendy"
+                       :person/name "Wendy"}]}}]
+                  (d/transact conn)
+                  deref)
+             (->> [:person/id "alice"]
+                  (d/entity (d/db conn))
+                  :person/boss
+                  h/render-inline))
+           [::ui/map
+            [::ui/map-entry [::ui/keyword :person/friends]]]))))
 
 (deftest render-dictionary-test
   (testing "Renders connection as dictionary"
