@@ -218,7 +218,7 @@
 
   (get-primitive-attrs [e]
     (let [rschema (:rschema (d/entity-db e))
-          unwanted (into (:db.type/ref rschema) (:db.cardinality/many rschema))]
+          unwanted (into (set (:db.type/ref rschema)) (:db.cardinality/many rschema))]
       (->> (keys e)
            (remove unwanted))))
 

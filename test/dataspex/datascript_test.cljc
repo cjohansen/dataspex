@@ -32,6 +32,13 @@
     :person/id "wendy"
     :person/name "Wendy"}])
 
+(deftest get-primitive-attrs-test
+  (testing "Gets primitive attributes from very simple database"
+    (is (= (let [conn (d/create-conn {:form/id {:db/unique :db.unique/identity}})]
+             (d/transact! conn [{:form/id "form"}])
+             (datalog/get-primitive-attrs (d/entity (d/db conn) [:form/id "form"])))
+           [:form/id]))))
+
 (deftest navigation-test
   (testing "Navigates in connection"
     (is (with-conn [conn schema]
