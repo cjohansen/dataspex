@@ -62,7 +62,7 @@
 (defonce txes
   (demo-data/add-data demo-data/conn))
 
-(rc/start-render-client
+(rc/start-render-client js/document.body
  {:channels {:process (in-process-client/create-channel store)}})
 
 (defn ^:dev/after-load main []

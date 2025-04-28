@@ -3,7 +3,7 @@
             [dataspex.server-client :as server-client]))
 
 (defn ^:export main []
-  (rc/start-render-client
+  (rc/start-render-client js/document.body
    {:channels
     {:jvm (server-client/create-channel "/jvm")
      :remotes (server-client/create-channel "/relay")}}))

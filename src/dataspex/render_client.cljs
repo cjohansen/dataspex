@@ -38,24 +38,24 @@
        (-> (process-actions (get channels channel) node actions)
            (.then execute-effects))))))
 
-(defn ensure-element [id]
+(defn ensure-element [^js root id]
   (if-let [el (js/document.getElementById id)]
     el
     (let [el (js/document.createElement "div")]
       (set! (.-id el) id)
       (.setAttribute el "data-channel" id)
-      (js/document.body.appendChild el)
+      (.appendChild root el)
       el)))
 
-(defn render [id hiccup]
-  (-> (ensure-element (name id))
+(defn render [^js el id hiccup]
+  (-> (ensure-element el (name id))
       (r/render hiccup)))
 
-(defn start-render-client [{:keys [channels]}]
+(defn ^{:indent 1} start-render-client [^js root {:keys [channels]}]
   (let [theme (get-preferred-theme)]
     (.add (.-classList js/document.documentElement) (name theme))
     (set-dispatch! channels)
     (doseq [[id channel] channels]
-      (initialize! channel #(render id %))
+      (initialize! channel #(render root id %))
       (->> [[:dataspex.actions/assoc-in [:dataspex/theme] theme]]
            (process-actions channel js/document.documentElement)))))
