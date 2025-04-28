@@ -53,7 +53,7 @@
     (not (number? (:history-limit opt)))
     (assoc :history-limit 25)))
 
-(extend-type #?(:cljs cljs.core/IAtom
+(extend-type #?(:cljs cljs.core/Atom
                 :clj clojure.lang.IAtom)
   dp/Watchable
   (get-val [ref]
