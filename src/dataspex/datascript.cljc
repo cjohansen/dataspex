@@ -81,7 +81,7 @@
        (hiccup/render-entries-dictionary db opt)))
 
 (defn render-index-dictionary [index opt]
-  (into [::ui/dictionary {:class :table-auto}]
+  (into [::ui/dictionary {:class [:table-auto :table-middle]}]
         (mapv #(datalog/render-datom % opt {:alias ::ui/tuple}) index)))
 
 (defn render-db-source [db opt]

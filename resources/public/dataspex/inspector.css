@@ -505,6 +505,11 @@ a.clickable:hover,
   white-space: nowrap;
 }
 
+.table-middle th,
+.table-middle td {
+  vertical-align: middle;
+}
+
 .table th:has(.icon) {
   display: flex;
   align-items: center;
