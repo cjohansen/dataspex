@@ -7,8 +7,7 @@
             [dataspex.datalog :as datalog]
             [dataspex.hiccup :as hiccup]
             [dataspex.protocols :as dp]
-            [dataspex.ui :as-alias ui]
-            [dataspex.views :as views])
+            [dataspex.ui :as-alias ui])
   #?(:clj (:import (me.tonsky.persistent_sorted_set PersistentSortedSet))))
 
 (defn get-datom-entries [[e a v t add?]]
@@ -172,6 +171,10 @@
     (render-db-source db opt)))
 
 (extend-type datascript.db.Datom
+  dp/IKey
+  (to-key [datom]
+    (datalog/make-datom-key datom))
+
   dp/IRenderInline
   (render-inline [datom opt]
     (datalog/render-datom datom opt))

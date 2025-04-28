@@ -155,6 +155,18 @@
 (defn make-entity-key [e]
   (EntityKey. (:db/id e) (summarize-entity e)))
 
+(deftype DatomKey [datom]
+  p/Datafiable
+  (datafy [_]
+    (:e datom))
+
+  dp/IKeyLookup
+  (lookup [_ _]
+    datom))
+
+(defn make-datom-key [datom]
+  (->DatomKey datom))
+
 (defn navigate-to [opt xs]
   (->> (views/path-to opt xs)
        (views/navigate-to opt)))
