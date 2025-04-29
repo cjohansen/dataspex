@@ -1,6 +1,5 @@
 (ns dataspex.data
-  (:require [clojure.core.protocols :as p]
-            [clojure.datafy :as datafy]
+  (:require [clojure.datafy :as datafy]
             #?(:cljs [dataspex.date :as date])
             [dataspex.protocols :as dp]))
 
@@ -8,7 +7,13 @@
   #?(:cljs (array? v)))
 
 (defn js-object? [#?(:cljs v :clj _)]
-  #?(:cljs (and (not (array? v)) (object? v))))
+  #?(:cljs
+     (and (some? v)
+          (identical? (goog/typeOf v) "object")
+          (not (array? v))
+          (not (map-entry? v))
+          (not (implements? IMap v))
+          (not (record? v)))))
 
 (defn hiccup? [data]
   (and (vector? data)
