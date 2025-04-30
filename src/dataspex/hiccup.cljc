@@ -67,6 +67,21 @@
          (number? v)
          (count (str v))
 
+         (data/js-object? v)
+         (loop [size 0
+                ks (into [] #?(:cljs (js/Object.keys v)))]
+           (cond
+             (<= n size) n
+             (empty? ks) size
+             :else (let [k (first ks)
+                         v (aget v k)
+                         size (+ size 3) ;; space between key and value,
+                         ;; plus comma and space before next value, OR
+                         ;; parenthesis (the last element)
+                         k-size (bounded-size (- n size) k)]
+                     (recur (+ size k-size (bounded-size (- n size k-size) v)) (next ks)))))
+
+
          :else
          (count (pr-str v)))))
 
@@ -199,12 +214,16 @@
                      (render-inline v opt)])
                   entries)))))
 
+(defn get-js-prefix [o]
+  (let [n (some->> o .-constructor .-name)]
+    (str "#js" (when (and (not-empty n) (not= n "Object")) (str "/" n)))))
+
 (defn render-inline-object [o opt]
   (cond
     (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
     (coll? o) (render-inline-seq o opt)
     (data/js-array? o) (render-inline-array o opt)
-    (data/js-object? o) (render-inline-map o (data/get-js-object-entries o opt) (assoc opt ::ui/prefix "#js"))
+    (data/js-object? o) (render-inline-map o (data/get-js-object-entries o opt) (assoc opt ::ui/prefix (get-js-prefix o)))
 
     :else
     (let [string (data/stringify o)]

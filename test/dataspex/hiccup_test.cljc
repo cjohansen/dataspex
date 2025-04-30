@@ -66,6 +66,11 @@
        (is (= (hiccup/bounded-size 100 #js [0 1 2 3]) 13))
        (is (= (hiccup/bounded-size 5 #js [0 1 2 3]) 5)))))
 
+(defn MyConstructor [data]
+  #?(:cljs (this-as this
+             (set! (.-data this) data))
+     :clj data))
+
 (deftest render-inline-test
   (testing "Renders string"
     (is (= (h/render-inline "String")
@@ -249,6 +254,15 @@
                [::ui/map-entry
                 [::ui/keyword :hello]
                 [::ui/string "There"]]]))))
+
+  #?(:cljs
+     (testing "Renders object with custom constructor"
+       (is (= (-> (MyConstructor. "Secret data")
+                  h/render-inline)
+              [::ui/map {:dataspex.ui/prefix "#js/dataspex$hiccup_test$MyConstructor"}
+               [::ui/map-entry
+                [::ui/keyword :data]
+                [::ui/string "Secret data"]]]))))
 
   (testing "Renders inline atom"
     (is (= (-> (h/render-inline (atom {}))
