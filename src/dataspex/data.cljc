@@ -9,11 +9,13 @@
 (defn js-object? [#?(:cljs v :clj _)]
   #?(:cljs
      (and (some? v)
-          (identical? (goog/typeOf v) "object")
+          (= (goog/typeOf v) "object")
+          (not (coll? v))
           (not (array? v))
-          (not (map-entry? v))
-          (not (implements? IMap v))
-          (not (record? v)))))
+          (not (satisfies? dp/IRenderDictionary v))
+          (not (satisfies? dp/IRenderInline v))
+          (not-empty (some-> v .-constructor .-name))
+          (not (= "clj" (.substring (some-> v .-constructor .-name) 0 3))))))
 
 (defn hiccup? [data]
   (and (vector? data)
