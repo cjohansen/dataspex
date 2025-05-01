@@ -7,8 +7,5 @@ function injectContentScript() {
 
 chrome.devtools.panels.create("Dataspex", "" /* icon */, "panel.html", function (panel) {
   injectContentScript();
-
-  chrome.devtools.network.onNavigated.addListener(function () {
-    injectContentScript();
-  });
+  chrome.devtools.network.onNavigated.addListener(injectContentScript);
 });

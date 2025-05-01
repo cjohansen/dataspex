@@ -1,7 +1,7 @@
 {
-  "name": "Dataspex",
-  "version": "2025.04.21",
   "manifest_version": 3,
+  "name": "Dataspex",
+  "version": "2025.05.01",
   "description": "A point-and-click Clojure(Script) data browser.",
   "devtools_page": "devtools.html",
   "permissions": ["scripting"],

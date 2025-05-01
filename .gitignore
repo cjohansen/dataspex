@@ -17,3 +17,13 @@ dev-resources/public/portfolio/
 /resources/public/dataspex/manifest.edn
 /dataspex.jar
 /dev-resources/public/dataspex/
+/browser-extension/chrome/content-script.js
+/browser-extension/chrome/devtools.html
+/browser-extension/chrome/extension.js
+/browser-extension/chrome/inspector.css
+/browser-extension/chrome/panel.html
+/browser-extension/firefox/content-script.js
+/browser-extension/firefox/devtools.html
+/browser-extension/firefox/extension.js
+/browser-extension/firefox/inspector.css
+/browser-extension/firefox/panel.html

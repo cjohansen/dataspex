@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+  "name": "Dataspex",
+  "version": "25.5.1",
+  "description": "A point-and-click ClojureScript data browser.",
+  "devtools_page": "devtools.html",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "permissions": ["tabs", "activeTab"],
+  "web_accessible_resources": ["content-script.js"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "exclude_globs": ["https://www.google*"],
+      "js": ["content-script.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}

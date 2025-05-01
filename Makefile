@@ -1,9 +1,22 @@
 node_modules:
 	npm install
 
-extension: node_modules
+browser-extension/extension.js: node_modules
 	npx shadow-cljs release browser-extension
-	cp resources/public/dataspex/inspector.css browser-extension/inspector.css
+
+chrome-extension: browser-extension/extension.js
+	cp resources/public/dataspex/inspector.css browser-extension/chrome/inspector.css
+	cp browser-extension/extension.js browser-extension/chrome/extension.js
+	cp browser-extension/content-script.js browser-extension/chrome/content-script.js
+	cp browser-extension/devtools.html browser-extension/chrome/devtools.html
+	cp browser-extension/panel.html browser-extension/chrome/panel.html
+
+firefox-extension: browser-extension/extension.js
+	cp resources/public/dataspex/inspector.css browser-extension/firefox/inspector.css
+	cp browser-extension/extension.js browser-extension/firefox/extension.js
+	cp browser-extension/content-script.js browser-extension/firefox/content-script.js
+	cp browser-extension/devtools.html browser-extension/firefox/devtools.html
+	cp browser-extension/panel.html browser-extension/firefox/panel.html
 
 resources/public/dataspex/inspector.js:
 	npx shadow-cljs release remote-inspector
