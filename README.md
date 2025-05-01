@@ -5,6 +5,10 @@ data browser that lets you peer into maps, vectors, and seqs; explore Datascript
 and Datomic connections; trace changes to atoms and databases over time; and
 more -- with minimal effort and a short learning curve.
 
+```clj
+no.cjohansen/dataspex {:mvn/version "2025.05.01"}
+```
+
 Dataspex runs as a Chrome and Firefox extension — or as a standalone web app —
 and connects to local ClojureScript apps, Clojure REPLs, or across the network
 so you can debug apps on your phone.
@@ -82,12 +86,35 @@ And much more.
 To build the Chrome extension:
 
 ```sh
-make extension
+make chrome-extension
 ```
 
 Then go to [chrome://extensions/](chrome://extensions/), enable devtools, and
 click "Load unpacked". Choose the `brower-extension` directory in this repo, and
 you should be good to go.
+
+## Firefox extension
+
+To build the Firefox extension:
+
+```sh
+make firefox-extension
+```
+
+You will need [Firefox Developer Edition](https://www.mozilla.org/en-US/firefox/developer/).
+
+1. Go to [about:config](about:config)
+2. Set `devtools.chrome.enabled` to `true`
+3. Set `devtools.debugger.remote-enabled` to `true`
+4. Set `devtools.debugger.prompt-connection` to `false` (optional, reduces prompts)
+5. Set `extensions.webextensions.remote` to `true` (required for devtools
+   extensions)
+6. Go to [about:debugging](about:debugging)
+7. Click "This Firefox" in the sidebar
+8. Click "Load Temporary Add-on"
+9. Select manifest.json from the browser-extension/firefox folder
+
+If you make changes to the extension code, click "reload".
 
 ## License
 
