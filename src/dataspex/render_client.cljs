@@ -82,9 +82,12 @@
                (every? #(empty? (.-innerHTML %))))
       (mount-splash el))))
 
+(defn set-theme! [theme]
+  (.setAttribute js/document.documentElement "data-theme" (name theme)))
+
 (defn ^{:indent 1} start-render-client [^js root {:keys [channels]}]
   (let [theme (get-preferred-theme)]
-    (.add (.-classList js/document.documentElement) (name theme))
+    (set-theme! theme)
     (mount-splash root)
     (set-dispatch! channels)
     (doseq [[id channel] channels]

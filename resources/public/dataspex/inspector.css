@@ -26,7 +26,7 @@
   --la-palma: #25a711;
 }
 
-:root, .light, .dark .light {
+:root, [data-theme=light], [data-theme=dark] [data-theme=light] {
   background: var(--white);
   color: var(--mine-shaft);
   --fg: var(--mine-shaft);
@@ -72,7 +72,7 @@
   --active-card-hover-bg: var(--mercury);
 }
 
-.dark {
+[data-theme=dark] {
   background: var(--woodsmoke);
   color: var(--mercury);
   --fg: var(--mercury);
@@ -132,7 +132,7 @@ body {
   font-size: 0.8rem;
 }
 
-.dark button {
+[data-theme=dark] button {
   color: var(--fg);
 }
 

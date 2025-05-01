@@ -280,13 +280,12 @@
               (lookup/select ::ui/card-list)))))
 
   (testing "Renders panel with selected theme"
-    (is (contains?
-         (->> (panel/render-panel
-               {"Store" {:dataspex/path []
-                         :dataspex/inspectee "Store"
-                         :dataspex/theme :dark}}
-               "Store")
-              (lookup/select-one [:div.panel])
-              lookup/attrs
-              :class)
-         "dark"))))
+    (is (= (->> (panel/render-panel
+                 {"Store" {:dataspex/path []
+                           :dataspex/inspectee "Store"
+                           :dataspex/theme :dark}}
+                 "Store")
+                (lookup/select-one [:div.panel])
+                lookup/attrs
+                :data-theme)
+           "dark"))))

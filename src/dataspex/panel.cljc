@@ -178,7 +178,7 @@
   (let [opt (views/get-view-options state label)
         rendering? (render? opt)]
     (into
-     [:div.panel (cond-> {:class (name (get-theme opt))}
+     [:div.panel (cond-> {:data-theme (name (get-theme opt))}
                    (not rendering?) (assoc :data-folded "folded"))
       (render-title-bar (get state label) opt)]
      (when rendering?
