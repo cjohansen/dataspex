@@ -16,7 +16,7 @@
        (if (= 0 @attempts)
          (do
            (.close event-source)
-           (println "Dataspex couldn't reach the server on localhot:7117 after three attempts, giving up. Refresh page to inspect remotely."))
+           (println (str "Dataspex couldn't reach the server on " remote-host " after three attempts, giving up. Refresh page to inspect remotely.")))
          (swap! attempts dec))))))
 
 (defrecord RemoteHost [!connected? remote-host host-id]
