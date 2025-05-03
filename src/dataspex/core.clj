@@ -18,11 +18,14 @@
   (str (-> (System/getProperty "user.dir")
            java.io.File.
            .getName)
-       (if-let [port (slurp ".nrepl-port")]
+       (if-let [port (try
+                       (slurp ".nrepl-port")
+                       (catch Exception _
+                         nil))]
          (str " nrepl:" port)
          " JVM")))
 
-(defonce store (atom {:dataspex/host-str (get-host-str)}))
+(defonce store (atom {}))
 (defonce server (atom nil))
 
 (defn stop-server! []
@@ -34,6 +37,8 @@
   {:arglists '[[]
                [{:keys [port]}]]}
   [& [opt]]
+  (when (nil? (:dataspex/host-str @store))
+    (swap! store assoc :dataspex/host-str (get-host-str)))
   (stop-server!)
   (println "Starting Dataspex server on http://localhost:"
            (or (:port opt) server/default-port))
@@ -43,6 +48,8 @@
   {:arglists '[[label x]
                [label x {:keys [start-server? server-port]}]]}
   [label x & [opt]]
+  (when (nil? (:dataspex/host-str @store))
+    (swap! store assoc :dataspex/host-str (get-host-str)))
   (inspector/inspect store label x opt)
   (when (and (nil? @server) (not (false? (:start-server? opt))))
     (start-server!))
