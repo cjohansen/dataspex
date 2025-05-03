@@ -6,7 +6,7 @@ and Datomic connections; trace changes to atoms and databases over time; and
 more -- with minimal effort and a short learning curve.
 
 ```clj
-no.cjohansen/dataspex {:mvn/version "2025.05.01"}
+no.cjohansen/dataspex {:mvn/version "2025.05.04"}
 ```
 
 Dataspex runs as a Chrome and Firefox extension — or as a standalone web app —
@@ -21,14 +21,14 @@ Inspector](https://github.com/cjohansen/gadget-inspector).
 
 ## Usage
 
-Dataspex has the same API in Clojure and ClojureScript. When used from Clojure,
-it will start a server on port 7117. The browser extension automatically
-connects to this port.
+Using Dataspex is easy: require `dataspex.core` and call `inspect` on your data.
+When used from Clojure, it will start a server on port 7117. The browser
+extension automatically connects to this port.
 
 ```clj
 (require '[dataspex.core :as dataspex])
 
-;; Atoms will be automatically watched for changes, including a live updated
+;; Atoms will automatically be watched for changes, including a live updated
 ;; changelog with diffs
 (def store (atom {}))
 (dataspex/inspect "App state" store)
@@ -50,6 +50,9 @@ connects to this port.
 ,,,
 
 (dataspex/inspect "DB" conn)
+
+;; Inspect taps
+(dataspex/inspect-taps)
 ```
 
 ## Features
@@ -63,7 +66,7 @@ features, including:
 - Browse JWT strings
 - Browse any data that implements `clojure.core.protocols/Datafiable`
 - Browse Datascript databases, indexes and entities
-- Browse Datomic entities (databases and indexes are under construction)
+- Browse Datomic databases and entities (indexes to follow)
 - Navigate Datascript/Datomic refs, including reverse refs
 - Browse sequences of maps in tables
 - Browse meta data of data
