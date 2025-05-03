@@ -55,7 +55,17 @@
   (render-dictionary [_ opt]
     (->> (get-entities-by-attr db attr)
          (map ->entity-entry)
-         (hiccup/render-entries-dictionary db opt))))
+         (hiccup/render-entries-dictionary db opt)))
+
+  dp/IRenderTable
+  (tableable? [_ _]
+    true)
+
+  (render-table [_ opt]
+    (hiccup/render-map-table
+     (->> (get-entities-by-attr db attr)
+          (map #(select-keys % (get-primitive-attrs %))))
+     opt)))
 
 (defrecord EntitiesByAttrKey [attr]
   dp/IRenderInline
