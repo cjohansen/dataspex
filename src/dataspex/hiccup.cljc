@@ -441,15 +441,34 @@
          (every? map? (take 100 data)))
     (render-map-table data opt)))
 
+(defn render-hiccup [hiccup opt]
+  [::ui/hiccup
+   (if (satisfies? dp/IRenderHiccup hiccup)
+     (dp/render-hiccup hiccup opt)
+     (render-hiccup-node hiccup (assoc opt :dataspex/folding-level 2) [0]))])
+
 (defn render-source [data opt]
   (let [opt (assoc opt :dataspex/summarize-above-w -1)]
     (if (data/hiccup? data)
-      [::ui/hiccup
-       (if (satisfies? dp/IRenderHiccup data)
-         (dp/render-hiccup data opt)
-         (render-hiccup-node data (assoc opt :dataspex/folding-level 2) [0]))]
+      (render-hiccup data opt)
       [::ui/source
        (render-source-content data opt)])))
+
+(defn render-inline-hiccup [hiccup opt]
+  (if (summarize? hiccup opt)
+    [::ui/hiccup
+     (cond-> [::ui/vector {}
+              [::ui/hiccup-tag (first hiccup)]]
+       (map? (second hiccup))
+       (conj (render-inline (second hiccup) opt))
+       :then (conj [::ui/code "..."]))]
+    (render-hiccup hiccup opt)))
+
+(defn render-inline-vector [v opt]
+  (if (data/hiccup? v)
+    (render-inline-hiccup v opt)
+    (->> {:get-entries data/get-indexed-entries}
+         (render-paginated-sequential ::ui/vector v opt))))
 
 (extend-type #?(:cljs string
                 :clj java.lang.String)
@@ -505,8 +524,7 @@
                 :clj clojure.lang.PersistentVector)
   dp/IRenderInline
   (render-inline [v opt]
-    (->> {:get-entries data/get-indexed-entries}
-         (render-paginated-sequential ::ui/vector v opt))))
+    (render-inline-vector v opt)))
 
 (extend-type #?(:cljs cljs.core/List
                 :clj clojure.lang.PersistentList)

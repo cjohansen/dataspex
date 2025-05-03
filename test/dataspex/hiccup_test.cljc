@@ -107,10 +107,10 @@
             [::ui/string "2025-04-05T00:00:00.000-00:00"]])))
 
   (testing "Renders short vector"
-    (is (= (-> (h/render-inline [:hello])
+    (is (= (-> (h/render-inline ["hello"])
                h/strip-attrs)
            [::ui/vector
-            [::ui/keyword :hello]])))
+            [::ui/string "hello"]])))
 
   (testing "Renders longer vector"
     (is (= (h/render-inline
@@ -127,6 +127,20 @@
              :hello :hello :hello :hello :hello
              :hello :hello :hello :hello])
            [::ui/link "[19 items]"])))
+
+  (testing "Renders hiccup summary"
+    (is (= (-> [:div {:data-theme "light"}
+                [:h1.text-lg "Hello world"]
+                [:p "Hope you're doing well"]]
+               h/render-inline)
+           [::ui/hiccup
+            [::ui/vector {}
+             [::ui/hiccup-tag :div]
+             [::ui/map
+              [::ui/map-entry
+               [::ui/keyword :data-theme]
+               [::ui/string "light"]]]
+             [::ui/code "..."]]])))
 
   (testing "Renders short list"
     (is (= (-> (h/render-inline (list :hello))

@@ -20,7 +20,12 @@
 (defn hiccup? [data]
   (and (vector? data)
        (not (map-entry? data))
-       (keyword? (first data))))
+       (keyword? (first data))
+       (let [x (second data)]
+         (or (= 1 (bounded-count 2 data))
+             (coll? x)
+             (string? x)
+             (qualified-keyword? (first data))))))
 
 (def string-inspectors (atom []))
 
