@@ -22,7 +22,7 @@
 (defrecord JWT [token headers data sig]
   dp/IRenderInline
   (render-inline [jwt _]
-    [::ui/literal {::ui/prefix "#jwt"}
+    [::ui/literal {::ui/prefix "JWT"}
      [::ui/string (str (first (str/split (:token (:token jwt)) #"\.")) "...")]])
 
   dp/IRenderDictionary

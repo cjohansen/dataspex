@@ -26,7 +26,7 @@
 
   (testing "Renders JWT inline"
     (is (= (h/render-inline token)
-           [::ui/literal {::ui/prefix "#jwt"}
+           [::ui/literal {::ui/prefix "JWT"}
             [::ui/string "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."]])))
 
   (testing "Renders JWT in dictionary browser"
