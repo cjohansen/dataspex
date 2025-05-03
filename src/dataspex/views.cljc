@@ -7,6 +7,7 @@
 (def source ::source)
 
 (def max-items 100)
+(def max-count 1000)
 
 (defn get-pagination [{:dataspex/keys [pagination path]}]
   {:page-size (or (get-in pagination [path :page-size])

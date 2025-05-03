@@ -142,6 +142,13 @@
     offset (drop offset)
     page-size (take page-size)))
 
+(defn ^{:indent 2} with-pagination-meta [xs pagination hiccup]
+  (with-meta
+    hiccup
+    (let [n (bounded-count (+ (:offset pagination) (inc views/max-count)) xs)]
+      (when (< (:page-size pagination) n)
+        {:dataspex/pagination (assoc pagination :n n)}))))
+
 (declare render-inline)
 
 (defn ^{:indent 1} render-paginated-sequential [tag s opt & {:keys [get-entries
@@ -149,35 +156,36 @@
   (if (summarize? s opt)
     (let [[l r] (tag->brackets tag)]
       [::ui/link (str l (summarize s) r)])
-    (let [{:keys [page-size offset]} (views/get-pagination opt)
+    (let [{:keys [page-size offset] :as pagination} (views/get-pagination opt)
           current-end (+ offset page-size)
           more (- (bounded-count (+ current-end (inc views/max-items)) s) current-end)
           attrs (select-keys opt [::ui/prefix])
           element-width (or element-width
                             (when (< 0 (or (:dataspex/summarize-above-w opt) 120))
-                              20))]
-      (into
-       (cond-> [tag]
-         (not-empty attrs) (conj attrs))
-       (let [opt (cond-> (dissoc opt ::ui/prefix)
-                   element-width (assoc :dataspex/summarize-above-w element-width))]
-         (cond-> []
-           (< 0 offset)
-           (conj [::ui/link
-                  {::ui/actions
-                   (views/offset-pagination opt (max 0 (- offset page-size)))}
-                  (str offset " more")])
+                              20))
+          entries ((or get-entries data/get-indexed-entries) s opt)]
+      (with-pagination-meta entries pagination
+        (into
+         (cond-> [tag]
+           (not-empty attrs) (conj attrs))
+         (let [opt (cond-> (dissoc opt ::ui/prefix)
+                     element-width (assoc :dataspex/summarize-above-w element-width))]
+           (cond-> []
+             (< 0 offset)
+             (conj [::ui/link
+                    {::ui/actions
+                     (views/offset-pagination opt (max 0 (- offset page-size)))}
+                    (str offset " more")])
 
-           :then (into
-                  (->> ((or get-entries data/get-indexed-entries) s opt)
-                       (paginate {:page-size page-size, :offset offset})
-                       (mapv #(render-inline (:v %) (update opt :dataspex/path conj (:k %))))))
+             :then (into
+                    (->> (paginate {:page-size page-size, :offset offset} entries)
+                         (mapv #(render-inline (:v %) (update opt :dataspex/path conj (:k %))))))
 
-           (< current-end (bounded-count (inc (+ offset page-size)) s))
-           (conj [::ui/link
-                  {::ui/actions
-                   (views/offset-pagination opt (+ offset page-size))}
-                  (str (if (< views/max-items more) (str views/max-items "+") more) " more")])))))))
+             (< current-end (bounded-count (inc (+ offset page-size)) s))
+             (conj [::ui/link
+                    {::ui/actions
+                     (views/offset-pagination opt (+ offset page-size))}
+                    (str (if (< views/max-items more) (str views/max-items "+") more) " more")]))))))))
 
 (defn render-inline-seq [s opt]
   (->> {:get-entries data/get-indexed-entries}
@@ -251,28 +259,30 @@
     (render-copy-button opt)]])
 
 (defn render-entries-dictionary [v opt entries]
-  (let [rows (into (data/get-meta-entries v)
+  (let [pagination (views/get-pagination opt)
+        rows (into (data/get-meta-entries v)
                    (-> (views/get-pagination opt)
                        (paginate entries)))]
-    (cond-> [::ui/dictionary]
-      (every? nil? (mapv :label rows))
-      (conj {:class :keyless})
+    (with-pagination-meta entries pagination
+      (cond-> [::ui/dictionary]
+        (every? nil? (mapv :label rows))
+        (conj {:class :keyless})
 
-      :then
-      (into
-       (for [{:keys [k path label v copyable?]} rows]
-         (let [opt (cond-> opt
-                     k (update :dataspex/path conj k)
-                     path (update :dataspex/path into path))]
-           [::ui/entry
-            {::ui/actions
-             (when (or k path)
-               (views/navigate-to opt (views/path-to opt)))}
-            (or (some-> label (render-inline opt)) "")
-            (render-inline v opt)
-            ;; Explicitly compare to false to default to true
-            (when-not (false? copyable?)
-              (render-copy-button opt))]))))))
+        :then
+        (into
+         (for [{:keys [k path label v copyable?]} rows]
+           (let [opt (cond-> opt
+                       k (update :dataspex/path conj k)
+                       path (update :dataspex/path into path))]
+             [::ui/entry
+              {::ui/actions
+               (when (or k path)
+                 (views/navigate-to opt (views/path-to opt)))}
+              (or (some-> label (render-inline opt)) "")
+              (render-inline v opt)
+              ;; Explicitly compare to false to default to true
+              (when-not (false? copyable?)
+                (render-copy-button opt))])))))))
 
 (defn ^{:indent 2} update-sorting [opt k v]
   [::actions/assoc-in [(:dataspex/inspectee opt) :dataspex/sorting (:dataspex/path opt) k] v])
@@ -306,28 +316,30 @@
                 set
                 (sort-by data/sort-order))
         sort-k (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :key]) :dataspex/idx)
-        sort-order (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :order]) :dataspex.sort.order/asc)]
-    [::ui/table
-     (-> [::ui/thead
-          (render-table-header :dataspex/idx nil sort-k sort-order opt)]
-         (into (mapv #(render-table-header % % sort-k sort-order opt) ks))
-         (conj [:th]))
-     (into
-      [::ui/tbody]
-      (mapv
-       (fn [m]
-         (-> [::ui/tr {::ui/actions (views/navigate-to opt
-                                      (views/path-to opt [(:dataspex/idx m)]))}
-              (render-inline (:dataspex/idx m) opt)]
-             (into (mapv #(render-inline (get m %) opt) ks))
-             (conj (render-copy-button opt (:dataspex/idx m)))))
-       (cond->> (mapv (fn [idx m] (assoc m :dataspex/idx idx)) (range) xs)
-         (get-in opt [:dataspex/sorting (:dataspex/path opt) :key])
-         (sort-by sort-k)
+        sort-order (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :order]) :dataspex.sort.order/asc)
+        pagination (views/get-pagination opt)]
+    (with-pagination-meta xs pagination
+      [::ui/table
+       (-> [::ui/thead
+            (render-table-header :dataspex/idx nil sort-k sort-order opt)]
+           (into (mapv #(render-table-header % % sort-k sort-order opt) ks))
+           (conj [:th]))
+       (into
+        [::ui/tbody]
+        (mapv
+         (fn [m]
+           (-> [::ui/tr {::ui/actions (views/navigate-to opt
+                                        (views/path-to opt [(:dataspex/idx m)]))}
+                (render-inline (:dataspex/idx m) opt)]
+               (into (mapv #(render-inline (get m %) opt) ks))
+               (conj (render-copy-button opt (:dataspex/idx m)))))
+         (cond->> (mapv (fn [idx m] (assoc m :dataspex/idx idx)) (range) xs)
+           (get-in opt [:dataspex/sorting (:dataspex/path opt) :key])
+           (sort-by sort-k)
 
-         (= (get-in opt [:dataspex/sorting (:dataspex/path opt) :order])
-            :dataspex.sort.order/descending) reverse
-         :then (paginate (views/get-pagination opt)))))]))
+           (= (get-in opt [:dataspex/sorting (:dataspex/path opt) :order])
+              :dataspex.sort.order/descending) reverse
+           :then (paginate (views/get-pagination opt)))))])))
 
 (defn render-source-content [data opt]
   (if (satisfies? dp/IRenderSource data)

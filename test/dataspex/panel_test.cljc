@@ -209,7 +209,9 @@
 
   (testing "Can go to next page"
     (is (= (panel/render-pagination-bar
-            (range 200)
+            {:page-size 100
+             :offset 0
+             :n 200}
             {:dataspex/inspectee "App data"
              :dataspex/path [:data]
              :dataspex/pagination
@@ -224,7 +226,9 @@
 
   (testing "Can go to previous page"
     (is (= (panel/render-pagination-bar
-            (range 200)
+            {:page-size 100
+             :offset 100
+             :n 200}
             {:dataspex/inspectee "App data"
              :dataspex/path [:data]
              :dataspex/pagination
@@ -240,7 +244,9 @@
 
   (testing "Can go back and forth"
     (is (= (panel/render-pagination-bar
-            (range 479)
+            {:page-size 100
+             :offset 100
+             :n 479}
             {:dataspex/inspectee "xs"
              :dataspex/path [:datas]
              :dataspex/pagination

@@ -135,24 +135,19 @@
       (< 0 n)
       (conj [::ui/crumb (render-path-k (last path) opt)]))))
 
-(def max-count 1000)
-
-(defn render-pagination-bar [v opt]
-  (when (counted? v)
-    (let [{:keys [page-size offset]} (views/get-pagination opt)
-          n (bounded-count (+ offset (inc max-count)) v)]
-      (when (< page-size n)
-        (let [prev-n (- offset page-size)
-              next-n (+ offset page-size)]
-          [::ui/navbar.center
-           (cond-> [::ui/button]
-             (<= 0 prev-n) (conj {::ui/actions [(views/offset-pagination opt prev-n)]})
-             :then (conj [::icons/caret-left]))
-           [:span.code.text-smaller.subtle
-            (str offset "-" (dec next-n) " of " (if (< max-count n) (str max-count "+") n) "")]
-           (cond-> [::ui/button]
-             (< next-n n) (conj {::ui/actions [(views/offset-pagination opt next-n)]})
-             :then (conj [::icons/caret-right]))])))))
+(defn render-pagination-bar [{:keys [page-size offset n]} opt]
+  (when (and n (< page-size n))
+    (let [prev-n (- offset page-size)
+          next-n (+ offset page-size)]
+      [::ui/navbar.center
+       (cond-> [::ui/button]
+         (<= 0 prev-n) (conj {::ui/actions [(views/offset-pagination opt prev-n)]})
+         :then (conj [::icons/caret-left]))
+       [:span.code.text-smaller.subtle
+        (str offset "-" (dec next-n) " of " (if (< views/max-count n) (str views/max-count "+") n) "")]
+       (cond-> [::ui/button]
+         (< next-n n) (conj {::ui/actions [(views/offset-pagination opt next-n)]})
+         :then (conj [::icons/caret-right]))])))
 
 (defn render-data [x opt]
   (when (render? opt)
@@ -186,15 +181,15 @@
          [(-> (get state label)
               (audit-log/render-log opt)
               (possibly-scroll opt))]
-         (let [pagination (render-pagination-bar data opt)]
+         (let [data-view (render-data data opt)
+               pagination (render-pagination-bar (:dataspex/pagination (meta data-view)) opt)]
            [(when (render? opt)
               [::ui/navbar
                (render-path (:dataspex/path opt) opt)
                (render-view-menu data opt)])
             pagination
             [:main.scroll-x
-             (-> (render-data data opt)
-                 (possibly-scroll opt))]
+             (possibly-scroll data-view opt)]
             pagination]))))))
 
 (defn render-inspector [state]

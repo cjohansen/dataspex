@@ -396,6 +396,19 @@
                 (mapv lookup/text))
            ["2" "3" "4"])))
 
+  (testing "Includes pagination details in meta"
+    (is (= (->> ["Replicant" "Portfolio" "Dataspex" "m1p" "lookup" "phosphor-clj"]
+                (mapv (fn [lib] {:library/name lib}))
+                (h/render-dictionary
+                 {:dataspex/path [:libs]
+                  :dataspex/pagination {[:libs] {:offset 2}
+                                        :page-size 3}})
+                meta
+                :dataspex/pagination)
+           {:page-size 3
+            :offset 2
+            :n 6})))
+
   (testing "Browses list as dictionary"
     (is (= (->> (h/render-dictionary
                  (list {:library/name "Replicant"}
