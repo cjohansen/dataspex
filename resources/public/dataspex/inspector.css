@@ -181,6 +181,10 @@ body, pre {
   color: var(--subtle-color);
 }
 
+.scroll-x {
+  overflow-x: scroll;
+}
+
 /* Color schemes */
 [data-color=error] {
   color: var(--error-color);
@@ -650,6 +654,6 @@ a.clickable:hover,
   padding-bottom: 0;
 }
 
-.panel > .source {
+.scroll-x > .source {
   padding: 2em 2em 0;
 }

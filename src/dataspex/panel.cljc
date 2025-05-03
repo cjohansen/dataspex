@@ -175,7 +175,7 @@
                          :overflow-y "scroll"}}])))
 
 (defn render-panel [state label]
-  (let [opt (views/get-view-options state label)
+  (let [{:keys [data opt]} (views/get-render-data state label)
         rendering? (render? opt)]
     (into
      [:div.panel (cond-> {:data-theme (name (get-theme opt))}
@@ -186,17 +186,15 @@
          [(-> (get state label)
               (audit-log/render-log opt)
               (possibly-scroll opt))]
-         (let [data (-> (get-in state [label :val])
-                        (data/nav-in (:dataspex/path opt))
-                        (data/inspect opt))
-               pagination (render-pagination-bar data opt)]
+         (let [pagination (render-pagination-bar data opt)]
            [(when (render? opt)
               [::ui/navbar
                (render-path (:dataspex/path opt) opt)
                (render-view-menu data opt)])
             pagination
-            (-> (render-data data opt)
-                (possibly-scroll opt))
+            [:main.scroll-x
+             (-> (render-data data opt)
+                 (possibly-scroll opt))]
             pagination]))))))
 
 (defn render-inspector [state]

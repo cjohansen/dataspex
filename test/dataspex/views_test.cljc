@@ -6,25 +6,25 @@
 
 (deftest get-view-options
   (testing "Gets initial view options"
-    (is (= (views/get-view-options {} "Store")
+    (is (= (:opt (views/get-render-data {} "Store"))
            {:dataspex/inspectee "Store"
             :dataspex/view :dataspex.views/dictionary})))
 
   (testing "Gets view options with current path"
-    (is (= (views/get-view-options
-            {"Store" {:dataspex/path [:users]}}
-            "Store")
+    (is (= (-> {"Store" {:dataspex/path [:users]}}
+               (views/get-render-data "Store")
+               :opt)
            {:dataspex/path [:users]
             :dataspex/inspectee "Store"
             :dataspex/view :dataspex.views/dictionary})))
 
   (testing "Gets view options with with pagination, sorting, folding, and string renderers"
-    (is (= (views/get-view-options
-            {"Store" {:dataspex/path [:users]
-                      :dataspex/pagination {[:libs] {:offset 2}}
-                      :dataspex/sorting {[:users] {:key :user/id}}
-                      :dataspex/folding {[:users :user/friends] {:folded? false}}}}
-            "Store")
+    (is (= (-> {"Store" {:dataspex/path [:users]
+                         :dataspex/pagination {[:libs] {:offset 2}}
+                         :dataspex/sorting {[:users] {:key :user/id}}
+                         :dataspex/folding {[:users :user/friends] {:folded? false}}}}
+               (views/get-render-data "Store")
+               :opt)
            {:dataspex/inspectee "Store"
             :dataspex/path [:users]
             :dataspex/pagination {[:libs] {:offset 2}}
@@ -33,10 +33,10 @@
             :dataspex/view :dataspex.views/dictionary})))
 
   (testing "Uses default theme"
-    (is (= (-> (views/get-view-options
-                {"Store" {:dataspex/path [:users]}
-                 :dataspex/theme :dark}
-                "Store")
+    (is (= (-> {"Store" {:dataspex/path [:users]}
+                :dataspex/theme :dark}
+               (views/get-render-data "Store")
+               :opt
                :dataspex/theme)
            :dark)))
 
@@ -44,7 +44,7 @@
     (is (= (let [dataspex-store (atom {})]
              (with-redefs [time/now (constantly #inst "2025-04-16T16:19:58")]
                (inspector/inspect dataspex-store "Store" (atom {})))
-             (views/get-view-options @dataspex-store "Store"))
+             (:opt (views/get-render-data @dataspex-store "Store")))
            {:dataspex/inspectee "Store"
             :dataspex/path []
             :dataspex/activity :dataspex.activity/browse

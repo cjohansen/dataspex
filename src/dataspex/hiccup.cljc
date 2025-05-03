@@ -465,7 +465,7 @@
     (render-hiccup hiccup opt)))
 
 (defn render-inline-vector [v opt]
-  (if (data/hiccup? v)
+  (if (and (data/hiccup? v) (:dataspex/hiccup? opt true))
     (render-inline-hiccup v opt)
     (->> {:get-entries data/get-indexed-entries}
          (render-paginated-sequential ::ui/vector v opt))))

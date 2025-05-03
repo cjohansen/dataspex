@@ -41,11 +41,15 @@
         source)
       dictionary))
 
-(defn get-view-options [state inspectee]
+(defn get-render-data [state inspectee]
   (let [inspector-state (get state inspectee)
         opt (merge {:dataspex/inspectee inspectee}
                    (select-keys state [:dataspex/theme])
                    (select-keys inspector-state
                                 (->> (keys inspector-state)
-                                     (filter (comp #{"dataspex"} namespace)))))]
-    (assoc opt :dataspex/view (get-current-view (get-in state [inspectee :val]) opt))))
+                                     (filter (comp #{"dataspex"} namespace)))))
+        data (-> (get-in state [inspectee :val])
+                 (data/nav-in (:dataspex/path opt)))
+        opt (assoc opt :dataspex/view (get-current-view data opt))]
+    {:opt opt
+     :data (data/inspect data opt)}))

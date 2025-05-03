@@ -267,6 +267,16 @@
                 (lookup/select [::ui/dictionary ::ui/string]))
            [[::ui/string "Here"]])))
 
+  (testing "Renders hiccup in the source view by default"
+    (is (= (->> (panel/render-panel
+                 {"Store" {:dataspex/path [:hiccup]
+                           :dataspex/inspectee "Store"
+                           :val {:hiccup [:h1 "Hello"]}}}
+                 "Store")
+                (lookup/select [::ui/hiccup])
+                count)
+           1)))
+
   (testing "Renders audit log"
     (is (not-empty
          (->> (panel/render-panel

@@ -59,7 +59,7 @@
        (mapv
         (fn [[path edits]]
           (into [:article.diff
-                 [::ui/source (render-inline path opt)]]
+                 [::ui/source (render-inline path (assoc opt :dataspex/hiccup? false))]]
                 (mapv
                  (fn [[_ op v]]
                    [::ui/source {::ui/prefix (name op)
