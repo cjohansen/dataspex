@@ -1,6 +1,8 @@
 {:paths ["src" "resources"]
  :deps {datascript/datascript {:mvn/version "1.7.4"}
-        juji/editscript {:mvn/version "0.6.6"}}
+        juji/editscript {:mvn/version "0.6.6"}
+        ring/ring-core {:mvn/version "1.14.1"}
+        ring/ring-jetty-adapter {:mvn/version "1.14.1"}}
  :aliases
  {:dev
   {:extra-paths ["dev" "test" "dev-resources" "portfolio"]
@@ -16,8 +18,6 @@
     kaocha-noyoda/kaocha-noyoda {:mvn/version "2019-06-03"}
     lambdaisland/kaocha {:mvn/version "1.91.1392"}
     com.lambdaisland/kaocha-cljs {:mvn/version "1.5.154"}
-    ring/ring-core {:mvn/version "1.14.1"}
-    ring/ring-jetty-adapter {:mvn/version "1.14.1"}
     com.widdindustries/cljc.java-time {:mvn/version "0.1.21"}
     com.widdindustries/time-literals {:mvn/version "0.1.10"}}}
 
