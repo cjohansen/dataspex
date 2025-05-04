@@ -36,6 +36,14 @@
        (sort)
        (map #(d/entity db %))))
 
+(defn get-attrs-used-with [db attr]
+  (d/q '[:find [?attr ...]
+         :in $ ?a
+         :where
+         [?e ?a]
+         [?e ?attr]]
+       db attr))
+
 (defn get-last-tx [db]
   (d/entity db (:max-tx db)))
 
@@ -150,6 +158,9 @@
      (if (contains? (:db.cardinality/many rschema) a)
        1 0)
      a])
+
+  (get-attrs-used-with [db attr]
+    (get-attrs-used-with db attr))
 
   (get-unique-attrs [db]
     (-> db :rschema :db/unique))

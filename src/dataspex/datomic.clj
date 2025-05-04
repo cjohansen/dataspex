@@ -189,6 +189,15 @@
        distinct
        (map #(entity db %))))
 
+(defn get-attrs-used-with [db attr]
+  (d/q '[:find [?attr ...]
+         :in $ ?used-a
+         :where
+         [?e ?used-a]
+         [?e ?a]
+         [?a :db/ident ?attr]]
+       db attr))
+
 (extend-type datomic.db.Db
   datalog/Database
   (count-entities-by-attr [db attr]
@@ -210,6 +219,9 @@
 
   (get-entities-by-attr [db attr]
     (get-entities-by-attr db attr))
+
+  (get-attrs-used-with [db attr]
+    (get-attrs-used-with db attr))
 
   (get-attr-sort-val [db a]
     (attr-sort-val (entity db a)))

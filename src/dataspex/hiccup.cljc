@@ -307,39 +307,41 @@
        [:dataspex.icons/sort-descending]
        [:dataspex.icons/sort-ascending]))])
 
-(defn render-map-table [xs opt]
-  ;; Assume there are no new keys beyond the first 1000 items. Tables work best
-  ;; for homogenous collections, and we can't realize an infinite seq, so that
-  ;; seems like a reasonable compromise.
-  (let [ks (->> (take 1000 xs)
-                (mapcat keys)
-                set
-                (sort-by data/sort-order))
-        sort-k (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :key]) :dataspex/idx)
-        sort-order (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :order]) :dataspex.sort.order/asc)
-        pagination (views/get-pagination opt)]
-    (with-pagination-meta xs pagination
-      [::ui/table
-       (-> [::ui/thead
-            (render-table-header :dataspex/idx nil sort-k sort-order opt)]
-           (into (mapv #(render-table-header % % sort-k sort-order opt) ks))
-           (conj [:th]))
-       (into
-        [::ui/tbody]
-        (mapv
-         (fn [m]
-           (-> [::ui/tr {::ui/actions (views/navigate-to opt
-                                        (views/path-to opt [(:dataspex/idx m)]))}
-                (render-inline (:dataspex/idx m) opt)]
-               (into (mapv #(render-inline (get m %) opt) ks))
-               (conj (render-copy-button opt (:dataspex/idx m)))))
-         (cond->> (mapv (fn [idx m] (assoc m :dataspex/idx idx)) (range) xs)
-           (get-in opt [:dataspex/sorting (:dataspex/path opt) :key])
-           (sort-by sort-k)
+(defn render-map-table
+  ([xs opt]
+   ;; Assume there are no new keys beyond the first 1000 items. Tables work best
+   ;; for homogenous collections, and we can't realize an infinite seq, so that
+   ;; seems like a reasonable compromise.
+   (render-map-table xs (->> (take 1000 xs)
+                             (mapcat keys)
+                             set
+                             (sort-by data/sort-order)) opt))
+  ([xs ks opt]
+   (let [sort-k (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :key]) :dataspex/idx)
+         sort-order (or (get-in opt [:dataspex/sorting (:dataspex/path opt) :order]) :dataspex.sort.order/asc)
+         pagination (views/get-pagination opt)
+         opt (update opt :dataspex/summarize-above-w #(or % (/ 190 (count ks))))]
+     (with-pagination-meta xs pagination
+       [::ui/table
+        (-> [::ui/thead
+             (render-table-header :dataspex/idx nil sort-k sort-order opt)]
+            (into (mapv #(render-table-header % % sort-k sort-order opt) ks))
+            (conj [:th]))
+        (into
+         [::ui/tbody]
+         (mapv
+          (fn [[idx m]]
+            (-> [::ui/tr {::ui/actions (views/navigate-to opt (views/path-to opt [idx]))}
+                 (render-inline idx opt)]
+                (into (mapv #(render-inline (get m %) opt) ks))
+                (conj (render-copy-button opt idx))))
+          (cond->> (map vector (range) xs)
+            (not= sort-k :dataspex/idx)
+            (sort-by (comp sort-k second))
 
-           (= (get-in opt [:dataspex/sorting (:dataspex/path opt) :order])
-              :dataspex.sort.order/descending) reverse
-           :then (paginate (views/get-pagination opt)))))])))
+            (= (get-in opt [:dataspex/sorting (:dataspex/path opt) :order])
+               :dataspex.sort.order/descending) reverse
+            :then (paginate (views/get-pagination opt)))))]))))
 
 (defn render-source-content [data opt]
   (if (satisfies? dp/IRenderSource data)

@@ -18,7 +18,8 @@
   (get-entities [db])
   (get-entities-by-attr [db attr])
   (get-unique-attrs [db])
-  (get-attr-sort-val [db a]))
+  (get-attr-sort-val [db a])
+  (get-attrs-used-with [db a]))
 
 (defprotocol IDatabaseLookup
   (lookup-in-db [x db]))
@@ -63,8 +64,9 @@
 
   (render-table [_ opt]
     (hiccup/render-map-table
-     (->> (get-entities-by-attr db attr)
-          (map #(select-keys % (get-primitive-attrs %))))
+     (get-entities-by-attr db attr)
+     (->> (get-attrs-used-with db attr)
+          (sort-by #(get-attr-sort-val db %)))
      opt)))
 
 (defrecord EntitiesByAttrKey [attr]
