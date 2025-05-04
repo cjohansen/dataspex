@@ -307,3 +307,15 @@
             {:rev 1
              :val 309
              :diff []}]))))
+
+(deftest key-table-keys
+  (testing "Prefers keys with same namespace as uniqueness attribute"
+    (is (= (with-conn [conn schema]
+             @(d/transact conn [{:db/ident :employee/number
+                                 :db/valueType :db.type/string
+                                 :db/cardinality :db.cardinality/one}])
+             @(d/transact conn [{:person/id "alice"
+                                 :person/name "Alice"
+                                 :employee/number "101"}])
+             (datalog/get-table-keys (d/db conn) :person/id))
+           [:person/id :person/name :employee/number]))))

@@ -42,6 +42,22 @@
          (map ->entity-entry)
          (hiccup/render-entries-dictionary db opt))))
 
+(defn get-table-keys [db attr]
+  (let [ns (namespace attr)]
+    (loop [[k & ks] (->> (get-attrs-used-with db attr)
+                         (sort-by #(get-attr-sort-val db %)))
+           front []
+           back []]
+      (cond
+        (nil? k)
+        (concat front back)
+
+        (= ns (namespace k))
+        (recur ks (conj front k) back)
+
+        :else
+        (recur ks front (conj back k))))))
+
 (deftype EntitiesByAttrIndex [db attr]
   p/Datafiable
   (datafy [_]
@@ -65,8 +81,7 @@
   (render-table [_ opt]
     (hiccup/render-map-table
      (get-entities-by-attr db attr)
-     (->> (get-attrs-used-with db attr)
-          (sort-by #(get-attr-sort-val db %)))
+     (get-table-keys db attr)
      opt))
 
   dp/IPrefersView
