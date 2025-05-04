@@ -42,6 +42,7 @@
   {:clj-kondo/lint-as 'clojure.core/let}
   [[binding] & body]
   `(let [uri# ~(str "datomic:mem://" (random-uuid))]
+     (d/delete-database uri#)
      (d/create-database uri#)
      (let [~binding (d/connect uri#)]
        @(d/transact ~binding (into [{:db/id "datomic.tx"
