@@ -34,6 +34,10 @@
   :extend-via-metadata true
   (render-hiccup [self opts]))
 
+(defprotocol IPrefersView
+  :extend-via-metadata true
+  (get-preferred-view [self]))
+
 (defprotocol IDiffable
   (->diffable [self]))
 

@@ -1,10 +1,12 @@
 (ns dataspex.views
-  (:require [dataspex.data :as data]))
+  (:require [dataspex.data :as data]
+            [dataspex.protocols :as dp]))
 
 (def inline ::inline)
 (def dictionary ::dictionary)
 (def table ::table)
 (def source ::source)
+(def views #{inline dictionary table source})
 
 (def max-items 100)
 (def max-count 1000)
@@ -36,6 +38,8 @@
 
 (defn ^{:indent 1} get-current-view [v {:dataspex/keys [path view default-view] :as opt}]
   (or (get view path)
+      (when (satisfies? dp/IPrefersView v)
+        (views (dp/get-preferred-view v)))
       (when (data/supports-view? v default-view opt)
         default-view)
       (when (data/hiccup? v)

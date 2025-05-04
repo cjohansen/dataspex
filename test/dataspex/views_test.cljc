@@ -1,6 +1,7 @@
 (ns dataspex.views-test
   (:require [clojure.test :refer [deftest is testing]]
             [dataspex.inspector :as inspector]
+            [dataspex.protocols :as dp]
             [dataspex.time :as time]
             [dataspex.views :as views]))
 
@@ -50,6 +51,11 @@
             :dataspex/activity :dataspex.activity/browse
             :dataspex/view :dataspex.views/dictionary}))))
 
+(deftype PrefersTables []
+  dp/IPrefersView
+  (get-preferred-view [_]
+    views/table))
+
 (deftest get-current-view
   (testing "Defaults to dictionary"
     (is (= (views/get-current-view {} {}) views/dictionary)))
@@ -78,6 +84,12 @@
              {:dataspex/default-view views/table
               :dataspex/path [:users]})
            views/dictionary)))
+
+  (testing "Defaults to data-specific view preference"
+    (is (= (views/get-current-view (->PrefersTables)
+             {:dataspex/default-view views/dictionary
+              :dataspex/path []})
+           views/table)))
 
   (testing "Defaults to source view for hiccup"
     (is (= (views/get-current-view [:h1 "Hello"]

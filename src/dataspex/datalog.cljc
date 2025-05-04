@@ -67,7 +67,11 @@
      (get-entities-by-attr db attr)
      (->> (get-attrs-used-with db attr)
           (sort-by #(get-attr-sort-val db %)))
-     opt)))
+     opt))
+
+  dp/IPrefersView
+  (get-preferred-view [_]
+    views/table))
 
 (defrecord EntitiesByAttrKey [attr]
   dp/IRenderInline
