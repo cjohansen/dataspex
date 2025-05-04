@@ -88,7 +88,7 @@
     (respond
      (cond
        (= "/" (:uri req))
-       (response/file-response "resources/public/dataspex/remote-inspector.html")
+       (response/resource-response "public/dataspex/remote-inspector.html")
 
        (= "/jvm/actions" (:uri req))
        (process-actions req)))))
