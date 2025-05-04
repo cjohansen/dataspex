@@ -117,7 +117,7 @@
 
 (defn find-reverse-refs [db entity]
   (->> (get-reverse-ref-attrs entity)
-       (sort-by #(get-attr-sort-val db (first %)))
+       (sort-by #(get-attr-sort-val db %))
        (mapv
         (fn [a]
           (let [attr (keyword (namespace a) (str "_" (name a)))]

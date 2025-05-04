@@ -234,6 +234,19 @@
             ":person/name"
             ":person/friends"])))
 
+  (testing "Renders reverse refs as underscore attributes"
+    (is (= (->> (with-conn [conn schema]
+                  @(d/transact conn data)
+                  (->> (d/entity (d/db conn) [:person/id "wendy"])
+                       h/render-dictionary))
+                (lookup/select '[::ui/dictionary > ::ui/entry])
+                (mapv (comp first lookup/children))
+                (mapv lookup/text))
+           [":person/id"
+            ":person/name"
+            ":person/_boss"
+            ":person/_friends"])))
+
   (testing "Renders many ref as navigatable dictionary"
     (is (= (with-conn [conn schema]
              @(d/transact conn data)
