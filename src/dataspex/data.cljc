@@ -22,10 +22,12 @@
        (not (map-entry? data))
        (keyword? (first data))
        (let [x (second data)]
-         (or (= 1 (bounded-count 2 data))
-             (coll? x)
+         (or (map? x)
              (string? x)
-             (qualified-keyword? (first data))))))
+             (= 1 (bounded-count 2 data))
+             (hiccup? x)
+             (and (seq? x) (or (string? (first x))
+                               (hiccup? (first x))))))))
 
 (def string-inspectors (atom []))
 

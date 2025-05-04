@@ -20,6 +20,21 @@
    (when (= "Special string" s)
      datafiable-inline-renderable)))
 
+(deftest hiccup?
+  (testing "Recognizes hiccup"
+    (is (data/hiccup? [:br]))
+    (is (data/hiccup? [:h1 "Hello"]))
+    (is (data/hiccup? [:h1 {} "Hello"]))
+    (is (data/hiccup? [:h1 '("Hello")]))
+    (is (data/hiccup? [:h1 {} '("Hello")]))
+    (is (data/hiccup? [:ui/a {}]))
+    (is (data/hiccup? [:div
+                       [:h1 "Hello world"]
+                       [:p.text-sm "How are you doing?"]])))
+
+  (testing "Does not mistake non-hiccup for hiccup"
+    (is (not (data/hiccup? [:actions/assoc-in [:p :a :t :h] "Value"])))))
+
 (deftest inspect
   (testing "Returns data when it implements no relevant protocols"
     (is (= (data/inspect {:map? true} {})
