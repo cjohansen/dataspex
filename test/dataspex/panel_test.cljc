@@ -261,7 +261,17 @@
             [::ui/button
              {::ui/actions
               [[::actions/assoc-in ["xs" :dataspex/pagination [:datas] :offset] 200]]}
-             [::icons/caret-right]]]))))
+             [::icons/caret-right]]])))
+
+  (testing "Renders actual number for upper range on the last page"
+    (is (= (->> (panel/render-pagination-bar
+                 {:page-size 100
+                  :offset 400
+                  :n 479}
+                 {})
+                (lookup/select-one :span)
+                lookup/text)
+           "400-479 of 479"))))
 
 (deftest render-panel
   (testing "Renders panel in browsing mode by default"
