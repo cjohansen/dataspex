@@ -128,6 +128,13 @@
                (data/nav-in (d/entity (d/db conn) 3) [:person/_friends (data/as-key friend) :person/name])))
            "Bob"))))
 
+(deftest lookupable-test
+  (testing "Entities can be looked up"
+    (is (with-conn [conn schema]
+          (d/transact! conn data)
+          (->> (d/entity (d/db conn) [:person/id "wendy"])
+               data/lookupable?)))))
+
 (deftest render-inline-test
   (testing "Renders connection inline"
     (is (= (with-conn [conn schema]

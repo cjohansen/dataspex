@@ -450,9 +450,7 @@
     (satisfies? dp/IRenderTable data)
     (dp/render-table data opt)
 
-    (and (sequential? data)
-         ;; Don't "every" an infinite seq
-         (every? map? (take 100 data)))
+    (data/tableable? data opt)
     (render-map-table data opt)))
 
 (defn render-hiccup [hiccup opt]

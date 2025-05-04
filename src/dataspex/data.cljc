@@ -114,6 +114,10 @@
             (recur (aget data (cond-> k
                                 (keyword? k) name)) (next ks))))))))
 
+(defn lookupable? [x]
+  ;; Includes entities
+  (or (map? x) (:db/id x)))
+
 (defn tableable?
   "Determine if `x` can render as a table. Returns `false` if `x` does not
   implement the `IRenderTable` protocol."
@@ -121,7 +125,10 @@
   (let [data (datafy/datafy x)]
     (if (satisfies? dp/IRenderTable data)
       (dp/tableable? data opt)
-      false)))
+      (and (coll? data)
+           (not (map? data))
+           ;; Don't "every" an infinite seq
+           (every? lookupable? (take 100 data))))))
 
 (defn supports-view? [x view opt]
   (cond
