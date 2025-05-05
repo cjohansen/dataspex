@@ -178,7 +178,7 @@
     [ui/card
      [ui/card-header {::ui/actions []}
       [ui/timestamp {:data-folded "true"} "21:37:12"]
-      [:div.grow.flex
+      [:div.grow.flex.space-between
        [ui/vector
         [ui/keyword :actions/transact]
         [ui/vector
@@ -191,7 +191,7 @@
     [ui/card
      [ui/card-header {::ui/actions []}
       [ui/timestamp {:data-folded "true"} "21:36:59"]
-      [:div.grow.flex
+      [:div.grow.flex.space-between
        [ui/vector
         [ui/keyword :actions/transact]
         [ui/vector
@@ -204,7 +204,7 @@
     [ui/card
      [ui/card-header {::ui/actions []}
       [ui/timestamp {:data-folded "true"} "21:36:37"]
-      [:div.grow.flex
+      [:div.grow.flex.space-between
        [ui/vector
         [ui/keyword :actions/navigate]
         [ui/map
@@ -221,7 +221,7 @@
     [ui/card
      [ui/card-header {::ui/actions []}
       [ui/timestamp {:data-folded "true"} "21:23:14"]
-      [:div.grow.flex
+      [:div.grow.flex.space-between
        [ui/vector
         [ui/keyword :actions/navigate]
         [ui/map

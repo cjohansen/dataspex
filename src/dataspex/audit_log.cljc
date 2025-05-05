@@ -73,7 +73,7 @@
     (render-diffs diff opt)))
 
 (defn render-custom-summary [summary diff]
-  [:div.grow.flex
+  [:div.grow.flex.space-between
    (render-inline summary)
    (let [stats (diff/get-stats diff)]
      (some->> [(when-let [n (:insertions stats)]

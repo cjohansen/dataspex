@@ -143,7 +143,7 @@
   [(if actions :tr.clickable :tr) {:on {:click actions}}
    [:th k]
    [:td (if button
-          [:span.flex v button]
+          [:span.flex.space-between v button]
           v)]])
 
 (defalias dictionary [attrs entries]
@@ -388,10 +388,10 @@
   [:nav attrs crumbs])
 
 (defalias navbar [attrs children]
-  [:div.flex.navbar attrs children])
+  [:div.flex.space-between.navbar attrs children])
 
 (defalias button-bar [attrs children]
-  [:nav.flex.gap-2 attrs children])
+  [:nav.flex.space-between.gap-2 attrs children])
 
 (defalias tab [{::keys [selected? actions] :as attrs} content]
   [(if actions :button.tab.clickable :div.tab)
@@ -400,8 +400,8 @@
    content])
 
 (defalias tabs [attrs children]
-  [:nav.flex attrs children])
+  [:nav.flex.space-between attrs children])
 
 (defalias toolbar [attrs children]
-  [:div.toolbar.flex attrs
+  [:div.toolbar.flex.space-between attrs
    children])
