@@ -1,4 +1,6 @@
 (ns dataspex.browser-extension-client
+  "The browser extension client expects to run in the browser devtools extension.
+  It connects to the inspected page via a browser-specific messaging channel."
   (:require [dataspex.codec :as codec]
             [dataspex.render-client :as rc]))
 

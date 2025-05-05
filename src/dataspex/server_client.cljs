@@ -1,4 +1,7 @@
 (ns dataspex.server-client
+  "The server client connects to a Dataspex ring server. It receives hiccup to
+  render over a server-sent events endpoint and sends commands with an HTTP POST
+  request."
   (:require [dataspex.codec :as codec]
             [dataspex.render-client :as rc]))
 

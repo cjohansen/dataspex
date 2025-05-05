@@ -1,4 +1,6 @@
 (ns dataspex.in-process-client
+  "The in-process client runs in the same process that inspects data with
+  Dataspex. It's main use is for aiding Dataspex development."
   (:require [dataspex.actions :as actions]
             [dataspex.panel :as panel]
             [dataspex.render-client :as rc]))
