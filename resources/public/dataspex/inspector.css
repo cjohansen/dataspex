@@ -26,7 +26,7 @@
   --la-palma: #25a711;
 }
 
-:root, [data-theme=light], [data-theme=dark] [data-theme=light] {
+:root, [data-theme=light], [data-theme=dark] [data-theme=light], .light, .dark .light {
   background: var(--white);
   color: var(--mine-shaft);
   --fg: var(--mine-shaft);
@@ -72,7 +72,7 @@
   --active-card-hover-bg: var(--mercury);
 }
 
-[data-theme=dark] {
+[data-theme=dark], .dark {
   background: var(--woodsmoke);
   color: var(--mercury);
   --fg: var(--mercury);
