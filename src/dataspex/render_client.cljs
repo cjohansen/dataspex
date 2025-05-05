@@ -9,7 +9,8 @@
 ::ui/keep
 
 (defprotocol HostChannel
-  (initialize! [host-channel render-f])
+  (connect [host-channel render-f])
+  (disconnect [host-channel])
   (process-actions [host-channel node actions]))
 
 (defn prefers-dark-mode? []
@@ -91,6 +92,6 @@
     (mount-splash root)
     (set-dispatch! channels)
     (doseq [[id channel] channels]
-      (initialize! channel #(render root id %))
+      (connect channel #(render root id %))
       (->> [[:dataspex.actions/assoc-in [:dataspex/theme] theme]]
            (process-actions channel js/document.documentElement)))))

@@ -34,15 +34,15 @@
        (fn [^js message _sender _send-response]
          (process-message render message))))))
 
-(defrecord BrowserExtensionClient []
-  rc/HostChannel
-  (initialize! [_ render-f]
-    (js/chrome.runtime.sendMessage #js {:type "panel-ready"})
-    (subscribe-to-messages render-f)
-    (post-message {:event :extension-loaded}))
-
-  (process-actions [_ _ actions]
-    (post-actions actions)))
-
 (defn create-channel []
-  (->BrowserExtensionClient))
+  (reify
+    rc/HostChannel
+    (connect [_ render-f]
+      (js/chrome.runtime.sendMessage #js {:type "panel-ready"})
+      (subscribe-to-messages render-f)
+      (post-message {:event :extension-loaded}))
+
+    (disconnect [_])
+
+    (process-actions [_ _ actions]
+      (post-actions actions))))

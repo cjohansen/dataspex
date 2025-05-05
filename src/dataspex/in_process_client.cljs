@@ -3,15 +3,16 @@
             [dataspex.panel :as panel]
             [dataspex.render-client :as rc]))
 
-(defrecord InProcessClient [store]
-  rc/HostChannel
-  (initialize! [_ render-f]
-    (add-watch store ::render (fn [_ _ _ state]
-                                (render-f (panel/render-inspector state)))))
-
-  (process-actions [_ _ actions]
-    (actions/act! store actions)
-    (js/Promise.resolve [])))
-
 (defn create-channel [store]
-  (->InProcessClient store))
+  (reify
+    rc/HostChannel
+    (connect [_ render-f]
+      (add-watch store ::render (fn [_ _ _ state]
+                                  (render-f (panel/render-inspector state)))))
+
+    (disconnect [_]
+      (remove-watch store ::render))
+
+    (process-actions [_ _ actions]
+      (actions/act! store actions)
+      (js/Promise.resolve []))))
