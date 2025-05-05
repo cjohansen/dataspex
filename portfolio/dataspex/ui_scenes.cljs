@@ -198,3 +198,33 @@
      [ui/button {::ui/actions []}
       [icons/caret-right]]]
     dictionary]])
+
+(defscene inspector-remote-status
+  [:div.flex.space-between
+   [:div.flex.gap-8
+    [:span.subtle.flex.gap-2.discrete-button
+     [ui/button {::ui/actions []}
+      [icons/wifi-high {:class "hover_hide"
+                        :data-color "success"}]
+      [icons/x {:class "hover_show"}]
+      "localhost:7117"]]
+
+    [:span.subtle.flex.gap-2.discrete-button
+     [ui/button {::ui/actions []}
+      [icons/wifi-x {:class "hover_hide"
+                     :data-color "error"}]
+      [icons/arrow-counter-clockwise {:class "hover_show"}]
+      "localhost:5335"]]]
+   [ui/button {::ui/actions []}
+    [icons/plus-circle]]])
+
+(defscene inspector-add-remote
+  [:div.flex.space-between
+   [:div.flex.gap-8
+    ]
+   [:div.flex.gap-2
+    [:input.input {:type "text"}]
+    [ui/button {::ui/actions []}
+     [icons/plus-circle {:data-color "success"}]]
+    [ui/button {::ui/actions []}
+     [icons/x]]]])

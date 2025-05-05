@@ -40,8 +40,14 @@
 (defalias arrows-out-simple [attrs _]
   (render-icon attrs (icons/icon :phosphor.bold/arrows-out-simple)))
 
+(defalias arrow-counter-clockwise [attrs _]
+  (render-icon attrs (icons/icon :phosphor.bold/arrow-counter-clockwise)))
+
 (defalias x [attrs _]
   (render-icon attrs (icons/icon :phosphor.bold/x)))
+
+(defalias plus-circle [attrs _]
+  (render-icon attrs (icons/icon :phosphor.regular/plus-circle)))
 
 (defalias caret-left [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/caret-left)))
@@ -54,3 +60,9 @@
 
 (defalias moon [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/moon)))
+
+(defalias wifi-high [attrs _]
+  (render-icon (assoc-in attrs [:style :fill] "currentColor") (icons/icon :phosphor.regular/wifi-high)))
+
+(defalias wifi-x [attrs _]
+  (render-icon (assoc-in attrs [:style :fill] "currentColor") (icons/icon :phosphor.regular/wifi-x)))

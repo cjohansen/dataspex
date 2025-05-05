@@ -176,6 +176,14 @@ body, pre {
   gap: 0.5em;
 }
 
+.gap-4 {
+  gap: 1em;
+}
+
+.gap-8 {
+  gap: 2em;
+}
+
 .ml-4 {
   margin-left: 1em;
 }
@@ -285,6 +293,14 @@ a.clickable:hover,
     display: inline-block;
     width: 1.25em;
     height: 1.25em;
+}
+
+.button:hover .hover_hide {
+  display: none;
+}
+
+.button:not(:hover) .hover_show {
+  display: none;
 }
 
 /* Tags */
