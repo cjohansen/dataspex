@@ -1,4 +1,5 @@
 (ns dataspex.core
+  "The Dataspex public API for JVM Clojure"
   (:require [dataspex.data :as data]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]

@@ -1,4 +1,5 @@
 (ns dataspex.core
+  "The Dataspex public API for ClojureScript."
   (:require [clojure.string :as str]
             [dataspex.data :as data]
             [dataspex.in-process-host :as in-process-host]

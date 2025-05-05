@@ -1,4 +1,5 @@
 (ns dataspex.browser-extension
+  "Main entry-point for the browser extension"
   (:require [dataspex.browser-extension-client :as extension-client]
             [dataspex.render-client :as rc]
             [dataspex.server-client :as server-client]))
