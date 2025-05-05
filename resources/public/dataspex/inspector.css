@@ -30,7 +30,7 @@
   background: var(--white);
   color: var(--mine-shaft);
   --fg: var(--mine-shaft);
-  --subtle-color: var(--dusty);
+  --subtle-color: var(--dove-gray);
   --code-background: var(--gallery);
   --code-text-shadow-color: var(--white);
   --string-color: var(--san-felix);
