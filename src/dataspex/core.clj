@@ -60,13 +60,12 @@
   (inspector/uninspect store label)
   nil)
 
-(defn ^:export inspect-taps [& [label]]
-  (inspector/inspect
-   store
-   (or label "Taps")
-   (tap-inspector/create-inspector)
-   {:track-changes? false})
-  nil)
+(defn ^:export inspect-taps
+  {:arglists '[[]
+               [label]
+               [label {:keys [start-server? server-port]}]]}
+  [& [label opt]]
+  (inspect (or label "Taps") (tap-inspector/create-inspector) (assoc opt :track-changes? false)))
 
 (defn ^:export uninspect-taps [& [label]]
   (uninspect (or label "Taps")))
