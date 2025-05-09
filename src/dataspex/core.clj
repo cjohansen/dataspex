@@ -53,7 +53,7 @@
   (inspector/inspect store label x opt)
   (when (and (nil? @server) (not (false? (:start-server? opt))))
     (start-server!))
-  nil)
+  x)
 
 (defn ^:export uninspect [label]
   (inspector/uninspect store label)
