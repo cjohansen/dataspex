@@ -182,7 +182,7 @@ body, pre {
 }
 
 .scroll-x {
-  overflow-x: scroll;
+  overflow-x: auto;
 }
 
 /* Color schemes */
