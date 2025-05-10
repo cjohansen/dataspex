@@ -11,25 +11,24 @@
 
 (deftest render-revision
   (testing "Renders time of change and diff summary"
-    (is (= (with-redefs [time/get-default-timezone
-                         (constantly #?(:clj (ZoneId/of "Europe/Oslo") :cljs nil))]
-             (audit-log/render-revision
-              {:created-at #inst "2025-04-16T16:21:14.000-00:00"
-               :rev 2
-               :val {:movie/title "Interstellar"
-                     :movie/year 2014}
-               :diff [[[:movie/director] :-]
-                      [[:movie/year] :+]
-                      [[:movie/title] :+ "Interstellar"]]}
-              {:dataspex/inspectee "Store"
-               :dataspex/path []}))
+    (is (= (-> (audit-log/render-revision
+                {:created-at #inst "2025-04-16T16:21:14.000-00:00"
+                 :rev 2
+                 :val {:movie/title "Interstellar"
+                       :movie/year 2014}
+                 :diff [[[:movie/director] :-]
+                        [[:movie/year] :+]
+                        [[:movie/title] :+ "Interstellar"]]}
+                {:dataspex/inspectee "Store"
+                 :dataspex/path []})
+               h/strip-clock-times)
            [::ui/card
             [::ui/card-header
              {::ui/actions
               [[::actions/assoc-in
                 ["Store" :dataspex/folding [:dataspex.audit-log/audit-log :rev 2]]
                 {:folded? false}]]}
-             [::ui/timestamp {:data-folded "true"} "18:21:14"]
+             [::ui/timestamp {:data-folded "true"} "HH:mm:ss"]
              [:div.grow
               [::ui/success "2"] " insertions, "
               [::ui/error "1"] " deletion"

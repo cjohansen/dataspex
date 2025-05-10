@@ -1,5 +1,6 @@
 (ns dataspex.helper
-  (:require [clojure.walk :as walk]
+  (:require [clojure.string :as str]
+            [clojure.walk :as walk]
             [datascript.core :as d]
             [dataspex.data :as data]
             [dataspex.hiccup :as hiccup]
@@ -73,3 +74,11 @@
          (into [(first x)] (drop 2 x))
          x))
      hiccup)))
+
+(defn strip-clock-times [data]
+  (walk/postwalk
+   (fn [x]
+     (cond-> x
+       (string? x)
+       (str/replace #"\d\d:\d\d:\d\d" "HH:mm:ss")))
+   data))
