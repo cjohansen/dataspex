@@ -105,14 +105,12 @@
           (or (associative? data) (set? data))
           (recur (get data (first ks)) (next ks))
 
-          :else
-          (cond
-            (and (coll? data) (number? k))
-            (recur (nth data k) (next ks))
+          (and (coll? data) (number? k))
+          (recur (nth data k) (next ks))
 
-            (or (js-array? data) (js-object? data))
-            (recur (aget data (cond-> k
-                                (keyword? k) name)) (next ks))))))))
+          (or (js-array? data) (js-object? data))
+          (recur (aget data (cond-> k
+                              (keyword? k) name)) (next ks)))))))
 
 (defn lookupable? [x]
   ;; Includes entities
