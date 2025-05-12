@@ -1,5 +1,6 @@
 (ns dataspex.inspector
-  (:require [dataspex.diff :as diff]
+  (:require [dataspex.data :as data]
+            [dataspex.diff :as diff]
             [dataspex.protocols :as dp])
   #?(:clj (:import (java.util Date))))
 
@@ -66,11 +67,32 @@
   (unwatch [ref k]
     (remove-watch ref k)))
 
+(defn try-extend-inspectee [x]
+  (cond
+    (satisfies? dp/Watchable x)
+    x
+
+    (data/watchable? x)
+    (reify
+      dp/Watchable
+      (get-val [_]
+        @x)
+
+      (watch [_ k f]
+        (add-watch x k (fn [_ _ old-data new-data] (f old-data new-data nil)))
+        k)
+
+      (unwatch [_ k]
+        (remove-watch x k)))
+
+    :else x))
+
 (defn inspect
   {:arglists '[[store label x]
                [store label x {:keys [track-changes? history-limit max-height]}]]}
   [store label x & [opt]]
-  (let [[val subscription]
+  (let [x (try-extend-inspectee x)
+        [val subscription]
         (if (satisfies? dp/Watchable x)
           [(dp/get-val x)
            (dp/watch x ::inspect

@@ -17,6 +17,14 @@
           (not-empty (some-> v .-constructor .-name))
           (not (= "clj" (.substring (some-> v .-constructor .-name) 0 3))))))
 
+(defn derefable? [x]
+  #?(:clj (instance? clojure.lang.IDeref x)
+     :cljs (satisfies? cljs.core/IDeref x)))
+
+(defn watchable? [x]
+  #?(:clj (instance? clojure.lang.IRef x)
+     :cljs (satisfies? cljs.core/IWatchable x)))
+
 (defn hiccup? [data]
   (and (vector? data)
        (not (map-entry? data))
@@ -107,6 +115,9 @@
 
           (and (coll? data) (number? k))
           (recur (nth data k) (next ks))
+
+          (derefable? data)
+          (recur (get @data k) (next ks))
 
           (or (js-array? data) (js-object? data))
           (recur (aget data (cond-> k

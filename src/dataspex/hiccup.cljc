@@ -226,12 +226,16 @@
   (let [n (some->> o .-constructor .-name)]
     (str "#js" (when (and (not-empty n) (not= n "Object")) (str "/" n)))))
 
+(defn render-inline-atom [r opt]
+  (render-paginated-sequential ::ui/vector [(deref r)] (assoc opt ::ui/prefix "#atom")))
+
 (defn render-inline-object [o opt]
   (cond
     (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
     (coll? o) (render-inline-seq o opt)
     (data/js-array? o) (render-inline-array o opt)
     (data/js-object? o) (render-inline-map o (data/get-js-object-entries o opt) (assoc opt ::ui/prefix (get-js-prefix o)))
+    (data/derefable? o) (render-inline-atom o opt)
 
     :else
     (let [string (data/stringify o)]
@@ -420,6 +424,9 @@
       folded?
       (conj [::ui/code "..."]))))
 
+(defn render-atom-source [r opt]
+  (render-source-content [(deref r)] (assoc opt ::ui/prefix "#atom")))
+
 (defn render-inline [data & [opt]]
   (if (satisfies? dp/IRenderInline data)
     (dp/render-inline data opt)
@@ -441,7 +448,10 @@
       (render-entries-dictionary data opt (data/get-js-array-entries data opt))
 
       (data/js-object? data)
-      (render-entries-dictionary data opt (data/get-js-object-entries data opt)))
+      (render-entries-dictionary data opt (data/get-js-object-entries data opt))
+
+      (data/derefable? data)
+      (render-dictionary (deref data) opt))
     (catch #?(:clj Exception :cljs :default) e
       [::ui/code #?(:clj (.getMessage e) :cljs (.-message e))])))
 
@@ -564,7 +574,7 @@
                 :clj clojure.lang.IAtom)
   dp/IRenderInline
   (render-inline [r opt]
-    (render-paginated-sequential ::ui/vector [(deref r)] (assoc opt ::ui/prefix "#atom")))
+    (render-inline-atom r opt))
 
   dp/IRenderDictionary
   (render-dictionary [r opt]
@@ -572,7 +582,7 @@
 
   dp/IRenderSource
   (render-source [r opt]
-    (render-source-content [(deref r)] (assoc opt ::ui/prefix "#atom"))))
+    (render-atom-source r opt)))
 
 #?(:cljs
    (extend-type js/Date
