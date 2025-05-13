@@ -1,11 +1,10 @@
 (ns dataspex.icons
+  "Since Dataspex will prepare its hiccup in one process and render it in another,
+  it can't use `icons/icon` to load an icon into the build as it's preparing the
+  hiccup. Instead, this namespace reifies all icons used by Dataspex, so they
+  are included in the rendering build."
   (:require [phosphor.icons :as icons]
             [replicant.alias :refer [defalias]]))
-
-;; Since Dataspex will prepare its hiccup in one process and render it in
-;; another, it can't use `icons/icon` to load an icon into the build as it's
-;; preparing the hiccup. Instead, this namespace reifies all icons used by
-;; Dataspex, so they are included in the rendering build.
 
 (defn render-icon [attrs icon]
   (icons/render icon (update attrs :class conj :icon)))

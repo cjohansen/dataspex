@@ -119,6 +119,95 @@ You will need [Firefox Developer Edition](https://www.mozilla.org/en-US/firefox/
 
 If you make changes to the extension code, click "reload".
 
+## Developing Dataspex
+
+Dataspex' primary use case is as an extension to the browser's devtools. But
+this isn't the only way to run Dataspex, and it certainly isn't the most
+ergonomical way to develop it. Luckily, you can run Dataspex as any old webapp.
+
+To run the development version of Dataspex:
+
+```sh
+npx shadow-cljs watch app portfolio
+```
+
+You can now find Portfolio (all the UI elements) on
+[http://localhost:9090/portfolio.html](http://localhost:9090/portfolio.html).
+The entry point is
+[portfolio/dataspex/scenes.cljs](portfolio/dataspex/scenes.cljs).
+
+...and a sample Dataspex instance on
+[http://localhost:9090](http://localhost:9090). Its entry point is
+[dev/dataspex/dev.cljs](dev/dataspex/dev.cljs).
+
+Finally, there's a comprehensible test suite that can be run with:
+
+```sh
+bin/kaocha --watch
+```
+
+A guide to the code and some more docs are pending. In the meantime, here's the
+bird's eye overview.
+
+`dataspex.core` defines the public API. All other namespaces are internal until
+publicly documented.
+
+### Core namespaces
+
+- `dataspex.data`: Datafy and navigate data structures
+- `dataspex.hiccup`: Rendering logic for data structures, most important
+  entry-points are `render-inline`, `render-dictionary`, `render-source`, and
+  `render-table`
+- `dataspex.audit_log`: Rendering logic for the audit log
+- `dataspex.protocols`: The protocols that power Dataspex' rendering
+- `dataspex.views`: Shared view options and utilities
+- `dataspex.inspector`: Inspecting values: subscribing to changes, rendering,
+  recording history/audit trail, etc.
+- `dataspex.tap_inspector`: Inspecting taps
+
+### The UI library:
+
+- `dataspex.ui`: UI elements, the building blocks.
+- `dataspex.icons`: The Phosphor icons used (see namespace docstring).
+
+### The Dataspex UI
+
+- `dataspex.panel`: The Dataspex
+- `dataspex.actions`: UI interaction dispatch
+
+### Various utilities
+
+- `dataspex.codec`: To and from strings for out of process communication
+- `dataspex.diff`: Dataspex' use of Editscript
+- `dataspex.time`: Very limited date-time stuff
+- `dataspex.user_agent`: User agent parser
+
+
+### Type-specifix extensions:
+
+- `dataspex.datalog`: Shared logic for Datomic/Datascript
+- `dataspex.datascript`
+- `dataspex.datomic`
+- `dataspex.date`: JavaScript Dates
+- `dataspex.jwt`: JSON Web Tokens
+
+## Infrastructure/wiring
+
+- `dataspex.server`: The Dataspex server, used when inspecting data on the JVM
+- `dataspex.browser_extension`: Entry-point for the browser extension
+- `dataspex.remote_inspector`: Entry-point for the remote inspector (e.g. http://localhost:7117)
+- `dataspex.browser_extension_client`: Client that receives render calls and
+  sends actions through the browser extension messaging system
+- `dataspex.in_process_client`: Client that subscribes to render calls and sends
+  actions in-process: basically the engine of the development version of
+  Dataspex
+- `dataspex.server_client`: Client that subscribes to render calls and sends
+  actions over the HTTP server: how Dataspex renders data inspected on the JVM
+- `dataspex.in_process_host`: Host that sends renders and subscribes to actions in-process
+- `dataspex.remote_host`: Host that sends renders and subscribes actions over HTTP
+- `dataspex.render_client`: Client wiring
+- `dataspex.render_host`: Host wiring
+
 ## License
 
 Copyright © 2025 Christian Johansen. Distributed under the [MIT
