@@ -211,7 +211,7 @@
                  :dataspex.audit/summary))
            [:db/transact [:person/id "christian"]])))
 
-  (testing "Extracts audit metadata from Datascript transaction"
+  (testing "Sets host-str"
     (is (= (let [dataspex-store (atom {:dataspex/host-str "My machine"})]
              (inspector/inspect dataspex-store "DB" {})
              (-> @dataspex-store
