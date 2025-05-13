@@ -233,6 +233,7 @@
   (cond
     (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
     (coll? o) (render-inline-seq o opt)
+    (uuid? o) [::ui/literal {::ui/prefix "#uuid"} [::ui/string (str o)]]
     (data/js-array? o) (render-inline-array o opt)
     (data/js-object? o) (render-inline-map o (data/get-js-object-entries o opt) (assoc opt ::ui/prefix (get-js-prefix o)))
     (data/derefable? o) (render-inline-atom o opt)
