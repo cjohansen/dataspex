@@ -2,7 +2,9 @@
   (:require [clojure.string :as str]))
 
 (defn parse-user-agent
-  ([] (parse-user-agent (.-userAgent js/navigator)))
+  ([]
+   (when (exists? js/navigator)
+     (parse-user-agent (.-userAgent js/navigator))))
   ([user-agent-str]
    (let [ua (str/lower-case user-agent-str)]
      {:browser (cond

@@ -5,7 +5,8 @@
             [dataspex.render-client :as rc]))
 
 (def firefox?
-  (re-find #"Firefox" (.-userAgent js/navigator)))
+  (when (exists? js/navigator)
+    (re-find #"Firefox" (.-userAgent js/navigator))))
 
 (defn post-message [message]
   (js/chrome.devtools.inspectedWindow.eval

@@ -32,7 +32,12 @@
           (.catch (fn [_] (reset! !connected? false)))))))
 
 (defn get-host-id []
-  (hash (str js/navigator.userAgent js/location.origin)))
+  (cond
+    (exists? js/navigator)
+    (hash (str js/navigator.userAgent js/location.origin))
+
+    (exists? js/process)
+    (hash js/process.cwd)))
 
 (defn create-channel [remote-host]
   (->RemoteHost (atom true) remote-host (get-host-id)))
