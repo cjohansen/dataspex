@@ -1,9 +1,9 @@
 (ns dataspex.jwt
-  (:require #?(:clj [clojure.data.json :as json])
-            [clojure.core.protocols]
+  (:require [clojure.core.protocols]
             [clojure.string :as str]
             [dataspex.data :as data]
             [dataspex.hiccup :as hiccup]
+            [dataspex.json :as json]
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui])
   #?(:clj (:import (java.util Base64))))
@@ -33,12 +33,8 @@
   #?(:clj (String. (.decode (Base64/getUrlDecoder) s))
      :cljs (js/atob s)))
 
-(defn parse-json [s]
-  #?(:cljs (-> s js/JSON.parse (js->clj :keywordize-keys true))
-     :clj (json/read-str s :key-fn keyword)))
-
 (defn unpack [s]
-  (-> s base64-url-decode parse-json))
+  (-> s base64-url-decode json/parse-string))
 
 (defn parse-jwt [token]
   (let [[header data sig] (str/split token #"\.")]
