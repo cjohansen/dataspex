@@ -15,7 +15,23 @@
        (or (not (coll? x)) (not-empty x))))
 
 (defn diff [a b]
-  (->> (e/diff
+  ;; Editscript currently exhibits strange behavior when diffing large maps.
+  ;; When there are enourmous keys in a and b that are identical, and other keys
+  ;; that are not, the presence of the big unchanged keys causes the diff to be
+  ;; slow. Removing the identical keys upfront have been found to produce a
+  ;; 500ms difference in time sent diffing 😅
+  (let [{:keys [a b]}
+        (reduce (fn [res k]
+                  (let [equal? (= (get (:a res) k) (get (:b res) k))]
+                    (cond-> res
+                      equal? (update :a dissoc k)
+                      equal? (update :b dissoc k))))
+                {:a a :b b}
+                (keys a))]
+    (e/diff a b)))
+
+(defn diff [a b]
+  (->> (diff
         (->diffable a)
         (->diffable b))
        edit/get-edits
