@@ -14,7 +14,7 @@
   (and (not (nil? x))
        (or (not (coll? x)) (not-empty x))))
 
-(defn diff [a b]
+(defn e-diff [a b]
   ;; Editscript currently exhibits strange behavior when diffing large maps.
   ;; When there are enourmous keys in a and b that are identical, and other keys
   ;; that are not, the presence of the big unchanged keys causes the diff to be
@@ -31,7 +31,7 @@
     (e/diff a b)))
 
 (defn diff [a b]
-  (->> (diff
+  (->> (e-diff
         (->diffable a)
         (->diffable b))
        edit/get-edits
