@@ -43,16 +43,19 @@
   #?(:cljs (js/requestAnimationFrame f)
      :clj (f)))
 
-(defn ^{:indent 1} start-render-host [store {:keys [channels]}]
-  (doseq [channel channels]
-    (initialize!
-     channel
-     #(render channel (render-inspector @store))
-     #(process-actions store %)))
+(defn ^{:indent 1} start-render-host [store]
   (add-watch
    store ::render
    (fn [_ _ _ new-state]
      (tick
       #(let [hiccup (render-inspector new-state)]
-         (doseq [channel channels]
+         (doseq [channel (::channels new-state)]
            (render channel hiccup)))))))
+
+(defn add-channel [store ^ClientChannel channel]
+  (initialize!
+   channel
+   #(render channel (render-inspector @store))
+   #(process-actions store %))
+  (swap! store update ::channels (fnil conj []) channel)
+  store)

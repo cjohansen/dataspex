@@ -19,10 +19,17 @@
 
 (defonce store
   (let [store (atom {:dataspex/host-str (get-host-str (ua/parse-user-agent) js/location.origin)})]
-    (rh/start-render-host store
-      {:channels [(in-process-host/create-channel)
-                  (remote-host/create-channel "http://localhost:7117")]})
+    (rh/start-render-host store)
+    (rh/add-channel store (in-process-host/create-channel))
     store))
+
+(defn ^:export connect-remote-inspector!
+  "Connect a server to send inspected data to for remote viewing. Sending to a
+  remote allows data to be inspected without using the Dataspex browser
+  extension (e.g. Safari, mobile browsers). `host` defaults to
+  \"http://localhost:7117\"."
+  [& [host]]
+  (rh/add-channel store (remote-host/create-channel (or host "http://localhost:7117"))))
 
 (defn ^:export inspect
   {:arglists '[[label x]
