@@ -6,7 +6,7 @@
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
             [dataspex.remote-host :as remote-host]
-            [dataspex.render-host :as rh]
+            [dataspex.render-host :as render-host]
             [dataspex.tap-inspector :as tap-inspector]
             [dataspex.user-agent :as ua]
             dataspex.datascript))
@@ -19,8 +19,8 @@
 
 (defonce store
   (let [store (atom {:dataspex/host-str (get-host-str (ua/parse-user-agent) js/location.origin)})]
-    (rh/start-render-host store)
-    (rh/add-channel store (in-process-host/create-channel))
+    (render-host/start-render-host store)
+    (render-host/add-channel store (in-process-host/create-channel))
     store))
 
 (defn ^:export connect-remote-inspector!
@@ -29,7 +29,7 @@
   extension (e.g. Safari, mobile browsers). `host` defaults to
   \"http://localhost:7117\"."
   [& [host]]
-  (rh/add-channel store (remote-host/create-channel (or host "http://localhost:7117"))))
+  (render-host/add-channel store (remote-host/create-channel (or host "http://localhost:7117"))))
 
 (defn ^:export inspect
   {:arglists '[[label x]
