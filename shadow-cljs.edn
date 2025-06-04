@@ -22,4 +22,10 @@
   :portfolio
   {:target :browser
    :modules {:main {:init-fn dataspex.scenes/main}}
-   :dev {:output-dir "dev-resources/public/portfolio"}}}}
+   :dev {:output-dir "dev-resources/public/portfolio"}}
+
+  :test
+  {:target :node-test
+   :output-to "resources/test/tests.js"
+   :ns-regexp "-test$"
+   :autorun true}}}
