@@ -28,7 +28,14 @@
          (receive-message (.-data e) request-render process-actions)))))
 
   (render [_ hiccup]
-    (post-message :render hiccup)))
+    (post-message :render hiccup))
+
+  rh/RemoteManager
+  (connect-remote [_ host]
+    (post-message :connect-remote-host {:host host}))
+
+  (disconnect-remote [_ host]
+    (post-message :disconnect-remote-host {:host host})))
 
 (defn create-channel []
   (->InProcessHost))

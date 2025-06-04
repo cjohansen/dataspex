@@ -2,28 +2,36 @@
   "The server client connects to a Dataspex ring server. It receives hiccup to
   render over a server-sent events endpoint and sends commands with an HTTP POST
   request."
-  (:require [dataspex.codec :as codec]
+  (:require [clojure.string :as str]
+            [dataspex.codec :as codec]
             [dataspex.render-client :as rc]))
 
-(defn connect-event-source [host render]
-  (let [event-source (js/EventSource. (str host "/renders"))
-        attempts (atom 3)]
+(defn connect-event-source [!state host render on-message on-connection-status-changed]
+  (let [event-source (js/EventSource. (str host "/client-messages"))]
+    (swap! !state merge {:event-source event-source
+                         :attempts 3})
+    (on-connection-status-changed {:connected? true})
     (.addEventListener
      event-source "message"
      (fn [e]
-       (println "Render")
-       (render (codec/parse-string (.-data e)))))
+       (let [{:keys [event data]} (codec/parse-string (.-data e))]
+         (println event)
+         (case event
+           :render (render data)
+           (if on-message
+             (on-message {:event event :data data})
+             (println "Unknown event" event data))))))
 
     (.addEventListener
      event-source "error"
      (fn [_]
-       (if (= 0 @attempts)
+       (if (= 0 (:attempts @!state))
          (do
            (.close event-source)
-           (println "Dataspex couldn't reach the server on localhot:7117 after three attempts, giving up. Refresh page to inspect remotely."))
-         (swap! attempts dec))))
-
-    event-source))
+           (println "Dataspex couldn't reach the server on " host " after three attempts, giving up. Refresh page to inspect remotely.")
+           (swap! !state dissoc :event-source)
+           (on-connection-status-changed {:connected? true}))
+         (swap! !state update :attempts dec))))))
 
 (defn post-actions [host node actions]
   (let [host-id (some-> node
@@ -36,15 +44,35 @@
         (.then (fn [res] (.text res)))
         (.then (fn [text] (codec/parse-string text))))))
 
-(defn create-channel [& [host]]
-  (let [!event-source (atom nil)]
+(defn ^{:indent 1} create-channel [& [host {:keys [on-connection-status-changed on-message]}]]
+  (let [!state (atom {})]
     (reify
       rc/HostChannel
       (connect [_ render-f]
-        (reset! !event-source (connect-event-source host render-f)))
+        (connect-event-source !state host render-f on-message (or on-connection-status-changed (fn [_]))))
 
       (disconnect [_]
-        (.close @!event-source))
+        (.close (:event-source @!state))
+        (reset! !state {}))
 
       (process-actions [_ node actions]
         (post-actions host node actions)))))
+
+(defn host->id [host]
+  (-> host
+      (str/replace #"^.*://" "")
+      (str/replace #":" "-")
+      (str/replace #"/" "-")))
+
+(defn add-channel [client host & [{:keys [on-message]}]]
+  (let [id (host->id host)]
+    (swap! client assoc-in [:server-clients id :host] host)
+    (->> {:on-connection-status-changed
+          (fn [status]
+            (swap! client assoc-in [:server-clients id :status] status))
+          :on-message on-message}
+         (create-channel host)
+         (rc/add-channel client id))))
+
+(defn remove-channel [client host]
+  (rc/remove-channel client (host->id host)))

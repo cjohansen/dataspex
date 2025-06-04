@@ -17,32 +17,34 @@
 (defn post-actions [actions]
   (js/Promise.resolve (post-message {:event :actions :data actions})))
 
-(defn process-message [render ^js message]
+(defn process-message [^js message render on-message]
   (when (= "dataspex-library" (.-from message))
     (let [message (codec/parse-string (.-payload message))]
       (case (:event message)
         :render (render (:data message))
         :effects (rc/execute-effects (:data message))
-        (js/console.log "Unknown message event" (codec/generate-string message))))))
+        (if on-message
+          (on-message message)
+          (js/console.log "Unknown message event" (codec/generate-string message)))))))
 
-(defn subscribe-to-messages [render]
+(defn subscribe-to-messages [render on-message]
   (when (and js/chrome js/chrome.runtime)
     (if firefox?
       (-> (js/chrome.runtime.connect #js {:name "dataspex-panel"})
           .-onMessage
           (.addListener
            (fn [^js message]
-             (process-message render message))))
+             (process-message message render on-message))))
       (js/chrome.runtime.onMessage.addListener
        (fn [^js message _sender _send-response]
-         (process-message render message))))))
+         (process-message message render on-message))))))
 
-(defn create-channel []
+(defn create-channel [{:keys [on-message]}]
   (reify
     rc/HostChannel
     (connect [_ render-f]
       (js/chrome.runtime.sendMessage #js {:type "panel-ready"})
-      (subscribe-to-messages render-f)
+      (subscribe-to-messages render-f on-message)
       (post-message {:event :extension-loaded}))
 
     (disconnect [_])

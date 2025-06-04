@@ -23,7 +23,7 @@
     (render-host/add-channel store (in-process-host/create-channel))
     store))
 
-(defn ^:export connect-remote-inspector!
+(defn ^:export connect-remote-inspector
   "Connect a server to send inspected data to for remote viewing. Sending to a
   remote allows data to be inspected without using the Dataspex browser
   extension (e.g. Safari, mobile browsers). `host` defaults to
@@ -52,3 +52,11 @@
 
 (defn ^:export uninspect-taps [& [label]]
   (uninspect (or label "Taps")))
+
+(defn ^:export inspect-remote [host]
+  (swap! store update :dataspex/remotes (fnil conj #{}) host)
+  nil)
+
+(defn ^:export uninspect-remote [host]
+  (swap! store update :dataspex/remotes disj host)
+  nil)

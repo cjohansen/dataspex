@@ -1,14 +1,14 @@
 (ns dataspex.server
   (:require [clojure.string :as str]
             [dataspex.codec :as codec]
-            [dataspex.render-host :as rh]
+            [dataspex.render-host :as render-host]
             [ring.adapter.jetty :as jetty]
             [ring.core.protocols :as protocols]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.util.response :as response])
   (:import (java.nio.charset StandardCharsets)))
 
-(defn write-event [ref id out data]
+(defn write-event [ref id ^java.io.OutputStream out data]
   (try
     (.write out (-> (str "data: " (codec/generate-string data) "\n\n")
                     (.getBytes StandardCharsets/UTF_8)))
@@ -16,23 +16,27 @@
     (catch java.io.IOException _
       (remove-watch ref id))))
 
-(defn ^{:indent 2} stream-changes [ref out f {:keys [stream-current?]}]
+(defn ^{:indent 2} stream-changes [ref ^java.io.OutputStream out f {:keys [stream-current?]}]
   (let [id (random-uuid)]
-    (add-watch ref id (fn [_ _ _ new-state]
-                        (write-event ref id out (f new-state))))
+    (add-watch ref id (fn [_ _ old-state new-state]
+                        (doseq [event (f old-state new-state)]
+                          (write-event ref id out event))))
     (if-not (false? stream-current?)
-      (write-event ref id out (f @ref))
+      (doseq [event (f nil @ref)]
+        (write-event ref id out event))
       (.flush out))))
 
-(defn render-relayed-renders [state]
-  (some->> (sort-by key state)
-           (keep
-            (fn [[id hiccup]]
-              (when hiccup
-                [:article {:data-host id}
-                 hiccup])))
-           not-empty
-           (into [:div])))
+(defn render-relayed-renders [_ state]
+  [{:event :render
+    :data
+    (some->> (sort-by key state)
+             (keep
+              (fn [[id hiccup]]
+                (when hiccup
+                  [:article {:data-host id}
+                   hiccup])))
+             not-empty
+             (into [:div]))}])
 
 (defn get-relayed-actions [host-id data]
   (when (= (:host-id data) host-id)
@@ -55,7 +59,7 @@
 (defn process-actions [req]
   {:status 200
    :body (->> (get-body req)
-              (rh/process-actions (:store req))
+              (render-host/process-actions (:store req))
               codec/generate-string)})
 
 (defn relay-request [req respond]
@@ -70,16 +74,16 @@
           (reset! (:relay-actions req) {:host-id host-id, :actions data}))
         (respond {:status 200}))
       (cond
-        (= "/relay/renders" (:uri req))
+        (= "/relay/client-messages" (:uri req))
         (events-handler respond (:relay-renders req) render-relayed-renders)
 
         (= "actions" path)
-        (events-handler respond (:relay-actions req) #(get-relayed-actions host-id %) {:stream-current? false})))))
+        (events-handler respond (:relay-actions req) #(vector (get-relayed-actions host-id %2)) {:stream-current? false})))))
 
 (defn app [req respond _raise]
   (cond
-    (= "/jvm/renders" (:uri req))
-    (events-handler respond (:store req) #'rh/render-inspector)
+    (= "/jvm/client-messages" (:uri req))
+    (events-handler respond (:store req) render-host/get-events)
 
     (str/starts-with? (:uri req) "/relay/")
     (relay-request req respond)
@@ -100,6 +104,7 @@
             (-> res
                 (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
                 (assoc-in [:headers "Access-Control-Allow-Methods"] "GET, PUT, POST, DELETE, HEAD, OPTIONS")
+                (assoc-in [:headers "Access-Control-Allow-Headers"] "content-type")
                 respond))]
       (if (= :options (:request-method req))
         (respond-with-cors {:status 200})

@@ -5,7 +5,10 @@
             [dataspex.server-client :as server-client]))
 
 (defn ^:export main []
-  (rc/start-render-client js/document.body
-   {:channels
-    {:server (server-client/create-channel "http://localhost:7117/jvm")
-     :extension (extension-client/create-channel)}}))
+  (let [client (rc/start-render-client js/document.body)
+        on-message (fn on-message [{:keys [event data]}]
+                     (case event
+                       :connect-remote-host
+                       (server-client/add-channel client (str (:host data) "/jvm") {:on-message on-message})))]
+    (->> (extension-client/create-channel {:on-message on-message})
+         (rc/add-channel client "extension"))))

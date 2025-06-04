@@ -70,6 +70,14 @@
 (defn ^:export uninspect-taps [& [label]]
   (uninspect (or label "Taps")))
 
+(defn ^:export inspect-remote [host]
+  (swap! store update :dataspex/remotes (fnil conj #{}) host)
+  nil)
+
+(defn ^:export uninspect-remote [host]
+  (swap! store update :dataspex/remotes disj host)
+  nil)
+
 (comment
 
   (stop-server!)

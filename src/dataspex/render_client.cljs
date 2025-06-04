@@ -29,25 +29,26 @@
 
     (prn effect args)))
 
-(defn set-dispatch! [channels]
+(defn set-dispatch! [store]
   (r/set-dispatch!
    (fn [{:replicant/keys [^js dom-event ^js node]} actions]
      (.preventDefault dom-event)
      (.stopPropagation dom-event)
-     (let [channel (keyword (.getAttribute (.closest node "[data-channel]") "data-channel"))]
+     (let [channel (.getAttribute (.closest node "[data-channel]") "data-channel")]
        (doseq [action actions]
          (apply prn channel action))
-       (-> (process-actions (get channels channel) node actions)
+       (-> (process-actions (get (:channels @store) channel) node actions)
            (.then execute-effects))))))
 
-(defn ensure-element [^js root id]
-  (if-let [el (js/document.getElementById id)]
-    el
-    (let [el (js/document.createElement "div")]
-      (set! (.-id el) id)
-      (.setAttribute el "data-channel" id)
-      (.appendChild root el)
-      el)))
+(defn ensure-element [^js root channel-id]
+  (let [id (str "el-" (hash channel-id))]
+    (if-let [el (js/document.getElementById id)]
+      el
+      (let [el (js/document.createElement "div")]
+        (set! (.-id el) id)
+        (.setAttribute el "data-channel" channel-id)
+        (.appendChild root el)
+        el))))
 
 (defn render-splash []
   [::ui/card-list#dataspex.code
@@ -73,7 +74,7 @@
 
 (defn render [^js el id hiccup]
   (when hiccup
-    (when-let [splash (.querySelector el "#dataspex-splash")]
+    (when-let [splash (ensure-element el "dataspex-splash")]
       (r/unmount splash)))
   (-> (ensure-element el (name id))
       (r/render hiccup))
@@ -86,12 +87,30 @@
 (defn set-theme! [theme]
   (.setAttribute js/document.documentElement "data-theme" (name theme)))
 
-(defn ^{:indent 1} start-render-client [^js root {:keys [channels]}]
-  (let [theme (get-preferred-theme)]
+(defn ^{:indent 2} add-channel [store id channel]
+  (let [{:keys [root theme]} @store]
+    (ensure-element root id)
+    (swap! store assoc-in [:channels id] channel)
+    (connect channel #(render root id %))
+    (->> [[:dataspex.actions/assoc-in [:dataspex/theme] theme]]
+         (process-actions channel js/document.documentElement))))
+
+(defn remove-channel [store id]
+  (let [el ^js (ensure-element (:root @store) id)
+        channel (get-in @store [:channels id])]
+    (swap! store update :channels dissoc id)
+    (when el
+      (.removeChild (.-parentNode el) el))
+    (when channel
+      (disconnect channel))))
+
+(defn ^{:indent 1} start-render-client [^js root]
+  (let [theme (get-preferred-theme)
+        store (atom {:root root
+                     :theme theme
+                     :channels {}
+                     :remotes {}})]
     (set-theme! theme)
     (mount-splash root)
-    (set-dispatch! channels)
-    (doseq [[id channel] channels]
-      (connect channel #(render root id %))
-      (->> [[:dataspex.actions/assoc-in [:dataspex/theme] theme]]
-           (process-actions channel js/document.documentElement)))))
+    (set-dispatch! store)
+    store))
