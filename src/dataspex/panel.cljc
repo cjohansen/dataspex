@@ -145,7 +145,7 @@
          (<= 0 prev-n) (conj {::ui/actions [(views/offset-pagination opt prev-n)]})
          :then (conj [::icons/caret-left]))
        [:span.code.text-smaller.subtle
-        (str offset "-" (min max-n (dec next-n)) " of " max-n "")]
+        (str offset "-" (min n (dec next-n)) " of " max-n "")]
        (cond-> [::ui/button]
          (< next-n n) (conj {::ui/actions [(views/offset-pagination opt next-n)]})
          :then (conj [::icons/caret-right]))])))

@@ -271,7 +271,17 @@
                  {})
                 (lookup/select-one :span)
                 lookup/text)
-           "400-479 of 479"))))
+           "400-479 of 479")))
+
+  (testing "Can deal with too big collections to fully count"
+    (is (= (->> (panel/render-pagination-bar
+                 {:page-size 100
+                  :offset 0
+                  :n 1001}
+                 {})
+                (lookup/select-one :span)
+                lookup/text)
+           "0-99 of 1000+"))))
 
 (deftest render-panel
   (testing "Renders panel in browsing mode by default"
