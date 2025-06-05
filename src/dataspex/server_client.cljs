@@ -53,26 +53,8 @@
 
       (disconnect [_]
         (.close (:event-source @!state))
+        (on-connection-status-changed {:connected? false})
         (reset! !state {}))
 
       (process-actions [_ node actions]
         (post-actions host node actions)))))
-
-(defn host->id [host]
-  (-> host
-      (str/replace #"^.*://" "")
-      (str/replace #":" "-")
-      (str/replace #"/" "-")))
-
-(defn add-channel [client host & [{:keys [on-message]}]]
-  (let [id (host->id host)]
-    (swap! client assoc-in [:server-clients id :host] host)
-    (->> {:on-connection-status-changed
-          (fn [status]
-            (swap! client assoc-in [:server-clients id :status] status))
-          :on-message on-message}
-         (create-channel host)
-         (rc/add-channel client id))))
-
-(defn remove-channel [client host]
-  (rc/remove-channel client (host->id host)))

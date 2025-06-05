@@ -4,6 +4,6 @@
   "version": "2025.05.01",
   "description": "A point-and-click Clojure(Script) data browser.",
   "devtools_page": "devtools.html",
-  "permissions": ["scripting"],
+  "permissions": ["scripting", "storage"],
   "host_permissions": ["<all_urls>"]
 }

@@ -127,6 +127,10 @@ body {
   font-size: 0.8rem;
 }
 
+html, body {
+  height: 100%;
+}
+
 .code, [data-type], .source {
   font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
   font-size: 0.8rem;
@@ -188,7 +192,11 @@ body, pre {
   margin-left: 1em;
 }
 
-.subtle {
+.p-2 {
+  padding: 0.5em;
+}
+
+.subtle, .subtle button {
   color: var(--subtle-color);
 }
 
@@ -675,4 +683,11 @@ a.clickable:hover,
 
 .scroll-x > .source {
   padding: 2em 2em 0;
+}
+
+/* "Inspector": Panels with a footer */
+.inspector {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }

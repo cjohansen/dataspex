@@ -8,7 +8,7 @@
     "scripts": ["background.js"],
     "persistent": true
   },
-  "permissions": ["tabs", "activeTab"],
+  "permissions": ["tabs", "activeTab", "storage"],
   "web_accessible_resources": ["content-script.js"],
   "content_scripts": [
     {

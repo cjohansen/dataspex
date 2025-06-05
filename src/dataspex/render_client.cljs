@@ -1,5 +1,6 @@
 (ns dataspex.render-client
-  (:require [dataspex.actions :as actions]
+  (:require [clojure.walk :as walk]
+            [dataspex.actions :as actions]
             [dataspex.hiccup :as hiccup]
             [dataspex.icons :as icons]
             [dataspex.ui :as ui]
@@ -29,16 +30,37 @@
 
     (prn effect args)))
 
-(defn set-dispatch! [store]
+(defn get-form-data [^js form]
+  (->> (into-array (.-elements form))
+       (reduce
+        (fn [res ^js el]
+          (let [k (some-> el .-name not-empty keyword)]
+            (cond-> res
+              k (assoc k (.-value el)))))
+        {})))
+
+(defn interpolate [^js event actions]
+  (walk/postwalk
+   (fn [x]
+     (case x
+       :event.target/value (some-> event .-target .-value)
+       :event/form-data (some-> event .-target get-form-data)
+       x))
+   actions))
+
+(defn set-dispatch! [store handle-remotes-actions]
   (r/set-dispatch!
    (fn [{:replicant/keys [^js dom-event ^js node]} actions]
      (.preventDefault dom-event)
      (.stopPropagation dom-event)
-     (let [channel (.getAttribute (.closest node "[data-channel]") "data-channel")]
+     (let [channel (.getAttribute (.closest node "[data-channel]") "data-channel")
+           actions (interpolate dom-event actions)]
        (doseq [action actions]
          (apply prn channel action))
-       (-> (process-actions (get (:channels @store) channel) node actions)
-           (.then execute-effects))))))
+       (if (= "dataspex-remotes" channel)
+         (handle-remotes-actions actions)
+         (-> (process-actions (get (:channels @store) channel) node actions)
+             (.then execute-effects)))))))
 
 (defn ensure-element [^js root channel-id]
   (let [id (str "el-" (hash channel-id))]
@@ -104,13 +126,25 @@
     (when channel
       (disconnect channel))))
 
-(defn ^{:indent 1} start-render-client [^js root]
-  (let [theme (get-preferred-theme)
-        store (atom {:root root
+(defn init-el [root]
+  (.add (.-classList root) "inspector")
+  ;; This `into` indirection ensures the elements are created in the desired
+  ;; order
+  (into {} [[:panels-el (ensure-element root "dataspex-panels")]
+            [:remotes-el (ensure-element root "dataspex-remotes")]]))
+
+(defn ^{:indent 1} start-render-client [^js root {:keys [handle-remotes-actions
+                                                         render-remotes]}]
+  (let [{:keys [panels-el remotes-el]} (init-el root)
+        theme (get-preferred-theme)
+        store (atom {:root panels-el
                      :theme theme
                      :channels {}
                      :remotes {}})]
     (set-theme! theme)
-    (mount-splash root)
-    (set-dispatch! store)
+    (mount-splash panels-el)
+    (set-dispatch! store (partial handle-remotes-actions store panels-el))
+    (add-watch store ::render-remotes
+     (fn [_ _ _ state]
+       (r/render remotes-el (render-remotes state))))
     store))
