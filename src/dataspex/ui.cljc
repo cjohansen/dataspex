@@ -405,3 +405,11 @@
 (defalias toolbar [attrs children]
   [:div.toolbar.flex.space-between attrs
    children])
+
+(defalias input [attrs]
+  [:input.input
+   (cond-> attrs
+     (::autofocus? attrs)
+     (assoc :replicant/on-mount
+            (fn [{:replicant/keys [node]}]
+              (.focus node))))])
