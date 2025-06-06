@@ -15,18 +15,29 @@
 (defalias number [attrs [number]]
   [:code (assoc attrs :data-type "number") (str number)])
 
-(defn render-named [named & [prefix]]
-  (if-let [ns (namespace named)]
-    [[:span.namespace (str prefix ns)] "/"
-     [:span.name (name named)]]
-    [[:span.name (str prefix (name named))]]))
+(defn render-named
+  ([named]
+   (render-named (namespace named) (name named) nil))
+  ([named prefix]
+   (render-named (namespace named) (name named) prefix))
+  ([ns n prefix]
+   (if ns
+     [[:span.namespace (str prefix ns)] "/"
+      [:span.name n]]
+     [[:span.name (str prefix n)]])))
 
-(defalias keyword [attrs [kw]]
+(defalias keyword [attrs [c1 c2]]
   (into
    [:code (assoc (actions->click-handler attrs) :data-type "keyword")]
-   (if (keyword? kw)
-     (render-named kw ":")
-     [[:span.name (str kw)]])))
+   (cond
+     c2
+     (render-named c1 c2 ":")
+
+     (keyword? c1)
+     (render-named c1 ":")
+
+     :else
+     (render-named nil c1 ":"))))
 
 (defalias boolean [attrs [boolean]]
   [:code (assoc (actions->click-handler attrs) :data-type "boolean")

@@ -15,7 +15,9 @@
 (defscene keyword
   [:div
    [:div [ui/keyword :hello]]
-   [:div [ui/keyword :namespaced/hello]]])
+   [:div [ui/keyword "hello"]]
+   [:div [ui/keyword :namespaced/hello]]
+   [:div [ui/keyword ":ns" "keyword"]]])
 
 (defscene boolean
   [ui/boolean true])
