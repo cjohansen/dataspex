@@ -16,6 +16,8 @@ so you can debug apps on your phone.
 Whether you're debugging a live system or scrying the hidden structure of your
 app state, Dataspex gives you eyes on the flow.
 
+(Watch the grand tour of Dataspex in 10 minutes)[https://youtu.be/5AKvD3nGCYY].
+
 Dataspex is the spiritual successor to [Gadget
 Inspector](https://github.com/cjohansen/gadget-inspector).
 
