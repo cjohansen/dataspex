@@ -22,10 +22,13 @@
   ;; 500ms difference in time sent diffing 😅
   (let [{:keys [a b]}
         (reduce (fn [res k]
-                  (let [equal? (= (get (:a res) k) (get (:b res) k))]
+                  (let [a-val (get (:a res) k)
+                        b-val (get (:b res) k)
+                        ignorable? (and (= a-val b-val)
+                                        (or (coll? a-val) (coll? b-val)))]
                     (cond-> res
-                      equal? (update :a dissoc k)
-                      equal? (update :b dissoc k))))
+                      ignorable? (update :a dissoc k)
+                      ignorable? (update :b dissoc k))))
                 {:a a :b b}
                 (keys a))]
     (e/diff a b)))
