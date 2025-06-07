@@ -10,11 +10,14 @@
 
 (defn write-event [ref id ^java.io.OutputStream out data]
   (try
-    (.write out (-> (str "data: " (codec/generate-string data) "\n\n")
-                    (.getBytes StandardCharsets/UTF_8)))
+    (let [bytes (-> (str "data: " (codec/generate-string data) "\n\n")
+                    (.getBytes StandardCharsets/UTF_8))]
+      (.write out bytes 0 (alength bytes)))
     (.flush out)
     (catch java.io.IOException _
-      (remove-watch ref id))))
+      (remove-watch ref id))
+    (catch Exception e
+      (prn e))))
 
 (defn ^{:indent 2} stream-changes [ref ^java.io.OutputStream out f {:keys [stream-current?]}]
   (let [id (random-uuid)]
