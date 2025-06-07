@@ -20,17 +20,19 @@
   ;; that are not, the presence of the big unchanged keys causes the diff to be
   ;; slow. Removing the identical keys upfront have been found to produce a
   ;; 500ms difference in time sent diffing 😅
-  (let [{:keys [a b]}
-        (reduce (fn [res k]
-                  (let [a-val (get (:a res) k)
-                        b-val (get (:b res) k)
-                        ignorable? (and (= a-val b-val)
-                                        (or (coll? a-val) (coll? b-val)))]
-                    (cond-> res
-                      ignorable? (update :a dissoc k)
-                      ignorable? (update :b dissoc k))))
-                {:a a :b b}
-                (keys a))]
+  (if (and (map? a) (map? b))
+    (let [{:keys [a b]}
+          (reduce (fn [res k]
+                    (let [a-val (get (:a res) k)
+                          b-val (get (:b res) k)
+                          ignorable? (and (= a-val b-val)
+                                          (or (coll? a-val) (coll? b-val)))]
+                      (cond-> res
+                        ignorable? (update :a dissoc k)
+                        ignorable? (update :b dissoc k))))
+                  {:a a :b b}
+                  (keys a))]
+      (e/diff a b))
     (e/diff a b)))
 
 (defn diff [a b]
