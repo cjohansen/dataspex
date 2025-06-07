@@ -6,7 +6,7 @@ and Datomic connections; trace changes to atoms and databases over time; and
 more -- with minimal effort and a short learning curve.
 
 ```clj
-no.cjohansen/dataspex {:mvn/version "2025.06.1"}
+no.cjohansen/dataspex {:mvn/version "2025.06.2"}
 ```
 
 Dataspex runs as a Chrome and Firefox extension — or as a standalone web app —
