@@ -6,7 +6,6 @@
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
             [dataspex.views :as views]
-            [datomic-type-extensions.api :as dte]
             [datomic.api :as d]))
 
 (defn attr-sort-val [attribute]
@@ -55,15 +54,25 @@
     :dte/valueType ;; datomic-type-extensions
     :fressian/tag})
 
+(def dte-db
+  (try
+    (requiring-resolve 'datomic-type-extensions.api/db)
+    (catch Exception _)))
+
+(def dte-entity
+  (try
+    (requiring-resolve 'datomic-type-extensions.api/entity)
+    (catch Exception _)))
+
 (defn db [conn]
   (let [db (d/db conn)]
-    (if (d/entity db :dte/valueType)
-      (dte/db conn)
+    (if (and (d/entity db :dte/valueType) dte-db)
+      (dte-db conn)
       db)))
 
 (defn entity [db e-ref]
-  (if (::dte/attr->attr-info db)
-    (dte/entity db e-ref)
+  (if (and (:datomic-type-extensions.api/attr->attr-info db) dte-entity)
+    (dte-entity db e-ref)
     (d/entity db e-ref)))
 
 (defn load-schema [db]
