@@ -201,10 +201,7 @@
 (extend-type datomic.db.Db
   datalog/Database
   (count-entities-by-attr [db attr]
-    (let [attr (if (number? attr)
-                 (:db/ident (entity db attr))
-                 attr)]
-      (or (get-in (d/db-stats db) [:attrs attr :count]) 0)))
+    (count (seq (d/datoms db :avet attr))))
 
   (entity [db entity-ref]
     (entity db entity-ref))

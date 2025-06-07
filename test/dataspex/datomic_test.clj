@@ -199,6 +199,16 @@
             "Entities"
             "Transactions"])))
 
+  (testing "Does not count deleted entities"
+    (is (= (->> (with-conn [conn schema]
+                  @(d/transact conn data)
+                  @(d/transact conn [[:db/retractEntity [:person/id "bob"]]])
+                  (h/render-dictionary conn))
+                (lookup/select-one [:dataspex.ui/ul])
+                lookup/children
+                (mapv lookup/text))
+           ["All (2)" ":person/id  (2)"])))
+
   (testing "Offers entity filters by unique attribute"
     (is (= (->> (with-conn [conn schema]
                   (->> data
