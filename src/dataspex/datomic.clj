@@ -198,6 +198,8 @@
          [?a :db/ident ?attr]]
        db attr))
 
+(def last-tx (d/t->tx 0x00000000FFFFFFFF))
+
 (extend-type datomic.db.Db
   datalog/Database
   (count-entities-by-attr [db attr]
@@ -207,12 +209,10 @@
     (entity db entity-ref))
 
   (get-entities [db]
-    (->> (d/datoms db :eavt)
+    (->> (d/seek-datoms db :eavt last-tx)
          (map :e)
          distinct
-         (map #(entity db %))
-         (remove :db/txInstant)
-         (remove #(< (:db/id %) 1000))))
+         (map #(d/entity db %))))
 
   (get-entities-by-attr [db attr]
     (get-entities-by-attr db attr))
