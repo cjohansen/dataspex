@@ -33,14 +33,6 @@
             :dataspex/folding {[:users :user/friends] {:folded? false}}
             :dataspex/view :dataspex.views/dictionary})))
 
-  (testing "Uses default theme"
-    (is (= (-> {"Store" {:dataspex/path [:users]}
-                :dataspex/theme :dark}
-               (views/get-render-data "Store")
-               :opt
-               :dataspex/theme)
-           :dark)))
-
   (testing "Ignores technical data"
     (is (= (let [dataspex-store (atom {})]
              (with-redefs [time/now (constantly #inst "2025-04-16T16:19:58")]

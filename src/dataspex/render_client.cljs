@@ -110,12 +110,10 @@
   (.setAttribute js/document.documentElement "data-theme" (name theme)))
 
 (defn ^{:indent 2} add-channel [store id channel]
-  (let [{:keys [root theme]} @store]
+  (let [{:keys [root]} @store]
     (ensure-element root id)
     (swap! store assoc-in [:channels id] channel)
-    (connect channel #(render root id %))
-    (->> [[:dataspex.actions/assoc-in [:dataspex/theme] theme]]
-         (process-actions channel js/document.documentElement))))
+    (connect channel #(render root id %))))
 
 (defn remove-channel [store id]
   (let [el ^js (ensure-element (:root @store) id)
@@ -136,12 +134,10 @@
 (defn ^{:indent 1} start-render-client [^js root {:keys [handle-remotes-actions
                                                          render-remotes]}]
   (let [{:keys [panels-el remotes-el]} (init-el root)
-        theme (get-preferred-theme)
         store (atom {:root panels-el
-                     :theme theme
                      :channels {}
                      :remotes {}})]
-    (set-theme! theme)
+    (set-theme! (get-preferred-theme))
     (mount-splash panels-el)
     (set-dispatch! store (partial handle-remotes-actions store panels-el))
     (add-watch store ::render-remotes

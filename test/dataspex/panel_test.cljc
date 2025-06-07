@@ -19,9 +19,6 @@
              [::ui/tab {::ui/selected? true} "Browse"]]
             [:h2 [:strong "Store"]]
             [::ui/button-bar
-             [::ui/button {::ui/title "Switch to light mode"
-                           ::ui/actions [[::actions/assoc-in ["Store" :dataspex/theme] :light]]}
-              [::icons/sun]]
              [::ui/button {::ui/title "Minimize"
                            ::ui/actions [[::actions/assoc-in ["Store" :dataspex/render?] false]]}
               [::icons/arrows-in-simple]]
@@ -38,19 +35,6 @@
            [:h2
             [:strong "Store"]
             [:span {:class #{"ml-4" "subtle"}} "localhost:9090 Chrome macOS"]])))
-
-  (testing "Offers dark mode when currently in light mode"
-    (is (= (->> (panel/render-title-bar
-                 {}
-                 {:dataspex/path ["Store"]
-                  :dataspex/inspectee "Store"
-                  :dataspex/theme :light})
-                (lookup/select-one [::ui/button-bar ":first-child"]))
-           [::ui/button
-            {::ui/title "Switch to dark mode"
-             ::ui/actions
-             [[::actions/assoc-in ["Store" :dataspex/theme] :dark]]}
-            [::icons/moon]])))
 
   (testing "Renders audit tab when there are more than one version"
     (is (= (->> (panel/render-title-bar
@@ -313,15 +297,4 @@
                          :val {}
                          :history [{:rev 1 :val {}}]}}
                "Store")
-              (lookup/select ::ui/card-list)))))
-
-  (testing "Renders panel with selected theme"
-    (is (= (->> (panel/render-panel
-                 {"Store" {:dataspex/path []
-                           :dataspex/inspectee "Store"
-                           :dataspex/theme :dark}}
-                 "Store")
-                (lookup/select-one [:div.panel])
-                lookup/attrs
-                :data-theme)
-           "dark"))))
+              (lookup/select ::ui/card-list))))))

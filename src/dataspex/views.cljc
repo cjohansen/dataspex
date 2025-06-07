@@ -49,7 +49,6 @@
 (defn get-render-data [state inspectee]
   (let [inspector-state (get state inspectee)
         opt (merge {:dataspex/inspectee inspectee}
-                   (select-keys state [:dataspex/theme])
                    (select-keys inspector-state
                                 (->> (keys inspector-state)
                                      (filter (comp #{"dataspex"} namespace)))))
