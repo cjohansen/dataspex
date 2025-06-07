@@ -21,6 +21,17 @@ app state, Dataspex gives you eyes on the flow.
 Dataspex is the spiritual successor to [Gadget
 Inspector](https://github.com/cjohansen/gadget-inspector).
 
+## Status
+
+Dataspex is currently "hardening". It works for a wide variety of use cases, but
+there are some sharp edges. The browser extensions are not currently in the
+official extension stores because the contract between the library and the
+extensions may still change. At this point you should build the extensions (see
+below) for the corresponding library version you are using.
+
+I expect Dataspex to be stable and with officially released browser extensions
+by the end of June 2025.
+
 ## Usage
 
 Using Dataspex is easy: require `dataspex.core` and call `inspect` on your data.
