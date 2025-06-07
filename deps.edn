@@ -1,5 +1,7 @@
 {:paths ["src" "resources"]
- :deps {datascript/datascript {:mvn/version "1.7.4"}
+ :deps {com.cognitect/transit-clj {:mvn/version "1.0.333"}
+        com.cognitect/transit-cljs {:mvn/version "0.8.280"}
+        datascript/datascript {:mvn/version "1.7.4"}
         juji/editscript {:mvn/version "0.6.6"}
         ring/ring-core {:mvn/version "1.14.1"}
         ring/ring-jetty-adapter {:mvn/version "1.14.1"}}

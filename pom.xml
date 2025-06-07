@@ -8,6 +8,16 @@
   <name>dataspex</name>
   <dependencies>
     <dependency>
+      <groupId>com.cognitect</groupId>
+      <artifactId>transit-clj</artifactId>
+      <version>1.0.333</version>
+    </dependency>
+    <dependency>
+      <groupId>com.cognitect</groupId>
+      <artifactId>transit-cljs</artifactId>
+      <version>0.8.280</version>
+    </dependency>
+    <dependency>
       <groupId>datascript</groupId>
       <artifactId>datascript</artifactId>
       <version>1.7.4</version>
