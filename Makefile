@@ -22,12 +22,14 @@ resources/public/dataspex/inspector.js:
 	npx shadow-cljs release remote-inspector
 
 clean:
-	rm -fr target resources/public/app dev-resources/public/dataspex resources/public/dataspex/cljs-runtime resources/public/dataspex/inspector.js resources/public/dataspex/manifest.edn browser-extension/manifest.edn browser-extension/inspector.css browser-extension/extension.js dev-resources/public/portfolio
+	rm -fr target resources/public/app dev-resources/public/dataspex resources/public/dataspex/cljs-runtime resources/public/dataspex/inspector.js resources/public/dataspex/manifest.edn browser-extension/manifest.edn browser-extension/inspector.css browser-extension/extension.js dev-resources/public/portfolio dataspex.jar
 
 dataspex.jar: resources/public/dataspex/inspector.js
 	clojure -M:jar
 
 deploy: dataspex.jar
-	clojure -X:deploy
+	env CLOJARS_USERNAME=$$(xmllint --xpath "string(/settings/servers/server[id='clojars']/username)" ~/.m2/settings.xml) \
+	    CLOJARS_PASSWORD=$$(xmllint --xpath "string(/settings/servers/server[id='clojars']/password)" ~/.m2/settings.xml) \
+	    clojure -X:deploy
 
 .PHONY: extension clean deploy
