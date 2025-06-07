@@ -33,7 +33,7 @@
 
 (defn ^:export inspect
   {:arglists '[[label x]
-               [label x {:keys [track-changes? history-limit max-height]}]]}
+               [label x {:keys [track-changes? history-limit max-height dataspex/ns-aliases]}]]}
   [label x & [opt]]
   (inspector/inspect store label x opt)
   x)

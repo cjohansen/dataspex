@@ -506,8 +506,10 @@
 (extend-type #?(:cljs cljs.core/Keyword
                 :clj clojure.lang.Keyword)
   dp/IRenderInline
-  (render-inline [k _]
-    [::ui/keyword k])
+  (render-inline [k opt]
+    (if-let [alias (get-in opt [:dataspex/ns-aliases (namespace k)])]
+      [::ui/keyword (str ":" alias) (name k)]
+      [::ui/keyword k]))
 
   dp/IRenderDictionary
   (render-dictionary [k opt]
@@ -536,8 +538,10 @@
 (extend-type #?(:cljs cljs.core/Symbol
                 :clj clojure.lang.Symbol)
   dp/IRenderInline
-  (render-inline [s _]
-    [::ui/symbol s])
+  (render-inline [s opt]
+    (if-let [alias (get-in opt [:dataspex/ns-aliases (namespace s)])]
+      [::ui/symbol alias (name s)]
+      [::ui/symbol s]))
 
   dp/IRenderDictionary
   (render-dictionary [s opt]

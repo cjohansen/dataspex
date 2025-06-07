@@ -20,9 +20,11 @@
 
 (deftest inspect-val-test
   (testing "Initializes view options for inspected value"
-    (is (= (inspector/inspect-val nil data dataspex-opts)
+    (is (= (inspector/inspect-val nil data (assoc dataspex-opts :dataspex/ns-aliases
+                                                  {'dataspex.inspector 'inspector}))
            {:dataspex/path []
             :dataspex/activity :dataspex.activity/browse
+            :dataspex/ns-aliases {"dataspex.inspector" "inspector"}
             :rev 1
             :val data
             :history [{:created-at #inst "2025-04-16T16:19:58"

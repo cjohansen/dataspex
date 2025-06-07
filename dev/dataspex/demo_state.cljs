@@ -2,11 +2,13 @@
 
 (defonce app-state
   {:app/title "Movie Explorer"
+   :really.long.ns/title "I'm a keyword with a long namespace"
    :user {:id 42
           :name "Ada Lovelace"
           :roles #{:admin :reviewer}
           :auth-token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQyfQ.sEcrEt-KU5phTcLBBjDDxpsHloA4j1ebJfXnB4rmkmc"
-          :last-login (js/Date. "2025-04-15T12:34:56Z")}
+          :last-login (js/Date. "2025-04-15T12:34:56Z")
+          :really.long.ns/secret "Shush!"}
 
    :filters {:genres [:drama :sci-fi :comedy]
              :year-range {:min 1990 :max 2024}

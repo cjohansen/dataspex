@@ -80,6 +80,11 @@
     (is (= (h/render-inline :keyword)
            [::ui/keyword :keyword])))
 
+  (testing "Renders keyword with registered ns alias"
+    (is (= (-> {:dataspex/ns-aliases {"dataspex.inspector" "inspector"}}
+               (h/render-inline :dataspex.inspector/keyword))
+           [::ui/keyword ":inspector" "keyword"])))
+
   (testing "Renders number"
     (is (= (h/render-inline 42)
            [::ui/number 42])))
@@ -91,6 +96,11 @@
   (testing "Renders symbol"
     (is (= (h/render-inline 'hello)
            [::ui/symbol 'hello])))
+
+  (testing "Renders keyword with registered ns alias"
+    (is (= (-> {:dataspex/ns-aliases {"dataspex.inspector" "inspector"}}
+               (h/render-inline 'dataspex.inspector/keyword))
+           [::ui/symbol "inspector" "keyword"])))
 
   (testing "Renders nil"
     (is (= (h/render-inline nil)

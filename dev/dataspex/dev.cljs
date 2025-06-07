@@ -7,7 +7,7 @@
             [dataspex.in-process-client :as in-process-client]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
-            [dataspex.panel :as panel]
+            [dataspex.remotes-panel :as remotes]
             [dataspex.render-client :as rc]))
 
 ::datascript/keep
@@ -18,15 +18,21 @@
 (defonce txes
   (demo-data/add-data demo-data/conn))
 
-(rc/start-render-client js/document.body
- {:channels {:process (in-process-client/create-channel store)}})
+(def client (rc/start-render-client js/document.body
+                                    {:handle-remotes-actions remotes/handle-actions
+                                     :render-remotes remotes/render-panel}))
+(rc/add-channel client "process" (in-process-client/create-channel store))
 
 (defn ^:dev/after-load main []
   (swap! store assoc ::loaded (.getTime (js/Date.))))
 
-;;(dataspex/inspect "App state" demo-state/app-state)
+(dataspex/inspect "App state" demo-state/app-state {:dataspex/ns-aliases {'really.long.ns 'rl}})
+(dataspex/inspect-remote "http://localhost:7117")
+(dataspex/connect-remote-inspector "http://localhost:7117")
 
-(inspector/inspect store "App state" demo-state/app-state)
+(inspector/inspect store "App state" demo-state/app-state {:dataspex/ns-aliases {'really.long.ns 'rl}})
+
+(inspector/inspect store "Test" {:val (keyword ":ns" "keyword")})
 
 (comment
   (dataspex/inspect "DB" demo-data/conn)

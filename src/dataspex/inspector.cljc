@@ -4,13 +4,17 @@
             [dataspex.protocols :as dp])
   #?(:clj (:import (java.util Date))))
 
-(defn get-dataspex-opts [current {:keys [host-str label auditable? max-height]}]
+(defn get-dataspex-opts [current {:keys [host-str label auditable? max-height] :as opt}]
   (cond-> {:dataspex/path []
            :dataspex/activity :dataspex.activity/browse}
     host-str (assoc :dataspex/host-str host-str)
     label (assoc :dataspex/inspectee label)
     (not= nil auditable?) (assoc :dataspex/auditable? auditable?)
     (number? max-height) (assoc :dataspex/max-height max-height)
+    (:dataspex/ns-aliases opt) (assoc :dataspex/ns-aliases
+                                      (->> (:dataspex/ns-aliases opt)
+                                           (mapv (fn [[k v]] [(str k) (str v)]))
+                                           (into {})))
     :then
     (into (->> (keys current)
                (filter (comp #{"dataspex"} namespace))
