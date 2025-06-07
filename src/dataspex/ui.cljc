@@ -43,12 +43,18 @@
   [:code (assoc (actions->click-handler attrs) :data-type "boolean")
    (str boolean)])
 
-(defalias symbol [attrs [symbol]]
+(defalias symbol [attrs [s1 s2]]
   (into
    [:code (assoc (actions->click-handler attrs) :data-type "symbol")]
-   (if (symbol? symbol)
-     (render-named symbol)
-     [(str symbol)])))
+   (cond
+     s2
+     (render-named s1 s2 nil)
+
+     (symbol? s1)
+     (render-named s1)
+
+     :else
+     (render-named nil s1 nil))))
 
 (defalias code [attrs value]
   [:code.code (actions->click-handler attrs) value])
