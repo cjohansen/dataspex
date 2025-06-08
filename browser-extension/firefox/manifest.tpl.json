@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Dataspex",
-  "version": "25.5.1",
+  "version": "VERSION",
   "description": "A point-and-click ClojureScript data browser.",
   "devtools_page": "devtools.html",
   "background": {
