@@ -325,28 +325,23 @@
   (render-dictionary [entity opt]
     (render-entity-dictionary entity opt)))
 
-(extend-type datomic_type_extensions.entity.TypeExtendedEntityMap
-  datalog/Entity
-  (entity-db [entity]
-    (d/entity-db entity))
+(when-let [type-extended-entity-map
+           (try
+             (Class/forName "datomic_type_extensions.entity.TypeExtendedEntityMap")
+             (resolve 'datomic_type_extensions.entity/TypeExtendedEntityMap)
+             (catch Throwable _ nil))]
+  (extend type-extended-entity-map
+    datalog/Entity
+    {:entity-db           d/entity-db
+     :get-ref-attrs       get-ref-attrs
+     :get-primitive-attrs get-primitive-attrs
+     :get-reverse-ref-attrs get-reverse-ref-attrs}
 
-  (get-ref-attrs [e]
-    (get-ref-attrs e))
+    dp/IKey
+    {:to-key datalog/make-entity-key}
 
-  (get-primitive-attrs [e]
-    (get-primitive-attrs e))
+    dp/IRenderInline
+    {:render-inline datalog/render-inline-entity}
 
-  (get-reverse-ref-attrs [e]
-    (get-reverse-ref-attrs e))
-
-  dp/IKey
-  (to-key [e]
-    (datalog/make-entity-key e))
-
-  dp/IRenderInline
-  (render-inline [entity opt]
-    (datalog/render-inline-entity entity opt))
-
-  dp/IRenderDictionary
-  (render-dictionary [entity opt]
-    (render-entity-dictionary entity opt)))
+    dp/IRenderDictionary
+    {:render-dictionary render-entity-dictionary}))
