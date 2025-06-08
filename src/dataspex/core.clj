@@ -47,7 +47,7 @@
 
 (defn ^{:export true :indent 1} inspect
   {:arglists '[[label x]
-               [label x {:keys [start-server? server-port dataspex/ns-aliases]}]]}
+               [label x {:keys [start-server? server-port ns-aliases]}]]}
   [label x & [opt]]
   (when (nil? (:dataspex/host-str @store))
     (swap! store assoc :dataspex/host-str (get-host-str)))
