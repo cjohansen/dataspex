@@ -1,6 +1,7 @@
 /* Default theme */
 :root {
   --white: #fff;
+  --linen: #fceeee;
   --wild-sand: #f5f5f5;
   --gallery: #f0f0f0;
   --selago: #ebf2fc;
@@ -111,7 +112,7 @@
   --tag-border-color: #08080a;
   --error-bg: var(--guardsman-rojo-light);
   --error-fg: var(--maroon);
-  --error-color: var(--guardsman-rojo);
+  --error-color: var(--linen);
   --success-fg: var(--la-palma);
   --active-card-bg: var(--mine-shaft);
   --active-card-hover-bg: var(--mine-shaft-light);
@@ -190,6 +191,10 @@ body, pre {
 
 .ml-4 {
   margin-left: 1em;
+}
+
+.m-2 {
+  margin: 0.5em;
 }
 
 .p-2 {
@@ -341,6 +346,7 @@ a.clickable:hover,
   border-radius: 8px;
   display: block;
   font-size: 1em;
+  line-height: 1.5;
   padding: 18px;
   white-space: normal;
 }
