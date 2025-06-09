@@ -31,7 +31,9 @@
                        (remotes/add-channel client (str (:host data) "/jvm") {:on-message on-message})
 
                        :disconnect-remote-host
-                       (remotes/remove-channel client (str (:host data) "/jvm"))))]
+                       (remotes/remove-channel client (str (:host data) "/jvm"))
+
+                       (println "Unrecognized event" event)))]
     (get-inspected-host
      (fn [inspected-host]
        (swap! client assoc :dataspex/inspected-host inspected-host)

@@ -18,5 +18,6 @@
         (fn on-message [{:keys [event data]}]
           (case event
             :connect-remote-host (connect client (:host data) on-message)
-            :disconnect-remote-host (disconnect client (:host data))))]
+            :disconnect-remote-host (disconnect client (:host data))
+            (println "Unrecognized event" event (pr-str data))))]
     (connect client js/location.origin on-message)))

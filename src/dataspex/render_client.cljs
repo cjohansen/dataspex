@@ -26,7 +26,9 @@
   (doseq [[effect & args] effects]
     (case effect
       :effect/copy
-      (actions/copy-to-clipboard (first args)))
+      (actions/copy-to-clipboard (first args))
+
+      (println "Unrecognized effect" effect))
 
     (prn effect args)))
 

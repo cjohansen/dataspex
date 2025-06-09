@@ -88,7 +88,9 @@
 
              :disconnect-remote-host
              (when (satisfies? RemoteManager channel)
-               (disconnect-remote channel (:host (:data event)))))))))))
+               (disconnect-remote channel (:host (:data event))))
+
+             (println "Unrecognized event" (pr-str event)))))))))
 
 (defn add-channel [store channel]
   (initialize!
