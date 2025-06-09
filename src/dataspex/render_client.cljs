@@ -62,14 +62,21 @@
          (-> (process-actions (get (:channels @store) channel) node actions)
              (.then execute-effects)))))))
 
-(defn ensure-element [^js root channel-id]
-  (let [id (str "el-" (hash channel-id))]
-    (if-let [el (js/document.getElementById id)]
+(defn ensure-element [^js root channel-id & [{:keys [error?]}]]
+  (let [id (str "el-" (hash channel-id))
+        el-id (str id (when error? "-error"))]
+    (if-let [el (js/document.getElementById el-id)]
       el
       (let [el (js/document.createElement "div")]
-        (set! (.-id el) id)
-        (.setAttribute el "data-channel" channel-id)
-        (.appendChild root el)
+        (set! (.-id el) el-id)
+        (if error?
+          (.setAttribute el "data-error" "error")
+          (.setAttribute el "data-channel" channel-id))
+        (if error?
+          (.appendChild root el)
+          (if-let [anchor (.querySelector root "[data-error]")]
+            (.insertAdjacentElement anchor "beforebegin" el)
+            (.appendChild root el)))
         el))))
 
 (defn render-splash []
@@ -94,11 +101,11 @@
   (-> (ensure-element root "dataspex-splash")
       (r/render (render-splash))))
 
-(defn render [^js el id hiccup]
+(defn render [^js el id hiccup & [opt]]
   (when hiccup
     (when-let [splash (ensure-element el "dataspex-splash")]
       (r/unmount splash)))
-  (-> (ensure-element el (name id))
+  (-> (ensure-element el (name id) opt)
       (r/render hiccup))
   (when-not hiccup
     (when (->> (into [] (.-childNodes el))
@@ -113,7 +120,8 @@
   (let [{:keys [root]} @store]
     (ensure-element root id)
     (swap! store assoc-in [:channels id] channel)
-    (connect channel #(render root id %))))
+    (connect channel (fn [hiccup & [opt]]
+                       (render root id hiccup opt)))))
 
 (defn remove-channel [store id]
   (let [el ^js (ensure-element (:root @store) id)
