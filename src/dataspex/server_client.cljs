@@ -2,9 +2,9 @@
   "The server client connects to a Dataspex ring server. It receives hiccup to
   render over a server-sent events endpoint and sends commands with an HTTP POST
   request."
-  (:require [clojure.string :as str]
-            [dataspex.codec :as codec]
-            [dataspex.render-client :as rc]))
+  (:require [dataspex.codec :as codec]
+            [dataspex.render-client :as rc]
+            [dataspex.version :as version]))
 
 (defn connect-event-source [!state host render on-message on-connection-status-changed]
   (let [event-source (js/EventSource. (str host "/client-messages"))]
@@ -17,6 +17,8 @@
        (let [{:keys [event data]} (codec/parse-string (.-data e))]
          (println event)
          (case event
+           :connect (when-let [hiccup (version/check-version data)]
+                      (render hiccup {:error? true}))
            :render (render data)
            (if on-message
              (on-message {:event event :data data})

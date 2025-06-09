@@ -2,7 +2,8 @@
   (:require [clojure.walk :as walk]
             [dataspex.actions :as actions]
             [dataspex.panel :as panel]
-            [dataspex.protocols :as dp]))
+            [dataspex.protocols :as dp]
+            [dataspex.version :as version]))
 
 (defprotocol ClientChannel
   (initialize! [channel request-render process-actions])
@@ -55,6 +56,12 @@
               [{:event :render
                 :data (render-inspector new-state)}]
               [])
+      (nil? old-state)
+      (conj {:event :connect
+             :data {:breaking-version version/breaking-version
+                    :version version/version
+                    :host-str (:dataspex/host-str new-state)}})
+
       (seq pending)
       (into (for [host pending]
               {:event :connect-remote-host

@@ -18,9 +18,10 @@
   (str (str/replace origin #"^https?://" "") " " browser " " os))
 
 (defonce store
-  (let [store (atom {:dataspex/host-str (get-host-str (ua/parse-user-agent) js/location.origin)})]
+  (let [host-str (get-host-str (ua/parse-user-agent) js/location.origin)
+        store (atom {:dataspex/host-str host-str})]
     (render-host/start-render-host store)
-    (render-host/add-channel store (in-process-host/create-channel))
+    (render-host/add-channel store (in-process-host/create-channel host-str))
     store))
 
 (defn ^:export connect-remote-inspector

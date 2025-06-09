@@ -2,7 +2,8 @@
   "The browser extension client expects to run in the browser devtools extension.
   It connects to the inspected page via a browser-specific messaging channel."
   (:require [dataspex.codec :as codec]
-            [dataspex.render-client :as rc]))
+            [dataspex.render-client :as rc]
+            [dataspex.version :as version]))
 
 (def firefox?
   (when (exists? js/navigator)
@@ -21,6 +22,8 @@
   (when (= "dataspex-library" (.-from message))
     (let [message (codec/parse-string (.-payload message))]
       (case (:event message)
+        :connect (when-let [hiccup (version/check-version (:data message))]
+                   (render hiccup {:error? true}))
         :render (render (:data message))
         :effects (rc/execute-effects (:data message))
         (if on-message
