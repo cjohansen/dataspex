@@ -53,7 +53,7 @@
     (swap! store assoc :dataspex/host-str (get-host-str)))
   (inspector/inspect store label x opt)
   (when (and (nil? @server) (not (false? (:start-server? opt))))
-    (start-server!))
+    (start-server! {:port (:server-port opt)}))
   x)
 
 (defn ^:export uninspect [label]
