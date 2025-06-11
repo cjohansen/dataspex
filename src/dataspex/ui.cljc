@@ -328,8 +328,9 @@
       :then (into (mapv #(render-source-element % {:indent indent}) elements)))))
 
 (defalias hiccup [attrs elements]
-  (into [:pre.source.hiccup attrs]
-        (mapv #(render-source-element % {:indent 0}) elements)))
+  (cond-> [:pre.source.hiccup attrs]
+    (::prefix attrs) (conj [:code.strong (str (::prefix attrs) " ")])
+    :then (into (mapv #(render-source-element % {:indent 0}) elements))))
 
 (defalias tag [attrs value]
   [:code.tag attrs value])

@@ -6,7 +6,8 @@
             [dataspex.protocols :as dp]
             [dataspex.ui :as-alias ui]
             [dataspex.views :as views]
-            #?(:cljs [dataspex.date :as date])))
+            #?(:cljs [dataspex.date :as date])
+            #?(:cljs [dataspex.element :as element])))
 
 (defn inflect [n w]
   ;; It ain't much, but it works for the symbolic types Dataspex knows about
@@ -402,10 +403,11 @@
                                [(first xs) (second xs) (drop 2 xs)]
                                [(first xs) nil (next xs)])
         empty? (empty-node? hiccup)
-        folded? (and (not empty?) (folded? hiccup opt path))]
+        folding? (and (not empty?) (::ui/folding? opt true))
+        folded? (when folding? (and (not empty?) (folded? hiccup opt path)))]
     (cond-> [::ui/vector
              (cond-> [::ui/hiccup-tag]
-               (not empty?)
+               folding?
                (conj {:data-folded (str folded?)
                       ::ui/actions
                       [(views/update-folding opt path
@@ -465,10 +467,12 @@
     (render-map-table data opt)))
 
 (defn render-hiccup [hiccup opt]
-  [::ui/hiccup
-   (if (satisfies? dp/IRenderHiccup hiccup)
-     (dp/render-hiccup hiccup opt)
-     (render-hiccup-node hiccup (assoc opt :dataspex/folding-level 2) [0]))])
+  (let [opts (dissoc opt ::ui/prefix)]
+    (cond-> [::ui/hiccup]
+      (::ui/prefix opt) (conj (select-keys opt [::ui/prefix]))
+      :then (conj (if (satisfies? dp/IRenderHiccup hiccup)
+                    (dp/render-hiccup hiccup opts)
+                    (render-hiccup-node hiccup (assoc opts :dataspex/folding-level 2) [0]))))))
 
 (defn render-source [data opt]
   (let [opt (assoc opt :dataspex/summarize-above-w -1)]
@@ -595,3 +599,13 @@
      (render-dictionary [d opt]
        (let [m (date/->map d)]
          (render-entries-dictionary m opt (data/get-map-entries m opt {:ks date/date-keys}))))))
+
+#?(:cljs
+   (extend-type js/Element
+     dp/IRenderInline
+     (render-inline [el opt]
+       (-> el
+           element/->hiccup
+           (render-hiccup (assoc opt
+                                 ::ui/prefix (get-js-prefix el)
+                                 ::ui/folding? false))))))

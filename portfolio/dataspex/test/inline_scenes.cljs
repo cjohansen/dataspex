@@ -49,3 +49,18 @@
 
 (defscene inline-entity
   (render-inline (d/entity (d/db test-data/conn) 1)))
+
+(defscene element
+  (let [el (js/document.createElement "a")]
+    (set! (.-href el) "https://replicant.fun")
+    (set! (.-id el) "link")
+    (-> el .-classList (.add "btn"))
+    (-> el .-classList (.add "btn-primary"))
+    (set! (.-innerHTML el) "Replicant")
+    (render-inline el)))
+
+(defscene medium-element
+  (render-inline (js/document.querySelector "li")))
+
+(defscene big-element
+  (render-inline js/document.body))
