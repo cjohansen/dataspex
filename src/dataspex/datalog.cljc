@@ -128,7 +128,7 @@
 (defn get-entity-entries [entity]
   (let [db (entity-db entity)]
     (into
-     (->> (keys entity)
+     (->> (conj (keys entity) :db/id)
           (sort-by (partial get-attr-sort-val db))
           (mapv (fn [k]
                   {:k k

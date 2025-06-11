@@ -305,7 +305,8 @@
                 (lookup/select '[::ui/dictionary > ::ui/entry])
                 (mapv (comp first lookup/children))
                 (mapv lookup/text))
-           [":person/id"
+           [":db/id"
+            ":person/id"
             ":person/name"
             ":person/friends"])))
 
@@ -317,7 +318,8 @@
                 (lookup/select '[::ui/dictionary > ::ui/entry])
                 (mapv (comp first lookup/children))
                 (mapv lookup/text))
-           [":person/id"
+           [":db/id"
+            ":person/id"
             ":person/name"
             ":person/_boss"
             ":person/_friends"])))
@@ -347,7 +349,8 @@
                 (lookup/select '[::ui/dictionary > ::ui/entry])
                 (mapv (comp first lookup/children))
                 (mapv lookup/text))
-           [":person/id"
+           [":db/id"
+            ":person/id"
             ":person/name"
             ":person/boss"
             ":person/_friends"])))
@@ -361,7 +364,8 @@
                 (lookup/select '[::ui/dictionary > ::ui/entry])
                 (mapv (comp first lookup/children))
                 (mapv lookup/text))
-           [":person/id"
+           [":db/id"
+            ":person/id"
             ":person/name"
             ":person/boss"
             ":person/_friends"]))))

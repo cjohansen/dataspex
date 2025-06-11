@@ -151,7 +151,8 @@
     (get-entities-by-attr db attr))
 
   (get-attr-sort-val [{:keys [rschema]} a]
-    [(if (contains? (:db/unique rschema) a)
+    [(if (= :db/id a) 0 1)
+     (if (contains? (:db/unique rschema) a)
        0 1)
      (if (contains? (:db.type/ref rschema) a)
        1 0)

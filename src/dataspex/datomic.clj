@@ -230,7 +230,9 @@
     (get-attrs-used-with db attr))
 
   (get-attr-sort-val [db a]
-    (attr-sort-val (entity db a)))
+    (if (= :db/id a)
+      [0]
+      (attr-sort-val (entity db a))))
 
   (get-unique-attrs [db]
     (->> (d/q '[:find [?attr ...]
