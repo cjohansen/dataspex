@@ -215,7 +215,8 @@
 
 (defn render-inline-entity [entity opt]
   (let [entity-m (select-keys entity (get-primitive-attrs entity))
-        entity-m (if (empty? entity-m) (into {} entity) entity-m)]
+        entity-m (if (empty? entity-m) (into {} entity) entity-m)
+        opt (assoc opt ::ui/prefix "entity")]
     (if (hiccup/summarize? entity-m opt)
       (hiccup/render-inline (summarize-entity entity) opt)
       (hiccup/render-inline entity-m opt))))

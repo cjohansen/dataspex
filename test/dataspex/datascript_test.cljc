@@ -196,7 +196,7 @@
     (is (= (with-conn [conn schema]
              (d/transact! conn data)
              (h/render-inline (d/entity (d/db conn) 1)))
-           [::ui/map
+           [::ui/map {::ui/prefix "entity"}
             [::ui/map-entry
              [::ui/keyword :person/id]
              [::ui/string "bob"]]
@@ -217,11 +217,11 @@
                   (d/entity (d/db conn))
                   :person/boss
                   h/render-inline))
-           [::ui/map
+           [::ui/map {::ui/prefix "entity"}
             [::ui/map-entry
              [::ui/keyword :person/friends]
              [::ui/set
-              [::ui/map
+              [::ui/map {::ui/prefix "entity"}
                [::ui/map-entry
                 [::ui/keyword :person/id]
                 [::ui/string "bob"]]]]]]))))
