@@ -10,12 +10,12 @@
                    (into {}))
         children (if (< 100 (count (.-outerHTML el)))
                    [(str (let [s (.-innerText el)]
-                           (if (< 100 (count s))
+                           (if (< 50 (count s))
                              (let [short-s (first (str/split s #"\n"))]
-                               (if (< 100 (count short-s))
-                                 (str/join (take 80 short-s))
+                               (if (< 50 (count short-s))
+                                 (str/join (take 46 short-s))
                                  short-s))
-                             s))
+                             (str/replace s #"\s+" " ")))
                          " ...")]
                    (->> (.-childNodes el)
                         (filterv (fn [^js node]
