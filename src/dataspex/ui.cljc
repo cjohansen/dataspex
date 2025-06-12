@@ -328,8 +328,9 @@
       :then (into (mapv #(render-source-element % {:indent indent}) elements)))))
 
 (defalias hiccup [attrs elements]
-  (cond-> [:pre.source.hiccup attrs]
-    (::prefix attrs) (conj [:code.strong (str (::prefix attrs) " ")])
+  (cond-> [:pre.source.hiccup (cond-> attrs
+                                (::inline? attrs) (update :class conj "inline"))]
+    (::prefix attrs) (conj [:code.code.strong (str (::prefix attrs) " ")])
     :then (into (mapv #(render-source-element % {:indent 0}) elements))))
 
 (defalias tag [attrs value]
