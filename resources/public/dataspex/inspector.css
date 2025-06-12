@@ -540,6 +540,7 @@ a.clickable:hover,
 
 .table th {
   font-weight: normal;
+  line-height: 2;
   padding: 6px;
   text-align: left;
   vertical-align: top;
