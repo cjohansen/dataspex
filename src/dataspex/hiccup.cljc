@@ -245,7 +245,7 @@
     (data/js-collection? o) (render-inline-js-coll o opt)
     (data/js-map? o) (render-inline-js-map o opt)
     (data/js-array? o) (render-inline-array o opt)
-    (data/js-object? o) (render-inline-map o (data/get-js-object-entries o opt) (assoc opt ::ui/prefix (get-js-prefix o)))
+    (data/js-object? o) (render-inline-map o (data/get-inline-js-object-entries o opt) (assoc opt ::ui/prefix (get-js-prefix o)))
     (data/derefable? o) (render-inline-atom o opt)
 
     :else

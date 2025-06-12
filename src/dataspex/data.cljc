@@ -293,19 +293,23 @@
     (when (and (not-empty n) (not= n "Object"))
       n)))
 
+(defn get-inline-js-object-entries [#?(:cljs ^js o :clj o) opt]
+  (->> #?(:cljs (into [] (get-js-object-props o))
+          :clj (keys o))
+       (sort-by sort-order)
+       (map (fn [k]
+              (let [n (symbol k)]
+                {:k n
+                 :label n
+                 :v (inspect (aget o k) opt)})))))
+
 (defn get-js-object-entries [#?(:cljs ^js o :clj o) opt]
   (concat
+   ;; "not false" makes `true` the default
    (when-let [n (get-js-constructor o)]
      [{:label 'Type
        :v (symbol n)}])
-   (->> #?(:cljs (into [] (get-js-object-props o))
-           :clj (keys o))
-        (sort-by sort-order)
-        (map (fn [k]
-               (let [n (symbol k)]
-                 {:k n
-                  :label n
-                  :v (inspect (aget o k) opt)}))))))
+   (get-inline-js-object-entries o opt)))
 
 (defn get-audit-summary [x]
   (:dataspex.audit/summary (meta x)))
