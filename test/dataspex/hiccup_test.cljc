@@ -276,7 +276,7 @@
                   h/render-inline)
               [::ui/map {:dataspex.ui/prefix "#js"}
                [::ui/map-entry
-                [::ui/keyword :hello]
+                [::ui/symbol 'hello]
                 [::ui/string "There"]]]))))
 
   #?(:cljs
@@ -285,7 +285,10 @@
                   h/render-inline)
               [::ui/map {:dataspex.ui/prefix "#js/dataspex$hiccup_test$MyConstructor"}
                [::ui/map-entry
-                [::ui/keyword :data]
+                [::ui/symbol 'Type]
+                [::ui/symbol 'dataspex$hiccup_test$MyConstructor]]
+               [::ui/map-entry
+                [::ui/symbol 'data]
                 [::ui/string "Secret data"]]]))))
 
   (testing "Renders inline atom"
@@ -486,9 +489,9 @@
      (testing "Renders JS object as dictionary"
        (is (= (->> #js {:name "Christian"}
                    h/render-dictionary
-                   (lookup/select ::ui/keyword)
+                   (lookup/select ::ui/symbol)
                    (mapv lookup/text))
-              [":name"]))))
+              ["name"]))))
 
   #?(:cljs
      (testing "Renders JS array as dictionary"

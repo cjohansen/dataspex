@@ -230,15 +230,41 @@
                :label i
                :v (inspect v opt)})))
 
+(def ignored-js-props
+  #{"__proto__"})
+
+(defn get-js-object-props [o]
+  (loop [obj o
+         props #{}]
+    (if obj
+      (recur #?(:cljs (js/Object.getPrototypeOf obj)
+                :clj nil)
+             (cond->> #?(:cljs (js/Object.getOwnPropertyNames obj)
+                         :clj [])
+               :then (into props)
+               (not= o obj) (remove #(ifn? (aget o %)))))
+      (->> (remove ignored-js-props props)
+           (remove #(str/starts-with? % "dataspex"))
+           vec))))
+
+(defn get-js-constructor [o]
+  (let [n (some->> o .-constructor .-name)]
+    (when (and (not-empty n) (not= n "Object"))
+      n)))
+
 (defn get-js-object-entries [#?(:cljs ^js o :clj o) opt]
-  (->> #?(:cljs (into [] (js/Object.keys o))
-          :clj (keys o))
-       (sort-by sort-order)
-       (map (fn [k]
-              (let [n (keyword k)]
-                {:k n
-                 :label n
-                 :v (inspect (aget o k) opt)})))))
+  (concat
+   (when-let [n (get-js-constructor o)]
+     [{:label 'Type
+       :v (symbol n)}])
+   (->> #?(:cljs (into [] (get-js-object-props o))
+           :clj (keys o))
+        (sort-by sort-order)
+        (map (fn [k]
+               (let [n (symbol k)]
+                 {:k n
+                  :label n
+                  :v (inspect (aget o k) opt)}))))))
 
 (defn get-audit-summary [x]
   (:dataspex.audit/summary (meta x)))
