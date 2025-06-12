@@ -35,6 +35,12 @@
         (:val revision)
         {:auditable? false}]])
 
+    ::navigate
+    (let [[inspectee path] args]
+      (cond-> [[:effect/assoc-in [inspectee :dataspex/path] path]]
+        (not= :dataspex.activity/browse (get-in state [inspectee :dataspex/activity]))
+        (conj [:effect/assoc-in [inspectee :dataspex/activity] :dataspex.activity/browse])))
+
     ::uninspect
     [[:effect/uninspect (first args)]]))
 

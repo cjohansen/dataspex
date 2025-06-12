@@ -354,7 +354,7 @@
              {:library/name "Dataspex"}])
            [::ui/dictionary
             [::ui/entry
-             {::ui/actions [[::actions/assoc-in ["Clojars" :dataspex/path] [:libs 0]]]}
+             {::ui/actions [[::actions/navigate "Clojars" [:libs 0]]]}
              [::ui/number 0]
              [::ui/map
               [::ui/map-entry
@@ -365,7 +365,7 @@
                ::ui/actions [[::actions/copy "Clojars" [:libs 0]]]}
               [::icons/copy]]]
             [::ui/entry
-             {::ui/actions [[::actions/assoc-in ["Clojars" :dataspex/path] [:libs 1]]]}
+             {::ui/actions [[::actions/navigate "Clojars" [:libs 1]]]}
              [::ui/number 1]
              [::ui/map
               [::ui/map-entry
@@ -395,8 +395,8 @@
                   :dataspex/activity :dataspex.activity/browse})
                 (lookup/select ::ui/entry)
                 (mapv lookup/attrs))
-           [{::ui/actions [[::actions/assoc-in ["Libs" :dataspex/path] [:libraries 0]]]}
-            {::ui/actions [[::actions/assoc-in ["Libs" :dataspex/path] [:libraries 1]]]}])))
+           [{::ui/actions [[::actions/navigate "Libs" [:libraries 0]]]}
+            {::ui/actions [[::actions/navigate "Libs" [:libraries 1]]]}])))
 
   (testing "Paginates vector"
     (is (= (->> ["Replicant" "Portfolio" "Dataspex" "m1p" "lookup" "phosphor-clj"]
@@ -447,7 +447,7 @@
                 (lookup/select ::ui/entry)
                 first)
            [::ui/entry
-            {::ui/actions [[::actions/assoc-in ["Datas" :dataspex/path] [:lib-names "Dataspex"]]]}
+            {::ui/actions [[::actions/navigate "Datas" [:lib-names "Dataspex"]]]}
             ""
             [::ui/string "Dataspex"]
             [::ui/button

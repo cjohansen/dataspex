@@ -158,23 +158,22 @@
                     :dataspex/activity :dataspex.activity/browse})))
            [::ui/inline-tuple {::ui/prefix "datom"}
             [::ui/number
-             {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
+             {::ui/actions [[::actions/navigate "DS"
                              [:eavt (datalog/->EntityId 1)]]]}
              1]
             [::ui/keyword
-             {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
+             {::ui/actions [[::actions/navigate "DS"
                              [:eavt (datalog/->Attr :person/id)]]]}
              :person/id]
             [::ui/string
-             {::ui/actions [[::actions/assoc-in ["DS" :dataspex/path]
+             {::ui/actions [[::actions/navigate "DS"
                              [:eavt
                               (datalog/->EntityId 1)
                               (datalog/->Attr :person/id)
                               (datalog/->AttrValue :person/id "wendy")]]]}
              "wendy"]
             [::ui/number
-             {::ui/actions [[::actions/assoc-in
-                             ["DS" :dataspex/path]
+             {::ui/actions [[::actions/navigate "DS"
                              [:eavt (datalog/->EntityId 536870913)]]]}
              536870913]
             [::ui/boolean true]])))
