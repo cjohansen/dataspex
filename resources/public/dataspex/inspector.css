@@ -159,6 +159,10 @@ body, pre {
 
 /* Utilities */
 
+.inline {
+  display: inline;
+}
+
 .flex {
   display: flex;
   align-items: center;

@@ -469,7 +469,8 @@
 (defn render-hiccup [hiccup opt]
   (let [opts (dissoc opt ::ui/prefix)]
     (cond-> [::ui/hiccup]
-      (::ui/prefix opt) (conj (select-keys opt [::ui/prefix]))
+      (or (::ui/prefix opt)
+          (::ui/inline? opt)) (conj (select-keys opt [::ui/prefix ::ui/inline?]))
       :then (conj (if (satisfies? dp/IRenderHiccup hiccup)
                     (dp/render-hiccup hiccup opts)
                     (render-hiccup-node hiccup (assoc opts :dataspex/folding-level 2) [0]))))))
