@@ -6,6 +6,10 @@ function injectContentScript() {
 }
 
 chrome.devtools.panels.create("Dataspex", "" /* icon */, "panel.html", function (panel) {
+  panel.onShown.addListener(function (panelWindow) {
+    panelWindow.chrome_devtools = chrome.devtools;
+  });
+
   injectContentScript();
   chrome.devtools.network.onNavigated.addListener(injectContentScript);
 });

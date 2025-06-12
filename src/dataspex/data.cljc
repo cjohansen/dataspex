@@ -31,6 +31,11 @@
               (not-empty (some-> v .-constructor .-name))
               (not (= "clj" (.substring (some-> v .-constructor .-name) 0 3)))))))
 
+(defn element? [#?(:cljs x :clj _)]
+  #?(:cljs (when (exists? js/Element)
+             (instance? js/Element x))
+     :clj false))
+
 (defn js-map->map [m]
   (if #?(:cljs (when (exists? js/DOMStringMap)
                  (instance? js/DOMStringMap m))

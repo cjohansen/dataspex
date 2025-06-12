@@ -28,6 +28,14 @@
       :effect/copy
       (actions/copy-to-clipboard (first args))
 
+      :effect/inspect-in-devtools
+      (when (and (exists? js/window)
+                 js/window.chrome_devtools
+                 js/window.chrome_devtools.inspectedWindow)
+        (doseq [id args]
+          (js/window.chrome_devtools.inspectedWindow.eval
+           (str "inspect(window.__DATASPEX__." id ")") (fn []))))
+
       (println "Unrecognized effect" effect))
 
     (prn effect args)))

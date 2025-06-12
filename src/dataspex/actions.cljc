@@ -36,10 +36,16 @@
         {:auditable? false}]])
 
     ::navigate
-    (let [[inspectee path] args]
+    (let [[inspectee path] args
+          target (data/nav-in (get-in state [inspectee :val]) path)]
       (cond-> [[:effect/assoc-in [inspectee :dataspex/path] path]]
         (not= :dataspex.activity/browse (get-in state [inspectee :dataspex/activity]))
-        (conj [:effect/assoc-in [inspectee :dataspex/activity] :dataspex.activity/browse])))
+        (conj [:effect/assoc-in [inspectee :dataspex/activity] :dataspex.activity/browse])
+
+        (data/element? target)
+        (concat (let [id (str "el" (hash target))]
+                  [[:effect/inspect-in-devtools id]
+                   [:effect/expose-for-inspection id target]]))))
 
     ::uninspect
     [[:effect/uninspect (first args)]]))
@@ -56,6 +62,18 @@
     :effect/copy
     (doseq [[text] args]
       (copy-to-clipboard text))
+
+    :effect/expose-for-inspection
+    (doseq [[id target] args]
+      #?(:cljs (when (exists? js/window)
+                 (set! js/window.__DATASPEX__ (or js/window.__DATASPEX__ #js {}))
+                 (aset js/window.__DATASPEX__ id target))
+         :clj [id target]))
+
+    ;; This effect only runs in the browser extension,
+    ;; see dataspex.render-client
+    :effect/inspect-in-devtools
+    nil
 
     :effect/inspect
     (doseq [[label current value opts] args]

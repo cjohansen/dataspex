@@ -34,12 +34,15 @@
        x))
    data))
 
+(def client-actions
+  #{:effect/copy :effect/inspect-in-devtools})
+
 (defn process-actions [store actions]
   (let [effects (->> (revive-keys actions)
                      (actions/plan @store))]
-    (->> (remove (comp #{:effect/copy} first) effects)
+    (->> (remove (comp client-actions first) effects)
          (actions/execute-batched! store))
-    (filterv (comp #{:effect/copy} first) effects)))
+    (filterv (comp client-actions first) effects)))
 
 (defn render-inspector [state]
   (strip-opaque-keys (panel/render-inspector state)))
