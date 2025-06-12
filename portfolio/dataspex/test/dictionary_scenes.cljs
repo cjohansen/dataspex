@@ -62,3 +62,21 @@
 
 (defscene entity-as-dictionary
   (render-dictionary (d/entity (d/db test-data/conn) 2)))
+
+(defscene event
+  (let [event (js/MouseEvent. "click" #js {:bubbles true
+                                           :cancelable true
+                                           :view js/window})]
+    (js/document.body.dispatchEvent event)
+    (render-dictionary event)))
+
+(defscene element
+  (let [el (js/document.createElement "a")]
+    (.setAttribute el "data-custom-number" 42)
+    (set! (.-href el) "https://replicant.fun")
+    (set! (.-id el) "link")
+    (set! (-> el .-style .-color) "red")
+    (-> el .-classList (.add "btn"))
+    (-> el .-classList (.add "btn-primary"))
+    (set! (.-innerHTML el) "Replicant")
+    (render-dictionary el)))
