@@ -64,3 +64,10 @@
 
 (defscene big-element
   (render-inline js/document.body))
+
+(defscene event
+  (let [event (js/MouseEvent. "click" #js {:bubbles true
+                                           :cancelable true
+                                           :view js/window})]
+    (js/document.body.dispatchEvent event)
+    (render-inline event)))
