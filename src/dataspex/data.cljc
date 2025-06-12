@@ -1,21 +1,57 @@
 (ns dataspex.data
   (:require [clojure.datafy :as datafy]
+            [clojure.string :as str]
             #?(:cljs [dataspex.date :as date])
             [dataspex.protocols :as dp]))
+
+(defn js-collection? [#?(:cljs v :clj _)]
+  #?(:cljs (or (when (exists? js/NodeList) (instance? js/NodeList v))
+               (when (exists? js/HTMLCollection) (instance? js/HTMLCollection v))
+               (when (exists? js/DOMTokenList) (instance? js/DOMTokenList v)))))
+
+(defn js-map? [#?(:cljs v :clj _)]
+  #?(:cljs (or (when (exists? js/StylePropertyMap) (instance? js/StylePropertyMap v))
+               (when (exists? js/NamedNodeMap) (instance? js/NamedNodeMap v))
+               (when (exists? js/DOMStringMap) (instance? js/DOMStringMap v)))))
 
 (defn js-array? [#?(:cljs v :clj _)]
   #?(:cljs (array? v)))
 
 (defn js-object? [#?(:cljs v :clj _)]
   #?(:cljs
-     (and (some? v)
-          (= (goog/typeOf v) "object")
-          (not (coll? v))
-          (not (array? v))
-          (not (satisfies? dp/IRenderDictionary v))
-          (not (satisfies? dp/IRenderInline v))
-          (not-empty (some-> v .-constructor .-name))
-          (not (= "clj" (.substring (some-> v .-constructor .-name) 0 3))))))
+     (or (when (exists? js/Event)
+           (instance? js/Event v))
+         (and (some? v)
+              (= (goog/typeOf v) "object")
+              (not (coll? v))
+              (not (array? v))
+              (not (instance? js/Date v))
+              (not (and (satisfies? dp/IRenderDictionary v)
+                        (satisfies? dp/IRenderInline v)))
+              (not-empty (some-> v .-constructor .-name))
+              (not (= "clj" (.substring (some-> v .-constructor .-name) 0 3)))))))
+
+(defn js-map->map [m]
+  (if #?(:cljs (when (exists? js/DOMStringMap)
+                 (instance? js/DOMStringMap m))
+         :clj false)
+    (into {} (->> #?(:cljs (js/Object.keys m)
+                     :clj nil)
+                  (mapv (fn [k] [(symbol k) (aget m k)]))))
+    (into {} (map (fn [pair]
+                    (cond
+                      #?(:cljs (when (exists? js/Attr)
+                                 (instance? js/Attr pair))
+                         :clj nil)
+                      [(symbol (.-name pair)) (.-value pair)]
+
+                      #?(:cljs (when (exists? js/Attr)
+                                 (instance? js/StylePropertyMap m))
+                         :clj nil)
+                      [(symbol (first pair)) (first (second pair))]
+
+                      :else
+                      [(symbol (first pair)) (second pair)]))) m)))
 
 (defn derefable? [x]
   #?(:clj (instance? clojure.lang.IDeref x)

@@ -152,6 +152,9 @@
 
 (declare render-inline)
 
+(defn get-js-prefix [o]
+  (str "#js" (when-let [n (data/get-js-constructor o)] (str "/" n))))
+
 (defn ^{:indent 1} render-paginated-sequential [tag s opt & {:keys [get-entries
                                                                     element-width]}]
   (if (summarize? s opt)
@@ -200,6 +203,10 @@
   (->> {:get-entries data/get-js-array-entries}
        (render-paginated-sequential ::ui/vector a (assoc opt ::ui/prefix "#js"))))
 
+(defn render-inline-js-coll [coll opt]
+  (->> {:get-entries data/get-indexed-entries}
+       (render-paginated-sequential ::ui/vector coll (assoc opt ::ui/prefix (get-js-prefix coll)))))
+
 (defn render-inline-map [m entries opt]
   (let [prefix (::ui/prefix opt)
         opt (dissoc opt ::ui/prefix)]
@@ -223,9 +230,9 @@
                      (render-inline v opt)])
                   entries)))))
 
-(defn get-js-prefix [o]
-  (let [n (some->> o .-constructor .-name)]
-    (str "#js" (when (and (not-empty n) (not= n "Object")) (str "/" n)))))
+(defn render-inline-js-map [m opt]
+  (let [opt (assoc opt ::ui/prefix (get-js-prefix m))]
+    (render-inline-map m (data/get-map-entries (data/js-map->map m) opt) opt)))
 
 (defn render-inline-atom [r opt]
   (render-paginated-sequential ::ui/vector [(deref r)] (assoc opt ::ui/prefix "#atom")))
@@ -235,6 +242,8 @@
     (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
     (coll? o) (render-inline-seq o opt)
     (uuid? o) [::ui/literal {::ui/prefix "#uuid"} [::ui/string (str o)]]
+    (data/js-collection? o) (render-inline-js-coll o opt)
+    (data/js-map? o) (render-inline-js-map o opt)
     (data/js-array? o) (render-inline-array o opt)
     (data/js-object? o) (render-inline-map o (data/get-js-object-entries o opt) (assoc opt ::ui/prefix (get-js-prefix o)))
     (data/derefable? o) (render-inline-atom o opt)
@@ -447,6 +456,9 @@
       (coll? data)
       (render-entries-dictionary data opt (data/get-indexed-entries data opt))
 
+      (data/js-collection? data)
+      (render-entries-dictionary data opt (data/get-indexed-entries (into [] data) opt))
+
       (data/js-array? data)
       (render-entries-dictionary data opt (data/get-js-array-entries data opt))
 
@@ -602,11 +614,43 @@
          (render-entries-dictionary m opt (data/get-map-entries m opt {:ks date/date-keys}))))))
 
 #?(:cljs
-   (extend-type js/Element
-     dp/IRenderInline
-     (render-inline [el opt]
-       (-> el
-           element/->hiccup
-           (render-hiccup (assoc opt
-                                 ::ui/prefix (get-js-prefix el)
-                                 ::ui/folding? false))))))
+   (when (exists? js/Element)
+     (extend-type js/Element
+       dp/IRenderInline
+       (render-inline [el opt]
+         (-> (element/->hiccup el)
+             (render-hiccup (assoc opt
+                                   ::ui/prefix (get-js-prefix el)
+                                   ::ui/folding? false
+                                   ::ui/inline? true)))))))
+
+#?(:cljs
+   (when (exists? js/Text)
+     (extend-type js/Text
+       dp/IRenderInline
+       (render-inline [el _]
+         [::ui/string (.-nodeValue el)]))))
+
+#?(:cljs
+   (when (exists? js/Event)
+     (extend-type js/Event
+       dp/IRenderInline
+       (render-inline [event opt]
+         (render-inline-map
+          event
+          [{:k :type
+            :label :type
+            :v (.-type event)}
+           {:k :target
+            :label :target
+            :v (.-target event)}]
+          (assoc opt ::ui/prefix (get-js-prefix event)))))))
+
+#?(:cljs
+   (when (exists? js/CSSStyleValue)
+     (extend-type js/CSSStyleValue
+       dp/IRenderInline
+       (render-inline [v _]
+         (if (instance? js/CSSNumericValue v)
+           [::ui/number (str v)]
+           [::ui/string (str v)])))))
