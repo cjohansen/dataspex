@@ -85,3 +85,17 @@
      [:span.clickable [ui/keyword :user/id] [::ui/code " (3)"]]
      [:span.clickable [ui/keyword :movie/id] [::ui/code " (5)"]]
      [:span.clickable [ui/keyword :review/id] [::ui/code " (2)"]]]]])
+
+(defscene dictionary-inline-source
+  [ui/dictionary
+   [ui/entry
+    [ui/symbol "Actions"]
+    [ui/source {::ui/line-length 100}
+     [ui/vector
+      [ui/keyword :kanban.actions/save]
+      [ui/vector
+       [ui/keyword :transient]
+       [ui/literal {::ui/prefix "#uuid"}
+        [ui/string "21b35698-d679-48a1-a441-2f6c3a190f8f"]]
+       [ui/keyword :expanded?]]
+      [ui/boolean true]]]]])
