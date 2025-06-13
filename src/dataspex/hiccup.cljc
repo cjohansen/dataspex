@@ -491,8 +491,10 @@
   (let [opt (assoc opt :dataspex/summarize-above-w -1)]
     (if (data/hiccup? data)
       (render-hiccup data opt)
-      [::ui/source
-       (render-source-content data opt)])))
+      (let [attrs (select-keys opt [::ui/prefix ::ui/line-length])]
+        (cond-> [::ui/source]
+          (not-empty attrs) (conj attrs)
+          :then (conj (render-source-content data opt)))))))
 
 (defn render-inline-hiccup [hiccup opt]
   (if (summarize? hiccup opt)

@@ -273,10 +273,10 @@
                 (recur more res)
                 res))))))
 
-(defn render-coll-source [{::keys [prefix] :as attrs} xs indent l-br r-br]
+(defn render-coll-source [{::keys [prefix line-length] :as attrs} xs indent l-br r-br]
   (let [indent (+ indent (count l-br) (if prefix (inc (count prefix)) 0))
         indent-s (indent-str (+ indent (if prefix (inc (count prefix)) 0)))
-        inline? (< (reduce + indent (mapv content-length xs)) 80)
+        inline? (< (reduce + 0 (mapv content-length xs)) line-length)
         separator (if inline?
                     " "
                     (str "\n" indent-s))]
@@ -294,7 +294,8 @@
                         " "
                         separator)
                   res (cond-> (conj res (render-source-element v
-                                          {:indent
+                                          {:line-length (- line-length column)
+                                           :indent
                                            (if (or inline? (and (::inline? (second v)) prev))
                                              column
                                              indent)}))
@@ -304,11 +305,13 @@
                 (recur more res (+ column 1 (content-length v)) v)
                 res))))))
 
-(defn ^{:indent 1} render-source-element [element {:keys [indent]}]
+(defn ^{:indent 1} render-source-element [element {:keys [indent line-length]}]
   (let [[kind & xs] element
         [attrs children] (if (map? (first xs))
                            [(first xs) (rest xs)]
-                           [nil xs])]
+                           [nil xs])
+        attrs (cond-> attrs
+                line-length (assoc ::line-length line-length))]
     (case kind
       ::map
       (render-map-source attrs children indent)
@@ -325,10 +328,11 @@
       element)))
 
 (defalias source [attrs elements]
-  (let [indent (if (::prefix attrs) (inc (count (::prefix attrs))) 0)]
+  (let [opts {:indent (if (::prefix attrs) (inc (count (::prefix attrs))) 0)
+              :line-length (or (::line-length attrs) 80)}]
     (cond-> [:pre.source attrs]
       (::prefix attrs) (conj [:code.strong (str (::prefix attrs) " ")])
-      :then (into (mapv #(render-source-element % {:indent indent}) elements)))))
+      :then (into (mapv #(render-source-element % opts) elements)))))
 
 (defalias hiccup [attrs elements]
   (cond-> [:pre.source.hiccup (cond-> attrs
