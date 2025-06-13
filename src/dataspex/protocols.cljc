@@ -55,3 +55,6 @@
   (get-val [watchable])
   (watch [watchable k f])
   (unwatch [watchable watcher]))
+
+(defprotocol ICopy
+  (copy-as-string [v]))

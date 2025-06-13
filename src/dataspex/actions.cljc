@@ -1,6 +1,7 @@
 (ns dataspex.actions
   (:require [dataspex.data :as data]
             [dataspex.inspector :as inspector]
+            [dataspex.protocols :as dp]
             [dataspex.time :as time]))
 
 (defn copy-to-clipboard [#?(:cljs text :clj _)]
@@ -13,6 +14,11 @@
        (.blur text-area)
        (js/document.body.removeChild text-area))))
 
+(defn copy-as-string [v]
+  (if (satisfies? dp/ICopy v)
+    (dp/copy-as-string v)
+    (data/stringify v)))
+
 (defn action->effects [state [action & args]]
   (case action
     ::assoc-in
@@ -22,7 +28,7 @@
     (let [[label path] args]
       [[:effect/copy (-> (get-in state [label :val])
                          (data/nav-in path)
-                         data/stringify)]])
+                         copy-as-string)]])
 
     ::inspect-revision
     (let [[label rev] args
