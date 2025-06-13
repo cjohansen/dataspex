@@ -7,6 +7,16 @@
     (is (= (ui/content-length [ui/string "A string"]) 10))
     (is (= (ui/content-length [ui/string {} "A string"]) 10)))
 
+  (testing "Calculates length of string literals"
+    (is (= (ui/content-length
+            [ui/literal [ui/string "A string"]])
+           10))
+
+    (is (= (ui/content-length
+            [ui/literal {::ui/prefix "#uuid"}
+             [ui/string "A string"]])
+           16)))
+
   (testing "Calculates length of keyword"
     (is (= (ui/content-length [ui/keyword :keyword]) 8)))
 
@@ -50,4 +60,15 @@
              [::ui/map-entry
               [ui/keyword :version]
               [ui/string "1.0.0"]]])
-           36))))
+           36)))
+
+  (testing "Calculates length of nested structure"
+    (is (= (ui/content-length
+            [ui/vector
+             [ui/keyword :kanban.actions/save]
+             [ui/vector
+              [ui/keyword :transient]
+              [ui/literal {::ui/prefix "#uuid"} [ui/string "21b35698-d679-48a1-a441-2f6c3a190f8f"]]
+              [ui/keyword :expanded?]]
+             [ui/boolean true]])
+           96))))

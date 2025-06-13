@@ -223,6 +223,9 @@
          (inc (count prefix))
          0)
        (case tag
+         ::literal
+         (content-length (first children))
+
          ::string
          (+ 2 (count (str (first children))))
 
