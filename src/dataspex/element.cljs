@@ -9,7 +9,7 @@
                            [(keyword (.-name attr)) (.-value attr)]))
                    (into {}))
         children (if (< 100 (count (.-outerHTML el)))
-                   [(str (let [s (.-innerText el)]
+                   [(str (let [s (str (.-innerText el))]
                            (if (< 50 (count s))
                              (let [short-s (first (str/split s #"\n"))]
                                (if (< 50 (count short-s))
