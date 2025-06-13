@@ -638,15 +638,12 @@
      (extend-type js/Event
        dp/IRenderInline
        (render-inline [event opt]
-         (render-inline-map
-          event
-          [{:k :type
-            :label :type
-            :v (.-type event)}
-           {:k :target
-            :label :target
-            :v (.-target event)}]
-          (assoc opt ::ui/prefix (get-js-prefix event)))))))
+         [::ui/vector (assoc opt ::ui/prefix (get-js-prefix event))
+          [::ui/string (.-type event)]
+          (when-let [constructor (some-> event .-target data/get-js-constructor)]
+            (if (= constructor "HTMLElement")
+              [::ui/symbol (str "<" (some-> event .-target .-tagName str/lower-case) ">")]
+              [::ui/symbol constructor]))]))))
 
 #?(:cljs
    (when (exists? js/CSSStyleValue)
