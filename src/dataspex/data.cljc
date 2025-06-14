@@ -285,7 +285,10 @@
                :then (into props)
                (not= o obj) (remove #(ifn? (aget o %)))))
       (->> (remove ignored-js-props props)
+           ;; Dataspex protocol implementations
            (remove #(str/starts-with? % "dataspex"))
+           ;; ClojureScript protocol implementations
+           (remove #(str/starts-with? % "cljs$core$I"))
            vec))))
 
 (defn get-js-constructor [o]
