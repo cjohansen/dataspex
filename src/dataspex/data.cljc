@@ -282,8 +282,8 @@
                 :clj nil)
              (cond->> #?(:cljs (js/Object.getOwnPropertyNames obj)
                          :clj [])
-               :then (into props)
-               (not= o obj) (remove #(ifn? (aget o %)))))
+               (not= o obj) (remove #(ifn? (aget o %)))
+               :then (into props)))
       (->> (remove ignored-js-props props)
            ;; Dataspex protocol implementations
            (remove #(str/starts-with? % "dataspex"))
