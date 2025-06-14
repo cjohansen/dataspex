@@ -4,7 +4,7 @@
   <packaging>jar</packaging>
   <groupId>no.cjohansen</groupId>
   <artifactId>dataspex</artifactId>
-  <version>2025.06.3</version>
+  <version>2025.06.4</version>
   <name>dataspex</name>
   <dependencies>
     <dependency>
