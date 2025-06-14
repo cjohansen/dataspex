@@ -274,22 +274,23 @@
 (def ignored-js-props
   #{"__proto__"})
 
-(defn get-js-object-props [o]
-  (loop [obj o
-         props #{}]
-    (if obj
-      (recur #?(:cljs (js/Object.getPrototypeOf obj)
-                :clj nil)
-             (cond->> #?(:cljs (js/Object.getOwnPropertyNames obj)
-                         :clj [])
-               (not= o obj) (remove #(ifn? (aget o %)))
-               :then (into props)))
-      (->> (remove ignored-js-props props)
-           ;; Dataspex protocol implementations
-           (remove #(str/starts-with? % "dataspex"))
-           ;; ClojureScript protocol implementations
-           (remove #(str/starts-with? % "cljs$core$I"))
-           vec))))
+(defn get-js-object-props [o & [ignored-props]]
+  (let [ignored (into ignored-js-props ignored-props)]
+    (loop [obj o
+           props #{}]
+      (if obj
+        (recur #?(:cljs (js/Object.getPrototypeOf obj)
+                  :clj nil)
+               (cond->> #?(:cljs (js/Object.getOwnPropertyNames obj)
+                           :clj [])
+                 (not= o obj) (remove #(ifn? (aget o %)))
+                 :then (into props)))
+        (->> (remove ignored props)
+             ;; Dataspex protocol implementations
+             (remove #(str/starts-with? % "dataspex"))
+             ;; ClojureScript protocol implementations
+             (remove #(str/starts-with? % "cljs$core$I"))
+             vec)))))
 
 (defn get-js-constructor [o]
   (let [n (some->> o .-constructor .-name)]
@@ -300,6 +301,17 @@
   (->> #?(:cljs (into [] (get-js-object-props o))
           :clj (keys o))
        (sort-by sort-order)
+       (map (fn [k]
+              (let [n (symbol k)]
+                {:k n
+                 :label n
+                 :v (inspect (aget o k) opt)})))))
+
+(defn get-dom-element-entries [#?(:cljs ^js o :clj o) opt]
+  (->> #?(:cljs (into [] (get-js-object-props o #{"innerHTML" "outerHTML" }))
+          :clj (keys o))
+       (sort-by (fn [k] [(if (= k (str/upper-case k)) 1 0) k]))
+       (remove (fn [k] (or (nil? (aget o k)) (= "" (aget o k)))))
        (map (fn [k]
               (let [n (symbol k)]
                 {:k n

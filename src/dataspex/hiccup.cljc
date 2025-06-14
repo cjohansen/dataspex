@@ -122,12 +122,18 @@
     (when (< 0 w)
       (< (dec w) (bounded-size w v)))))
 
+(defn safe-count [xs]
+  #?(:clj (count xs)
+     :cljs (if (number? (.-length xs))
+             (.-length xs)
+             (count xs))))
+
 (defn summarize [xs & [{:keys [kind]}]]
   (if (< views/max-items (bounded-count (inc views/max-items) xs))
     (str views/max-items "+ items")
     (let [types (set (mapv type-name xs))]
       (enumerate
-       (count xs)
+       (safe-count xs)
        (cond
          kind kind
          (< 1 (count types)) "item"
@@ -631,7 +637,12 @@
              (render-hiccup (assoc opt
                                    ::ui/prefix (get-js-prefix el)
                                    ::ui/folding? false
-                                   ::ui/inline? true)))))))
+                                   ::ui/inline? true))))
+
+       dp/IRenderDictionary
+       (render-dictionary [el opt]
+         (->> (data/get-dom-element-entries el opt)
+              (render-entries-dictionary el opt))))))
 
 #?(:cljs
    (when (exists? js/Text)
