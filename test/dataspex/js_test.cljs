@@ -25,4 +25,20 @@
   (testing "Renders transit UUIDs as regular UUIDs"
     (is (= (h/render-inline (roundtrip #uuid "d8a1fa84-5e33-4ea9-a68b-3fbd6f365731"))
            [::ui/literal {::ui/prefix "#uuid"}
-            [::ui/string "d8a1fa84-5e33-4ea9-a68b-3fbd6f365731"]]))))
+            [::ui/string "d8a1fa84-5e33-4ea9-a68b-3fbd6f365731"]])))
+
+  (testing "Can render circular objects"
+    (is (= (let [o #js {:member #js {:number 42}}
+                 obj o]
+             (set! (.-inner (.-member obj)) obj)
+             (h/render-inline {:dataspex/summarize-above-w -1} o))
+           [::ui/map {::ui/prefix "#js"}
+            [::ui/map-entry
+             [::ui/symbol 'member]
+             [::ui/map {::ui/prefix "#js"}
+              [::ui/map-entry
+               [::ui/symbol 'inner]
+               [::ui/symbol "(circular)"]]
+              [::ui/map-entry
+               [::ui/symbol 'number]
+               [::ui/number 42]]]]]))))

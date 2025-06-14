@@ -238,24 +238,27 @@
   (render-paginated-sequential ::ui/vector [(deref r)] (assoc opt ::ui/prefix "#atom")))
 
 (defn render-inline-object [o opt]
-  (cond
-    (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
-    (coll? o) (render-inline-seq o opt)
-    (uuid? o) [::ui/literal {::ui/prefix "#uuid"} [::ui/string (str o)]]
-    (data/js-collection? o) (render-inline-js-coll o opt)
-    (data/js-map? o) (render-inline-js-map o opt)
-    (data/js-array? o) (render-inline-array o opt)
-    (data/js-object? o) (render-inline-map o (data/get-inline-js-object-entries o opt) (assoc opt ::ui/prefix (get-js-prefix o)))
-    (data/derefable? o) (render-inline-atom o opt)
+  (if (contains? (::visited opt) o)
+    [::ui/symbol "(circular)"]
+    (let [opt (update opt ::visited (fnil conj #{}) o)]
+      (cond
+        (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
+        (coll? o) (render-inline-seq o opt)
+        (uuid? o) [::ui/literal {::ui/prefix "#uuid"} [::ui/string (str o)]]
+        (data/js-collection? o) (render-inline-js-coll o opt)
+        (data/js-map? o) (render-inline-js-map o opt)
+        (data/js-array? o) (render-inline-array o opt)
+        (data/js-object? o) (render-inline-map o (data/get-inline-js-object-entries o opt) (assoc opt ::ui/prefix (get-js-prefix o)))
+        (data/derefable? o) (render-inline-atom o opt)
 
-    :else
-    (let [string (data/stringify o)]
-      (if-let [[_ prefix s] (re-find #"(#[a-zA-Z_\-*+!?=<>][a-zA-Z0-9_\-*+!?=<>/.]+)\s(.+)$" string)]
-        [::ui/literal {::ui/prefix prefix}
-         (if-let [[_ s] (re-find #"^\"(.*)\"$" s)]
-           [::ui/string s]
-           [::ui/code s])]
-        [::ui/code string]))))
+        :else
+        (let [string (data/stringify o)]
+          (if-let [[_ prefix s] (re-find #"(#[a-zA-Z_\-*+!?=<>][a-zA-Z0-9_\-*+!?=<>/.]+)\s(.+)$" string)]
+            [::ui/literal {::ui/prefix prefix}
+             (if-let [[_ s] (re-find #"^\"(.*)\"$" s)]
+               [::ui/string s]
+               [::ui/code s])]
+            [::ui/code string]))))))
 
 (defn render-copy-button [opt & paths]
   [::ui/button
