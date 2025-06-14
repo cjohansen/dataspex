@@ -251,8 +251,11 @@
         (data/derefable? o) (render-inline-atom o opt)
 
         :else
-        (let [string (data/stringify o)]
-          (if-let [[_ prefix s] (re-find #"(#[a-zA-Z_\-*+!?=<>][a-zA-Z0-9_\-*+!?=<>/.]+)\s(.+)$" string)]
+        (let [string (try
+                       (data/stringify o)
+                       (catch #?(:clj Exception :cljs :default) _ nil))
+              [_ prefix s] (some->> string (re-find #"(#[a-zA-Z_\-*+!?=<>][a-zA-Z0-9_\-*+!?=<>/.]+)\s(.+)$"))]
+          (if (and prefix (not= "#js" prefix))
             [::ui/literal {::ui/prefix prefix}
              (if-let [[_ s] (re-find #"^\"(.*)\"$" s)]
                [::ui/string s]
