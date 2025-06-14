@@ -11,3 +11,5 @@ window.addEventListener("message", function(event) {
     return;
   }
 });
+
+window.postMessage({from: "dataspex-content-script", type: "ready"}, "*");
