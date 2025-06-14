@@ -285,9 +285,6 @@
                   h/render-inline)
               [::ui/map {:dataspex.ui/prefix "#js/dataspex$hiccup_test$MyConstructor"}
                [::ui/map-entry
-                [::ui/symbol 'Type]
-                [::ui/symbol 'dataspex$hiccup_test$MyConstructor]]
-               [::ui/map-entry
                 [::ui/symbol 'data]
                 [::ui/string "Secret data"]]]))))
 
