@@ -1,7 +1,9 @@
 (ns dataspex.core
   "The Dataspex public API for ClojureScript."
   (:require [clojure.string :as str]
+            [dataspex.codec :as codec]
             [dataspex.data :as data]
+            [dataspex.datascript]
             [dataspex.in-process-host :as in-process-host]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
@@ -9,7 +11,7 @@
             [dataspex.render-host :as render-host]
             [dataspex.tap-inspector :as tap-inspector]
             [dataspex.user-agent :as ua]
-            dataspex.datascript))
+            [goog.functions :as gfn]))
 
 :dataspex.datascript/keep
 (data/add-string-inspector! jwt/inspect-jwt)
@@ -17,9 +19,27 @@
 (defn- get-host-str [{:keys [browser os]} origin]
   (str (str/replace origin #"^https?://" "") " " browser " " os))
 
+(def persist!
+  (gfn/debounce
+   (fn [state]
+     (try
+       (->> (select-keys state (filter string? (keys state)))
+            (mapv (fn [[k v]]
+                    [k (select-keys v (filter (comp #{"dataspex"} namespace) (keys v)))]))
+            (into {})
+            codec/generate-string
+            (.setItem js/localStorage "dataspex"))
+       (catch :default _)))
+   500))
+
 (defonce store
   (let [host-str (get-host-str (ua/parse-user-agent) js/location.origin)
-        store (atom {:dataspex/host-str host-str})]
+        store (atom (-> (some-> (try
+                                  (js/localStorage.getItem "dataspex")
+                                  (catch :default _ nil))
+                                codec/parse-string)
+                        (assoc :dataspex/host-str host-str)))]
+    (add-watch store ::remember (fn [_ _ _ state] (persist! state)))
     (render-host/start-render-host store)
     (render-host/add-channel store (in-process-host/create-channel host-str))
     store))
