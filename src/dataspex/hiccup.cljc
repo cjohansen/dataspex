@@ -383,19 +383,23 @@
   (let [len (count v)]
     (or (= 1 len) (and (= 2 len) (map? (second v))))))
 
+(defn hiccup? [data opt]
+  (and (data/hiccup? data) (:dataspex/hiccup? opt true)))
+
 (defn folded? [v {:dataspex/keys [folding-level path] :as opt} node-path]
   (let [{:keys [folded? ident]} (get-in opt [:dataspex/folding (into path node-path)])]
     (if (and ident (= ident (get-ident v)))
       folded?
-      (when (or (data/hiccup? v)
-                (every? data/hiccup? v))
+      (when (and (:dataspex/hiccup? opt true)
+                 (or (data/hiccup? v)
+                     (every? data/hiccup? v)))
         (< folding-level 0)))))
 
 (declare render-hiccup-node)
 
 (defn render-hiccup-child [node opt path idx]
   (cond
-    (data/hiccup? node)
+    (hiccup? node opt)
     (let [node-path (conj path idx)]
       (if (and (not (empty-node? node))
                (folded? node opt node-path))
@@ -502,7 +506,7 @@
 
 (defn render-source [data opt]
   (let [opt (assoc opt :dataspex/summarize-above-w -1)]
-    (if (data/hiccup? data)
+    (if (hiccup? data opt)
       (render-hiccup data opt)
       (let [attrs (select-keys opt [::ui/prefix ::ui/line-length])]
         (cond-> [::ui/source]
@@ -520,7 +524,7 @@
     (render-hiccup hiccup opt)))
 
 (defn render-inline-vector [v opt]
-  (if (and (data/hiccup? v) (:dataspex/hiccup? opt true))
+  (if (hiccup? v opt)
     (render-inline-hiccup v opt)
     (->> {:get-entries data/get-indexed-entries}
          (render-paginated-sequential ::ui/vector v opt))))
