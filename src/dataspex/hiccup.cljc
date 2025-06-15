@@ -660,7 +660,7 @@
      (extend-type js/Event
        dp/IRenderInline
        (render-inline [event opt]
-         [::ui/vector (assoc opt ::ui/prefix (get-js-prefix event))
+         [::ui/vector {::ui/prefix (get-js-prefix event)}
           [::ui/string (.-type event)]
           (when-let [constructor (some-> event .-target data/get-js-constructor)]
             (if (= constructor "HTMLElement")
