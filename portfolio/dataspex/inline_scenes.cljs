@@ -116,3 +116,14 @@
   :title "JS Date"
   [ui/literal {::ui/prefix "#inst"}
    [ui/string "2025-04-08T20:21:19.046-00:00"]])
+
+(defscene element-as-hiccup
+  [ui/hiccup {::ui/prefix "#js/SVGSVGElement"
+              ::ui/inline? true}
+   [ui/vector
+    [ui/hiccup-tag :svg]
+    [ui/map {::ui/inline? true}
+     [::ui/map-entry [ui/keyword :style]]
+     [::ui/map-entry [ui/keyword :viewBox]]
+     [::ui/map-entry [ui/keyword :xmlns]]]
+    [ui/string "..."]]])

@@ -256,6 +256,7 @@
           (loop [entries map-entries
                  res []]
             (let [[_ k v] (first entries)
+                  l (count (first entries))
                   indent-w (+ indent 2 (content-length k))
                   new-line? (and (< 40 indent-w)
                                  (#{::map ::list ::set ::vector} (first v))
@@ -267,7 +268,9 @@
                                    {:indent (if new-line?
                                               (inc indent)
                                               (+ indent 2 (content-length k)))})])
-                        more (conj (str "\n" indent-s))
+                        (= 2 l) (conj k)
+                        (and more v) (conj (str "\n" indent-s))
+                        (and more (= 2 l)) (conj ", ")
                         (nil? more) (conj [::code.strong "}"]))]
               (if more
                 (recur more res)
@@ -338,7 +341,7 @@
   (cond-> [:pre.source.hiccup (cond-> attrs
                                 (::inline? attrs) (update :class conj "inline"))]
     (::prefix attrs) (conj [:code.code.strong (str (::prefix attrs) " ")])
-    :then (into (mapv #(render-source-element % {:indent 0}) elements))))
+    :then (into (mapv #(render-source-element % {:indent 0 :line-length (or (::line-length attrs) 80)}) elements))))
 
 (defalias tag [attrs value]
   [:code.tag attrs value])
