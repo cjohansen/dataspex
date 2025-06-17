@@ -97,6 +97,12 @@ features, including:
 
 And much more.
 
+## Build dependencies
+
+The Makefile build tasks for the Chrome and Firefox browser extensions rely on the `xmllint` binary
+to embed the current version string. This is typically included with an installation of `libxml2` or
+`libxml2-utils` on Linux distributions (`libxml2` is installed by default on MacOS).
+
 ## Chrome extension
 
 To build the Chrome extension:
