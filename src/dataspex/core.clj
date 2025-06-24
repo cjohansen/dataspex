@@ -45,6 +45,9 @@
   (println (str "Started Dataspex server on http://localhost:" (:port @server)))
   @server)
 
+(defn get-server-info []
+  @server)
+
 (defn ^{:export true :indent 1} inspect
   {:arglists '[[label x]
                [label x {:keys [start-server? server-port ns-aliases]}]]}
