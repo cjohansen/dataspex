@@ -9,8 +9,13 @@
     (::actions attrs) (assoc :class #{:clickable})))
 
 (defalias string [attrs [string]]
-  [:code (assoc (actions->click-handler attrs) :data-type "string")
-   (str "\"" string "\"")])
+  (let [s [:code (assoc (actions->click-handler attrs) :data-type "string")
+           (str "\"" string "\"")]]
+    (if-let [prefix (::prefix attrs)]
+      [:span
+       [:code.strong (str prefix " ")]
+       s]
+      s)))
 
 (defalias number [attrs [number]]
   [:code (assoc attrs :data-type "number") (str number)])
