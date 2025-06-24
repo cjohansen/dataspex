@@ -205,6 +205,10 @@ body, pre {
   padding: 0.5em;
 }
 
+.pre {
+  white-space: pre;
+}
+
 .subtle, .subtle button {
   color: var(--subtle-color);
 }

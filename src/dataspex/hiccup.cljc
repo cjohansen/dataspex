@@ -92,7 +92,15 @@
     [::ui/code s]))
 
 (defn string-label [s]
-  (StringLabel. s))
+  (->StringLabel s))
+
+(defrecord PreformattedString [s]
+  dp/IRenderInline
+  (render-inline [_ _]
+    [::ui/code.pre s]))
+
+(defn preformatted-string [s]
+  (->PreformattedString s))
 
 (defn add-attr [hiccup k v]
   (if (map? (second hiccup))
