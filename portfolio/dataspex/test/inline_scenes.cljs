@@ -1,13 +1,15 @@
 (ns dataspex.test.inline-scenes
   (:require [datascript.core :as d]
             [dataspex.data :as data]
-            [dataspex.datascript]
             [dataspex.hiccup :as hiccup]
             [dataspex.test.data :as test-data]
             [dataspex.views :as views]
-            [portfolio.replicant :as portfolio :refer-macros [defscene]]))
+            [portfolio.replicant :as portfolio :refer-macros [defscene]]
+            dataspex.datascript
+            dataspex.error))
 
 :dataspex.datascript/keep
+:dataspex.error/keep
 
 (portfolio/configure-scenes
  {:title "Inline views"
@@ -71,3 +73,6 @@
                                            :view js/window})]
     (js/document.body.dispatchEvent event)
     (render-inline event)))
+
+(defscene error
+  (render-inline (ex-info "That didn't go too well!" {:data 42})))

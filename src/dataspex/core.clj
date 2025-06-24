@@ -5,8 +5,10 @@
             [dataspex.jwt :as jwt]
             [dataspex.server :as server]
             [dataspex.tap-inspector :as tap-inspector]
-            dataspex.datascript))
+            dataspex.datascript
+            dataspex.exception))
 
+:dataspex.exception/keep
 :dataspex.datascript/keep
 
 (try

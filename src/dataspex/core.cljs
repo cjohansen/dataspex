@@ -3,7 +3,6 @@
   (:require [clojure.string :as str]
             [dataspex.codec :as codec]
             [dataspex.data :as data]
-            [dataspex.datascript]
             [dataspex.in-process-host :as in-process-host]
             [dataspex.inspector :as inspector]
             [dataspex.jwt :as jwt]
@@ -11,9 +10,12 @@
             [dataspex.render-host :as render-host]
             [dataspex.tap-inspector :as tap-inspector]
             [dataspex.user-agent :as ua]
-            [goog.functions :as gfn]))
+            [goog.functions :as gfn]
+            dataspex.datascript
+            dataspex.error))
 
 :dataspex.datascript/keep
+:dataspex.error/keep
 (data/add-string-inspector! jwt/inspect-jwt)
 
 (defn- get-host-str [{:keys [browser os]} origin]

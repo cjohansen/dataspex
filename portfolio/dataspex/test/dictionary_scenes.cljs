@@ -80,3 +80,9 @@
     (-> el .-classList (.add "btn-primary"))
     (set! (.-innerHTML el) "Replicant")
     (render-dictionary el)))
+
+(defscene error
+  (render-dictionary
+   (ex-info "That didn't go too well!"
+            {:data 42}
+            (ex-info "Because of this shit!" {:data :boo}))))
