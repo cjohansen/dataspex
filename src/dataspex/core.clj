@@ -51,6 +51,12 @@
   (when (nil? (:dataspex/host-str @store))
     (swap! store assoc :dataspex/host-str (get-host-str)))
   (inspector/inspect store label x opt)
+  (when-let [port (:server-port opt)]
+    (let [running @server]
+      (when (and running (not= port (:port running)) (not= port 0))
+        (println
+         (str "A Dataspex server is already running on port " (:port running)
+              ", will not start another on port " port)))))
   (when (and (nil? @server) (not (false? (:start-server? opt))))
     (start-server! {:port (:server-port opt)}))
   x)
