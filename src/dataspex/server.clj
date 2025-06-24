@@ -115,23 +115,30 @@
 
 (def default-port 7117)
 
-(defn ^:export start-server [store & [{:keys [port]}]]
-  (let [relay-renders (atom {})
-        relay-actions (atom {})
-        server
-        (-> (fn [req respond raise]
-              (-> (assoc req :store store)
-                  (assoc :relay-renders relay-renders)
-                  (assoc :relay-actions relay-actions)
-                  (app respond raise)))
-            (wrap-resource "public")
-            (wrap-cors)
-            (jetty/run-jetty
-             {:port (or port default-port)
-              :async? true
-              :join? false}))]
-    (with-meta {:port (-> server .getConnectors first .getLocalPort)}
-      {:server server})))
+(defn ^:export start-server
+  {:arglists '[[]
+               [{:keys [port]}]
+               [store {:keys [port]}]]}
+  ([] (start-server nil {}))
+  ([opt] (start-server nil opt))
+  ([store {:keys [port]}]
+   (let [relay-renders (atom {})
+         relay-actions (atom {})
+         store (or store (atom {}))
+         server
+         (-> (fn [req respond raise]
+               (-> (assoc req :store store)
+                   (assoc :relay-renders relay-renders)
+                   (assoc :relay-actions relay-actions)
+                   (app respond raise)))
+             (wrap-resource "public")
+             (wrap-cors)
+             (jetty/run-jetty
+              {:port (or port default-port)
+               :async? true
+               :join? false}))]
+     (with-meta {:port (-> server .getConnectors first .getLocalPort)}
+       {:server server}))))
 
 (defn ^:export stop-server [server]
   (when-let [server ^org.eclipse.jetty.server.Server (:server (meta server))]
