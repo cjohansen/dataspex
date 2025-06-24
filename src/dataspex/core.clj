@@ -41,9 +41,8 @@
   (when (nil? (:dataspex/host-str @store))
     (swap! store assoc :dataspex/host-str (get-host-str)))
   (stop-server!)
-  (println "Starting Dataspex server on http://localhost:"
-           (or (:port opt) server/default-port))
-  (reset! server (server/start-server store opt)))
+  (reset! server (server/start-server store opt))
+  (println (str "Started Dataspex server on http://localhost:" (:port @server))))
 
 (defn ^{:export true :indent 1} inspect
   {:arglists '[[label x]
