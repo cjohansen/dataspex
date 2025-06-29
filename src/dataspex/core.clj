@@ -47,7 +47,7 @@
   (println (str "Started Dataspex server on http://localhost:" (:port @server)))
   @server)
 
-(defn get-server-info []
+(defn ^:export get-server-info []
   @server)
 
 (defn ^{:export true :indent 1} inspect
