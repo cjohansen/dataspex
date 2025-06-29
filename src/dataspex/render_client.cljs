@@ -4,6 +4,7 @@
             [dataspex.hiccup :as hiccup]
             [dataspex.icons :as icons]
             [dataspex.ui :as ui]
+            [goog.functions :as gfn]
             [replicant.dom :as r]))
 
 ::icons/keep
@@ -127,11 +128,12 @@
   (.setAttribute js/document.documentElement "data-theme" (name theme)))
 
 (defn ^{:indent 2} add-channel [store id channel]
-  (let [{:keys [root]} @store]
-    (ensure-element root id)
+  (let [{:keys [root]} @store
+        el (ensure-element root id)]
     (swap! store assoc-in [:channels id] channel)
     (connect channel (fn [hiccup & [opt]]
-                       (render root id hiccup opt)))))
+                       (render root id hiccup opt)))
+    (process-actions channel el [[::actions/assoc-in [:client-window-size] js/window.innerWidth]])))
 
 (defn remove-channel [store id]
   (let [el ^js (ensure-element (:root @store) id)
@@ -141,6 +143,13 @@
       (.removeChild (.-parentNode el) el))
     (when channel
       (disconnect channel))))
+
+(defn set-window-size [store root]
+  (let [w js/window.innerWidth]
+    (doseq [[id channel] (:channels @store)]
+      (process-actions channel (ensure-element root id) [[::actions/assoc-in [:client-window-size] w]]))))
+
+(def set-window-size-debounced (gfn/debounce set-window-size 100))
 
 (defn init-el [root]
   (.add (.-classList root) "inspector")
@@ -158,6 +167,7 @@
     (set-theme! (get-preferred-theme))
     (mount-splash panels-el)
     (set-dispatch! store (partial handle-remotes-actions store panels-el))
+    (set! js/window.onresize #(set-window-size-debounced store root))
     (add-watch store ::render-remotes
      (fn [_ _ _ state]
        (r/render remotes-el (render-remotes state))))

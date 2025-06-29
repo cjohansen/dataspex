@@ -44,6 +44,12 @@
         source)
       dictionary))
 
+(defn get-data-w [{:keys [client-window-size]}]
+  (if (number? client-window-size)
+    (int (/ (- (max client-window-size 600) 120) ;; Allow some space for keys
+            8)) ;; Each character is roughly 8px wide
+    80))
+
 (defn get-render-data [state inspectee]
   (let [inspector-state (get state inspectee)
         opt (merge {:dataspex/inspectee inspectee}
@@ -52,6 +58,8 @@
                                      (filter (comp #{"dataspex"} namespace)))))
         data (-> (get-in state [inspectee :val])
                  (data/nav-in (:dataspex/path opt)))
-        opt (assoc opt :dataspex/view (get-current-view data opt))]
+        opt (-> opt
+                (assoc :dataspex/view (get-current-view data opt))
+                (assoc :dataspex/summarize-above-w (get-data-w state)))]
     {:opt opt
      :data (data/inspect data opt)}))
