@@ -615,7 +615,8 @@ a.clickable:hover,
 /* Dictionary tables */
 
 .dictionary:not(.table-auto):not(.keyless) th {
-  width: 15em;
+    width: 1em;
+    padding-right: 24px;
 }
 
 /* Source listings */
