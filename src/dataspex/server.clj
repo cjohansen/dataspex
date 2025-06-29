@@ -115,6 +115,26 @@
 
 (def default-port 7117)
 
+(defn start-jetty [handler port]
+  (jetty/run-jetty handler
+   {:port port
+    :async? true
+    :join? false}))
+
+(defn start-jetty-instance [handler port]
+  (if port
+    (start-jetty handler port)
+    (loop [port default-port]
+      (let [res (try
+                  (start-jetty handler port)
+                  (catch java.io.IOException e
+                    (if (instance? java.net.BindException (.getCause e))
+                      :port-busy
+                      (throw e))))]
+        (if (= :port-busy res)
+          (recur (inc port))
+          res)))))
+
 (defn ^:export start-server
   {:arglists '[[]
                [{:keys [port]}]
@@ -133,10 +153,7 @@
                    (app respond raise)))
              (wrap-resource "public")
              (wrap-cors)
-             (jetty/run-jetty
-              {:port (or port default-port)
-               :async? true
-               :join? false}))]
+             (start-jetty-instance port))]
      (with-meta {:port (-> server .getConnectors first .getLocalPort)}
        {:server server}))))
 
