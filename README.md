@@ -6,7 +6,7 @@ and Datomic connections; trace changes to atoms and databases over time; and
 more -- with minimal effort and a short learning curve.
 
 ```clj
-no.cjohansen/dataspex {:mvn/version "2025.06.8"}
+no.cjohansen/dataspex {:mvn/version "2025.08.1"}
 ```
 
 Dataspex runs as a Chrome and Firefox extension — or as a standalone web app —
@@ -30,7 +30,7 @@ extensions may still change. At this point you should build the extensions (see
 below) for the corresponding library version you are using.
 
 I expect Dataspex to be stable and with officially released browser extensions
-by the end of June 2025.
+by the end of September 2025.
 
 ## Usage
 

@@ -4,7 +4,7 @@
   <packaging>jar</packaging>
   <groupId>no.cjohansen</groupId>
   <artifactId>dataspex</artifactId>
-  <version>2025.06.8</version>
+  <version>2025.08.1</version>
   <name>dataspex</name>
   <dependencies>
     <dependency>
@@ -58,4 +58,10 @@
       <url>https://repo.clojars.org/</url>
     </repository>
   </repositories>
+  <scm>
+    <connection>scm:git:git://github.com/cjohansen/dataspex.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/cjohansen/dataspex.git</developerConnection>
+    <tag>v2025.08.1</tag>
+    <url>https://github.com/cjohansen/dataspex</url>
+  </scm>
 </project>
