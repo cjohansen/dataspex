@@ -34,9 +34,11 @@ by the end of September 2025.
 
 ## Usage
 
-Using Dataspex is easy: require `dataspex.core` and call `inspect` on your data.
-When used from Clojure, it will start a server on port 7117. The browser
-extension automatically connects to this port.
+To use Dataspex, require `dataspex.core` and call `inspect` on your data. When
+used from Clojure, it will start a server on port 7117. The browser extension
+can connect to this port either with configuration from ClojureScript, or by
+clicking the plus icon in the extension panel and entering
+"http://localhost:7117" as the server to connect to.
 
 ```clj
 (require '[dataspex.core :as dataspex])
@@ -137,6 +139,11 @@ You will need [Firefox Developer Edition](https://www.mozilla.org/en-US/firefox/
 9. Select manifest.json from the browser-extension/firefox folder
 
 If you make changes to the extension code, click "reload".
+
+## Dataspex in the wild
+
+Calva has dedicated via
+[calva-power-tools](https://github.com/BetterThanTomorrow/calva-power-tools).
 
 ## Developing Dataspex
 
