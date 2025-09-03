@@ -125,8 +125,6 @@ To build the Firefox extension:
 make firefox-extension
 ```
 
-You will need [Firefox Developer Edition](https://www.mozilla.org/en-US/firefox/developer/).
-
 1. Go to [about:config](about:config)
 2. Set `devtools.chrome.enabled` to `true`
 3. Set `devtools.debugger.remote-enabled` to `true`
