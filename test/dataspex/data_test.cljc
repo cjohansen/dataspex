@@ -83,6 +83,7 @@
   (testing "Navigates in list"
     (is (= (data/nav-in '(:a :b :c) []) '(:a :b :c)))
     (is (= (data/nav-in '(:a :b :c) [1]) :b))
+    (is (= (data/nav-in '(:a :b :c) [4]) nil))
     (is (= (data/nav-in '(:a :b :c) [:k]) nil)))
 
   (testing "Navigates in seq"

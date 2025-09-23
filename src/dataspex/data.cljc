@@ -155,7 +155,8 @@
           (recur (get data (first ks)) (next ks))
 
           (and (coll? data) (number? k))
-          (recur (nth data k) (next ks))
+          (when (< k (bounded-count (inc k) data))
+            (recur (nth data k) (next ks)))
 
           (derefable? data)
           (recur (get @data k) (next ks))
