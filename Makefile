@@ -1,13 +1,17 @@
 VERSION := $(shell sed 's/xmlns="[^"]*"//g' pom.xml | xmllint --xpath 'string(/project/version)' -)
 
+check-xmllint:
+	@command -v xmllint >/dev/null 2>&1 || \
+	{ echo "Error: xmllint not found in PATH. Please install libxml2-utils."; exit 1; }
+
 node_modules:
 	npm install
 
-browser-extension/extension.js: node_modules shadow-cljs.edn $(wildcard src/dataspex/*.clj*)
+browser-extension/extension.js: check-xmllint node_modules shadow-cljs.edn $(wildcard src/dataspex/*.clj*)
 	npx shadow-cljs release browser-extension
 	$(info Building browser extension at version $(VERSION))
 
-browser-extension/chrome/manifest.json: pom.xml
+browser-extension/chrome/manifest.json: check-xmllint pom.xml
 	sed 's/VERSION/$(VERSION)/' browser-extension/chrome/manifest.tpl.json > browser-extension/chrome/manifest.json
 
 chrome-extension: browser-extension/extension.js browser-extension/chrome/manifest.json
@@ -17,7 +21,7 @@ chrome-extension: browser-extension/extension.js browser-extension/chrome/manife
 	cp browser-extension/devtools.html browser-extension/chrome/devtools.html
 	cp browser-extension/panel.html browser-extension/chrome/panel.html
 
-browser-extension/firefox/manifest.json:
+browser-extension/firefox/manifest.check-xmllint json:
 	sed 's/VERSION/$(VERSION)/' browser-extension/firefox/manifest.tpl.json > browser-extension/firefox/manifest.json
 
 firefox-extension: browser-extension/extension.js browser-extension/firefox/manifest.json
@@ -41,4 +45,4 @@ deploy: dataspex.jar
 	    CLOJARS_PASSWORD=$$(xmllint --xpath "string(/settings/servers/server[id='clojars']/password)" ~/.m2/settings.xml) \
 	    clojure -X:deploy
 
-.PHONY: extension clean deploy
+.PHONY: extension clean deploy check-xmllint
