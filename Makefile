@@ -5,7 +5,7 @@ node_modules:
 
 browser-extension/extension.js: node_modules shadow-cljs.edn $(wildcard src/dataspex/*.clj*)
 	npx shadow-cljs release browser-extension
-  $(info Building browser extension at version $(VERSION))
+	$(info Building browser extension at version $(VERSION))
 
 browser-extension/chrome/manifest.json: pom.xml
 	sed 's/VERSION/$(VERSION)/' browser-extension/chrome/manifest.tpl.json > browser-extension/chrome/manifest.json
