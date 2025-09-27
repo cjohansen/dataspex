@@ -95,6 +95,12 @@
       ::ui/title "Browse this version"})
    [::icons/browser]])
 
+(defn render-swap-rev-button [{:keys [rev]} opt]
+  [::ui/button
+   {::ui/actions [[::actions/swap-revision (:dataspex/inspectee opt) rev]],
+    ::ui/title "Render this version"}
+   [::icons/sun]])
+
 (defn render-revision [{:keys [created-at diff rev current? dataspex.audit/summary] :as revision} opt]
   (let [fold-path [::audit-log :rev rev]
         folded? (get-in opt [:dataspex/folding fold-path :folded?] true)
@@ -114,7 +120,9 @@
                 diff (render-diff-summary (:val revision) diff)
                 :else [:div.grow])
               (when folded?
-                (render-browse-rev-button revision opt))]]
+                [:div
+                 (render-browse-rev-button revision opt)
+                 (render-swap-rev-button revision opt)])]]
       (not folded?)
       (conj (cond-> [::ui/card-body]
               :then (into (render-diff-details (:val revision) (:diff revision) opt))

@@ -41,6 +41,15 @@
         (:val revision)
         {:auditable? false}]])
 
+    ::swap-revision
+    (let [[label rev] args
+          revision (->> (get-in state [label :history])
+                        (filterv (comp #{rev} :rev))
+                        first)]
+      [[:effect/swap
+        label
+        (:val revision)]])
+
     ::navigate
     (let [[inspectee path] args
           target (data/nav-in (get-in state [inspectee :val]) path)]
@@ -85,6 +94,13 @@
     (doseq [[label current value opts] args]
       (->> (inspector/inspect-val current value opts)
            (swap! store assoc label)))
+
+    :effect/swap
+    (doseq [[label current] args]
+      (let [ref (get-in @store [label :ref])]
+        (dp/unwatch ref :dataspex.inspector/inspect)
+        (reset! ref current)
+        (dp/watch ref :dataspex.inspector/inspect (inspector/watch-fn store label))))
 
     :effect/uninspect
     (doseq [[label] args]

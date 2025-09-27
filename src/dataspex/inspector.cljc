@@ -92,6 +92,10 @@
 
     :else x))
 
+(defn watch-fn [store label & [opt]]
+  (fn [_ new-val diff]
+    (swap! store update label inspect-val new-val (get-opts opt) diff)))
+
 (defn inspect
   {:arglists '[[store label x]
                [store label x {:keys [track-changes? history-limit max-height]}]]}
@@ -100,9 +104,7 @@
         [val subscription]
         (if (satisfies? dp/Watchable x)
           [(dp/get-val x)
-           (dp/watch x ::inspect
-                     (fn [_ new-val diff]
-                       (swap! store update label inspect-val new-val (get-opts opt) diff)))]
+           (dp/watch x ::inspect (watch-fn store label opt))]
           [x])]
     (->> (cond-> (assoc (get-opts opt)
                         :label label
