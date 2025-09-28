@@ -123,7 +123,7 @@
                 diff (render-diff-summary (:val revision) diff)
                 :else [:div.grow])
               (when folded?
-                [:div
+                [:div.buttons
                  (render-browse-rev-button revision opt)
                  (when ref-is-atom? (render-swap-rev-button revision opt))])]]
       (not folded?)
