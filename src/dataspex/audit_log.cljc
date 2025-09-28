@@ -1,5 +1,7 @@
 (ns dataspex.audit-log
-  (:require [cljs.core :refer [Atom]]
+  #?(:clj (:import
+           [clojure.lang Atom]))
+  (:require #?(:cljs [cljs.core :refer [Atom]])
             [dataspex.actions :as-alias actions]
             [dataspex.diff :as diff]
             [dataspex.hiccup :as hiccup]
