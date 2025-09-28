@@ -98,9 +98,9 @@
       ::ui/title "Browse this version"})
    [::icons/browser]])
 
-(defn render-swap-rev-button [{:keys [rev]} opt]
+(defn render-render-rev-button [{:keys [rev]} opt]
   [::ui/button
-   {::ui/actions [[::actions/swap-revision (:dataspex/inspectee opt) rev]],
+   {::ui/actions [[::actions/reset-ref-to-revision (:dataspex/inspectee opt) rev]],
     ::ui/title "Render this version"}
    [::icons/sun]])
 
@@ -125,7 +125,7 @@
               (when folded?
                 [:div.buttons
                  (render-browse-rev-button revision opt)
-                 (when ref-is-atom? (render-swap-rev-button revision opt))])]]
+                 (when ref-is-atom? (render-render-rev-button revision opt))])]]
       (not folded?)
       (conj (cond-> [::ui/card-body]
               :then (into (render-diff-details (:val revision) (:diff revision) opt))
