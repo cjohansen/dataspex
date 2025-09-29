@@ -18,7 +18,8 @@
                        :movie/year 2014}
                  :diff [[[:movie/director] :-]
                         [[:movie/year] :+]
-                        [[:movie/title] :+ "Interstellar"]]}
+                        [[:movie/title] :+ "Interstellar"]]
+                 :ref-is-atom? true}
                 {:dataspex/inspectee "Store"
                  :dataspex/path []})
                h/strip-clock-times)
@@ -38,7 +39,10 @@
                {:dataspex.ui/title "Browse this version"
                 ::ui/actions [[::actions/inspect-revision "Store" 2]]}
                [::icons/browser]]
-              nil]]])))
+              [::ui/button
+               {::ui/actions [[::actions/reset-ref-to-revision "Store" 2]],
+                ::ui/title "Render this version"}
+               [::icons/sun]]]]])))
 
   (testing "Renders more compact diff summary with custom audit log summary"
     (is (= (->> (with-redefs [time/get-default-timezone
