@@ -31,7 +31,16 @@
              (actions/act! store
                [[::actions/uninspect "Store"]])
              @store)
-           {}))))
+           {})))
+
+  (testing "Resets ref to value of revision"
+    (is (= (let [label "Store"
+                 rev 2
+                 store (atom {label {:history [{:rev rev :val {:next-player :o}}] :ref (atom {:next-player :x})}})]
+             (actions/act! store
+                           [[::actions/reset-ref-to-revision label rev]])
+             @(get-in @store [label :ref]))
+           {:next-player :o}))))
 
 (deftest inspect-revision-test
   (testing "Inspects revision of other value"
@@ -51,3 +60,15 @@
              nil
              {:my "Data"}
              {:auditable? false}]]))))
+
+(deftest reset-ref-to-revision-test
+  (testing "Action reset-ref-to-revision triggers the effect reset-ref"
+    (let [label "Store"
+          rev 2
+          revision {:rev rev :val {:next-player :o}}]
+      (is (= (-> (actions/plan
+                  {label {:history [revision] :ref (atom {:next-player :x})}}
+                  [[::actions/reset-ref-to-revision label rev]]))
+             [[:effect/reset-ref
+               label
+               (:val revision)]])))))
