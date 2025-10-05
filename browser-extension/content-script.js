@@ -7,7 +7,8 @@ window.addEventListener("message", function(event) {
 
   if (event.data.from === "dataspex-library") {
     // Relay messages from the inspected page to the extension
-    chrome.runtime.sendMessage(event.data);
+    chrome.runtime.sendMessage(event.data)
+      .catch(error => error); // Silence "Receiving end does not exist"
     return;
   }
 });
