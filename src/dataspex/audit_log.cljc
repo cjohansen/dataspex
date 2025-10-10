@@ -1,8 +1,6 @@
 (ns dataspex.audit-log
-  #?(:clj (:import
-           [clojure.lang Atom]))
-  (:require #?(:cljs [cljs.core :refer [Atom]])
-            [dataspex.actions :as-alias actions]
+  (:require [dataspex.actions :as-alias actions]
+            [dataspex.data :as data]
             [dataspex.diff :as diff]
             [dataspex.hiccup :as hiccup]
             [dataspex.icons :as-alias icons]
@@ -104,7 +102,7 @@
     ::ui/title "Render this version"}
    [::icons/sun]])
 
-(defn render-revision [{:keys [created-at diff rev current? ref-is-atom? dataspex.audit/summary] :as revision} opt]
+(defn render-revision [{:keys [created-at diff rev current? ref-resettable? dataspex.audit/summary] :as revision} opt]
   (let [fold-path [::audit-log :rev rev]
         folded? (get-in opt [:dataspex/folding fold-path :folded?] true)
         foldable? (not-empty diff)]
@@ -125,7 +123,7 @@
               (when folded?
                 [:div.buttons
                  (render-browse-rev-button revision opt)
-                 (when ref-is-atom? (render-render-rev-button revision opt))])]]
+                 (when ref-resettable? (render-render-rev-button revision opt))])]]
       (not folded?)
       (conj (cond-> [::ui/card-body]
               :then (into (render-diff-details (:val revision) (:diff revision) opt))
@@ -159,7 +157,7 @@
                      (fn [revision]
                        (-> revision
                            (assoc :current? (= (:rev revision) (:rev inspectee-state)))
-                           (assoc :ref-is-atom? (instance? Atom (:ref inspectee-state)))
+                           (assoc :ref-resettable? (data/resettable? (:ref inspectee-state)))
                            (render-revision opt)))
                      (:history inspectee-state))
               (< 0 overflow)

@@ -62,6 +62,10 @@
   #?(:clj (instance? clojure.lang.IDeref x)
      :cljs (satisfies? cljs.core/IDeref x)))
 
+(defn resettable? [x]
+  #?(:clj (instance? clojure.lang.IAtom x)
+     :cljs (or (satisfies? cljs.core/IReset x) (satisfies? cljs.core/IAtom x))))
+
 (defn watchable? [x]
   #?(:clj (instance? clojure.lang.IRef x)
      :cljs (satisfies? cljs.core/IWatchable x)))
