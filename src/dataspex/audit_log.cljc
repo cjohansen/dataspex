@@ -96,13 +96,16 @@
       ::ui/title "Browse this version"})
    [::icons/browser]])
 
-(defn render-render-rev-button [{:keys [rev]} opt]
+(defn render-render-rev-button [{:keys [rev current-rendered?]} opt]
   [::ui/button
-   {::ui/actions [[::actions/reset-ref-to-revision (:dataspex/inspectee opt) rev]],
-    ::ui/title "Render this version"}
+   (if current-rendered?
+     {::ui/selected? true
+      ::ui/title "Current version"}
+     {::ui/actions [[::actions/reset-ref-to-revision (:dataspex/inspectee opt) rev]],
+      ::ui/title "Render this version"})
    [::icons/eye]])
 
-(defn render-revision [{:keys [created-at diff rev current? ref-resettable? dataspex.audit/summary] :as revision} opt]
+(defn render-revision [{:keys [created-at diff rev current? current-rendered? ref-resettable? dataspex.audit/summary] :as revision} opt]
   (let [fold-path [::audit-log :rev rev]
         folded? (get-in opt [:dataspex/folding fold-path :folded?] true)
         foldable? (not-empty diff)]
@@ -157,6 +160,7 @@
                      (fn [revision]
                        (-> revision
                            (assoc :current? (= (:rev revision) (:rev inspectee-state)))
+                           (assoc :current-rendered? (= (:rev revision) (:rev-rendered inspectee-state)))
                            (assoc :ref-resettable? (data/resettable? (:ref inspectee-state)))
                            (render-revision opt)))
                      (:history inspectee-state))

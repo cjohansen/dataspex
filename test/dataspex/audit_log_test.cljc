@@ -14,6 +14,7 @@
     (is (= (-> (audit-log/render-revision
                 {:created-at #inst "2025-04-16T16:21:14.000-00:00"
                  :rev 2
+                 :rev-rendered 2
                  :val {:movie/title "Interstellar"
                        :movie/year 2014}
                  :diff [[[:movie/director] :-]

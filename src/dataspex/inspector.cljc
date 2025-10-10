@@ -29,6 +29,7 @@
        current
        (get-dataspex-opts current opt)
        (cond-> {:rev rev
+                :rev-rendered rev
                 :val x}
          (:subscription opt) (assoc :subscription (:subscription opt))
          (:ref opt) (assoc :ref (:ref opt))

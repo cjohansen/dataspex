@@ -71,4 +71,5 @@
                   [[::actions/reset-ref-to-revision label rev]]))
              [[:effect/reset-ref
                label
+               rev
                (:val revision)]])))))

@@ -60,6 +60,7 @@
                         first)]
       [[:effect/reset-ref
         label
+        rev
         (:val revision)]])
 
     ::uninspect
@@ -96,8 +97,9 @@
            (swap! store assoc label)))
 
     :effect/reset-ref
-    (doseq [[label current] args]
+    (doseq [[label rev current] args]
       (let [ref (get-in @store [label :ref])]
+        (swap! store assoc-in [label :rev-rendered] rev)
         (dp/unwatch ref :dataspex.inspector/inspect)
         (reset! ref current)
         (dp/watch ref :dataspex.inspector/inspect (inspector/watch-fn store label))))
