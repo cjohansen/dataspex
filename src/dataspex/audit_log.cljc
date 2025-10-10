@@ -100,7 +100,7 @@
   [::ui/button
    {::ui/actions [[::actions/reset-ref-to-revision (:dataspex/inspectee opt) rev]],
     ::ui/title "Render this version"}
-   [::icons/sun]])
+   [::icons/eye]])
 
 (defn render-revision [{:keys [created-at diff rev current? ref-resettable? dataspex.audit/summary] :as revision} opt]
   (let [fold-path [::audit-log :rev rev]

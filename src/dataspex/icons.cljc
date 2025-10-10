@@ -21,6 +21,9 @@
 (defalias browser [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/browser)))
 
+(defalias eye [attrs _]
+  (render-icon attrs (icons/icon :phosphor.regular/eye)))
+
 (defalias table [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/table)))
 
