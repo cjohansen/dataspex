@@ -18,5 +18,10 @@
       "run_at": "document_start",
       "all_frames": true
     }
-  ]
+  ],
+  "icons": {
+    "16": "dataspex-16.png",
+    "48": "dataspex-48.png",
+    "128": "dataspex-128.png"
+  }
 }

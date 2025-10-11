@@ -23,9 +23,11 @@ dev-resources/public/portfolio/
 /browser-extension/chrome/inspector.css
 /browser-extension/chrome/manifest.json
 /browser-extension/chrome/panel.html
+/browser-extension/chrome/*.png
 /browser-extension/firefox/content-script.js
 /browser-extension/firefox/devtools.html
 /browser-extension/firefox/extension.js
 /browser-extension/firefox/inspector.css
 /browser-extension/firefox/manifest.json
 /browser-extension/firefox/panel.html
+/browser-extension/firefox/*.png

@@ -16,6 +16,7 @@ browser-extension/chrome/manifest.json: check-xmllint pom.xml
 
 chrome-extension: browser-extension/extension.js browser-extension/chrome/manifest.json
 	cp resources/public/dataspex/inspector.css browser-extension/chrome/inspector.css
+	cp browser-extension/*.png browser-extension/chrome/.
 	cp browser-extension/extension.js browser-extension/chrome/extension.js
 	cp browser-extension/content-script.js browser-extension/chrome/content-script.js
 	cp browser-extension/devtools.html browser-extension/chrome/devtools.html
@@ -26,6 +27,7 @@ browser-extension/firefox/manifest.check-xmllint json:
 
 firefox-extension: browser-extension/extension.js browser-extension/firefox/manifest.json
 	cp resources/public/dataspex/inspector.css browser-extension/firefox/inspector.css
+	cp browser-extension/*.png browser-extension/firefox/.
 	cp browser-extension/extension.js browser-extension/firefox/extension.js
 	cp browser-extension/content-script.js browser-extension/firefox/content-script.js
 	cp browser-extension/devtools.html browser-extension/firefox/devtools.html

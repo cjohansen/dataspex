@@ -5,7 +5,7 @@ function injectContentScript() {
   });
 }
 
-chrome.devtools.panels.create("Dataspex", "" /* icon */, "panel.html", function (panel) {
+chrome.devtools.panels.create("Dataspex", "dataspex-48.png", "panel.html", function (panel) {
   panel.onShown.addListener(function (panelWindow) {
     panelWindow.chrome_devtools = chrome.devtools;
   });

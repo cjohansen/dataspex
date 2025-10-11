@@ -5,5 +5,10 @@
   "description": "A point-and-click Clojure(Script) data browser.",
   "devtools_page": "devtools.html",
   "permissions": ["scripting", "storage"],
-  "host_permissions": ["<all_urls>"]
+  "host_permissions": ["<all_urls>"],
+  "icons": {
+    "16": "dataspex-16.png",
+    "48": "dataspex-48.png",
+    "128": "dataspex-128.png"
+  }
 }
