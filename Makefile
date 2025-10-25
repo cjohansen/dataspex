@@ -22,7 +22,7 @@ chrome-extension: browser-extension/extension.js browser-extension/chrome/manife
 	cp browser-extension/devtools.html browser-extension/chrome/devtools.html
 	cp browser-extension/panel.html browser-extension/chrome/panel.html
 
-browser-extension/firefox/manifest.check-xmllint json:
+browser-extension/firefox/manifest.json: check-xmllint pom.xml
 	sed 's/VERSION/$(VERSION)/' browser-extension/firefox/manifest.tpl.json > browser-extension/firefox/manifest.json
 
 firefox-extension: browser-extension/extension.js browser-extension/firefox/manifest.json
