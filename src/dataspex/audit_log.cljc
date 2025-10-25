@@ -1,5 +1,6 @@
 (ns dataspex.audit-log
   (:require [dataspex.actions :as-alias actions]
+            [dataspex.data :as data]
             [dataspex.diff :as diff]
             [dataspex.hiccup :as hiccup]
             [dataspex.icons :as-alias icons]
@@ -95,7 +96,16 @@
       ::ui/title "Browse this version"})
    [::icons/browser]])
 
-(defn render-revision [{:keys [created-at diff rev current? dataspex.audit/summary] :as revision} opt]
+(defn render-render-rev-button [{:keys [rev current-rendered?]} opt]
+  [::ui/button
+   (if current-rendered?
+     {::ui/selected? true
+      ::ui/title "Current version"}
+     {::ui/actions [[::actions/reset-ref-to-revision (:dataspex/inspectee opt) rev]],
+      ::ui/title "Render this version"})
+   [::icons/eye]])
+
+(defn render-revision [{:keys [created-at diff rev current? current-rendered? ref-resettable? dataspex.audit/summary] :as revision} opt]
   (let [fold-path [::audit-log :rev rev]
         folded? (get-in opt [:dataspex/folding fold-path :folded?] true)
         foldable? (not-empty diff)]
@@ -114,7 +124,9 @@
                 diff (render-diff-summary (:val revision) diff)
                 :else [:div.grow])
               (when folded?
-                (render-browse-rev-button revision opt))]]
+                [:div.buttons
+                 (render-browse-rev-button revision opt)
+                 (when ref-resettable? (render-render-rev-button revision opt))])]]
       (not folded?)
       (conj (cond-> [::ui/card-body]
               :then (into (render-diff-details (:val revision) (:diff revision) opt))
@@ -148,6 +160,8 @@
                      (fn [revision]
                        (-> revision
                            (assoc :current? (= (:rev revision) (:rev inspectee-state)))
+                           (assoc :current-rendered? (= (:rev revision) (:rev-rendered inspectee-state)))
+                           (assoc :ref-resettable? (data/resettable? (:ref inspectee-state)))
                            (render-revision opt)))
                      (:history inspectee-state))
               (< 0 overflow)

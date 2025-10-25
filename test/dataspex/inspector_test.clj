@@ -26,6 +26,7 @@
             :dataspex/activity :dataspex.activity/browse
             :dataspex/ns-aliases {"dataspex.inspector" "inspector"}
             :rev 1
+            :rev-rendered 1
             :val data
             :history [{:created-at #inst "2025-04-16T16:19:58"
                        :val data
@@ -38,7 +39,7 @@
                 :dataspex/folding {[:movies] {:folded? false}}
                 :dataspex/sorting {[:movies] {:key :movie/title}}}
                (inspector/inspect-val data dataspex-opts)
-               (dissoc :rev :val :history))
+               (dissoc :rev :rev-rendered :val :history))
            {:dataspex/path [:movies]
             :dataspex/activity :dataspex.activity/audit
             :dataspex/pagination {:page-size 10}
@@ -121,6 +122,7 @@
              :dataspex/path []
              :dataspex/activity :dataspex.activity/browse
              :rev 1
+             :rev-rendered 1
              :val {:my "Data"}
              :history [{:created-at #inst "2025-04-16T16:19:58"
                         :rev 1
@@ -136,6 +138,7 @@
              :dataspex/path []
              :dataspex/activity :dataspex.activity/browse
              :rev 1
+             :rev-rendered 1
              :val {:my "Data"}
              :subscription :dataspex.inspector/inspect
              :ref app-store

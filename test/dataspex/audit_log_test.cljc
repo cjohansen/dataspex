@@ -14,11 +14,13 @@
     (is (= (-> (audit-log/render-revision
                 {:created-at #inst "2025-04-16T16:21:14.000-00:00"
                  :rev 2
+                 :rev-rendered 2
                  :val {:movie/title "Interstellar"
                        :movie/year 2014}
                  :diff [[[:movie/director] :-]
                         [[:movie/year] :+]
-                        [[:movie/title] :+ "Interstellar"]]}
+                        [[:movie/title] :+ "Interstellar"]]
+                 :ref-resettable? true}
                 {:dataspex/inspectee "Store"
                  :dataspex/path []})
                h/strip-clock-times)
@@ -33,10 +35,15 @@
               [::ui/success "2"] " insertions, "
               [::ui/error "1"] " deletion"
               " in 3 keys"]
-             [::ui/button
-              {:dataspex.ui/title "Browse this version"
-               ::ui/actions [[::actions/inspect-revision "Store" 2]]}
-              [::icons/browser]]]])))
+             [:div.buttons
+              [::ui/button
+               {:dataspex.ui/title "Browse this version"
+                ::ui/actions [[::actions/inspect-revision "Store" 2]]}
+               [::icons/browser]]
+              [::ui/button
+               {::ui/actions [[::actions/reset-ref-to-revision "Store" 2]],
+                ::ui/title "Render this version"}
+               [::icons/eye]]]]])))
 
   (testing "Renders more compact diff summary with custom audit log summary"
     (is (= (->> (with-redefs [time/get-default-timezone
@@ -146,9 +153,9 @@
              ["Store" :dataspex/folding [:dataspex.audit-log/audit-log :rev 2]]
              {:folded? true}]])))
 
-  (testing "Removes the browse button from the header"
+  (testing "When a revision is expanded removes the buttons from the header"
     (is (nil? (->> (render-expanded)
-                   (lookup/select-one [::ui/card-header ::ui/button])))))
+                   (lookup/select-one [::ui/card-header :div.buttons])))))
 
   (testing "Renders diff in card body"
     (is (= (->> (render-expanded)

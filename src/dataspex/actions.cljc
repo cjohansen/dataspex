@@ -52,6 +52,16 @@
         (concat (let [id (str "el" (hash target))]
                   [[:effect/inspect-in-devtools id]
                    [:effect/expose-for-inspection id target]]))))
+    
+    ::reset-ref-to-revision
+    (let [[label rev] args
+          revision (->> (get-in state [label :history])
+                        (filterv (comp #{rev} :rev))
+                        first)]
+      [[:effect/reset-ref
+        label
+        rev
+        (:val revision)]])
 
     ::uninspect
     [[:effect/uninspect (first args)]]))
@@ -85,6 +95,14 @@
     (doseq [[label current value opts] args]
       (->> (inspector/inspect-val current value opts)
            (swap! store assoc label)))
+
+    :effect/reset-ref
+    (doseq [[label rev current] args]
+      (let [ref (get-in @store [label :ref])]
+        (swap! store assoc-in [label :rev-rendered] rev)
+        (dp/unwatch ref :dataspex.inspector/inspect)
+        (reset! ref current)
+        (dp/watch ref :dataspex.inspector/inspect (inspector/watch-fn store label))))
 
     :effect/uninspect
     (doseq [[label] args]
