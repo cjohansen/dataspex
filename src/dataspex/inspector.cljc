@@ -4,10 +4,11 @@
             [dataspex.protocols :as dp])
   #?(:clj (:import (java.util Date))))
 
-(defn get-dataspex-opts [current {:keys [host-str label auditable? max-height] :as opt}]
+(defn get-dataspex-opts [current {:keys [host-str label auditable? max-height default-hiccup-folding-level] :as opt}]
   (let [aliases (or (:dataspex/ns-aliases opt) (:ns-aliases opt))]
     (cond-> {:dataspex/path []
              :dataspex/activity :dataspex.activity/browse}
+      default-hiccup-folding-level (assoc :dataspex/default-hiccup-folding-level default-hiccup-folding-level)
       host-str (assoc :dataspex/host-str host-str)
       label (assoc :dataspex/inspectee label)
       (not= nil auditable?) (assoc :dataspex/auditable? auditable?)
@@ -99,7 +100,7 @@
 
 (defn inspect
   {:arglists '[[store label x]
-               [store label x {:keys [track-changes? history-limit max-height]}]]}
+               [store label x {:keys [track-changes? history-limit max-height default-hiccup-folding-level]}]]}
   [store label x & [opt]]
   (let [x (try-extend-inspectee x)
         [val subscription]

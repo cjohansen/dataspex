@@ -504,13 +504,21 @@
     (render-map-table data opt)))
 
 (defn render-hiccup [hiccup opt]
-  (let [opts (dissoc opt ::ui/prefix)]
+  (let [opts (-> (dissoc opt ::ui/prefix)
+                 (update :dataspex/folding-level
+                         (fn [level]
+                           (or level
+                               (when-let [default-level (:dataspex/default-hiccup-folding-level opt)]
+                                 (if (< default-level 0)
+                                   1000000
+                                   default-level))
+                               2))))]
     (cond-> [::ui/hiccup]
       (or (::ui/prefix opt)
           (::ui/inline? opt)) (conj (select-keys opt [::ui/prefix ::ui/inline?]))
       :then (conj (if (satisfies? dp/IRenderHiccup hiccup)
                     (dp/render-hiccup hiccup opts)
-                    (render-hiccup-node hiccup (assoc opts :dataspex/folding-level 2) [0]))))))
+                    (render-hiccup-node hiccup opts [0]))))))
 
 (defn render-source [data opt]
   (let [opt (assoc opt :dataspex/summarize-above-w -1)]

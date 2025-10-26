@@ -917,6 +917,27 @@
                 :data-folded)
            "true")))
 
+  (testing "Explicitly unfolds everything"
+    (is (empty?
+         (->> [:div
+               [:div
+                [:div
+                 [:section [:h1 "Hello"]]
+                 [:section.text [:p "Aight?"]]
+                 [:main
+                  [:h2 "More stuff"]]]]]
+              (h/render-source {:dataspex/inspectee "Page hiccup"
+                                :dataspex/path []
+                                :dataspex/default-hiccup-folding-level -1})
+              (lookup/select '["dataspex.ui/hiccup-tag[data-folded=true]"]))))
+
+    (is (= (->> [:div [:h2]]
+                (h/render-source {:dataspex/inspectee "Page hiccup"
+                                  :dataspex/path []})
+                (lookup/select-one [::ui/vector ::ui/vector]))
+           [::ui/vector
+            [::ui/hiccup-tag :h2]])))
+
   (testing "Asks for attribute map to be rendered inline with the tag"
     (is (= (->> [:h2 {:data-tooltip "Learn here"} "More stuff"]
                 h/render-source
