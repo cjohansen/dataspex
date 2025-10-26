@@ -9,7 +9,8 @@
   (testing "Gets initial view options"
     (is (= (:opt (views/get-render-data {} "Store"))
            {:dataspex/inspectee "Store"
-            :dataspex/view :dataspex.views/dictionary})))
+            :dataspex/view :dataspex.views/dictionary
+            :dataspex/summarize-above-w 80})))
 
   (testing "Gets view options with current path"
     (is (= (-> {"Store" {:dataspex/path [:users]}}
@@ -17,7 +18,8 @@
                :opt)
            {:dataspex/path [:users]
             :dataspex/inspectee "Store"
-            :dataspex/view :dataspex.views/dictionary})))
+            :dataspex/view :dataspex.views/dictionary
+            :dataspex/summarize-above-w 80})))
 
   (testing "Gets view options with with pagination, sorting, folding, and string renderers"
     (is (= (-> {"Store" {:dataspex/path [:users]
@@ -31,7 +33,8 @@
             :dataspex/pagination {[:libs] {:offset 2}}
             :dataspex/sorting {[:users] {:key :user/id}}
             :dataspex/folding {[:users :user/friends] {:folded? false}}
-            :dataspex/view :dataspex.views/dictionary})))
+            :dataspex/view :dataspex.views/dictionary
+            :dataspex/summarize-above-w 80})))
 
   (testing "Ignores technical data"
     (is (= (let [dataspex-store (atom {})]
@@ -41,7 +44,8 @@
            {:dataspex/inspectee "Store"
             :dataspex/path []
             :dataspex/activity :dataspex.activity/browse
-            :dataspex/view :dataspex.views/dictionary}))))
+            :dataspex/view :dataspex.views/dictionary
+            :dataspex/summarize-above-w 80}))))
 
 (deftype PrefersTables []
   dp/IPrefersView
