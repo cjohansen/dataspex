@@ -21,6 +21,11 @@ app state, Dataspex gives you eyes on the flow.
 Dataspex is the spiritual successor to [Gadget
 Inspector](https://github.com/cjohansen/gadget-inspector).
 
+Extensions:
+
+- [Chrome](https://chromewebstore.google.com/detail/dataspex/blgomkhaagnapapellmdfelmohbalneo)
+- [Firefox](https://addons.mozilla.org/en-US/firefox/addon/dataspex/)
+
 ## Usage
 
 To use Dataspex, require `dataspex.core` and call `inspect` on your data. When
