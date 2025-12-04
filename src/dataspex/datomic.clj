@@ -330,7 +330,6 @@
 (when-let [type-extended-entity-map
            (try
              (Class/forName "datomic_type_extensions.entity.TypeExtendedEntityMap")
-             (resolve 'datomic_type_extensions.entity/TypeExtendedEntityMap)
              (catch Throwable _ nil))]
   (extend type-extended-entity-map
     datalog/Entity
