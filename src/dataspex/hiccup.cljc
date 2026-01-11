@@ -645,6 +645,16 @@
   (render-source [r opt]
     (render-atom-source r opt)))
 
+#?(:clj
+   (extend-type java.util.Properties
+     dp/IRenderInline
+     (render-inline [properties opt]
+       (render-inline-map properties (data/get-property-entries properties opt) opt))
+
+     dp/IRenderDictionary
+     (render-dictionary [properties opt]
+       (render-entries-dictionary properties opt (data/get-property-entries properties opt)))))
+
 #?(:cljs
    (extend-type js/Date
      dp/IRenderDictionary

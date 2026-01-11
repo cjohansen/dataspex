@@ -303,7 +303,14 @@
     (is (= (-> (h/render-inline (atom {}))
                (h/strip-attrs #{::ui/actions}))
            [::ui/vector {::ui/prefix "#atom"}
-            [::ui/map]]))))
+            [::ui/map]])))
+
+  #?(:clj
+     (testing "Renders Properties as a map"
+       (is (= (->> (System/getProperties)
+                   h/render-inline
+                   first)
+              :dataspex.ui/link)))))
 
 (deftest render-dictionary-test
   (testing "Renders string"
@@ -477,6 +484,14 @@
                 (lookup/select ::ui/keyword)
                 (mapv lookup/text))
            [":name"])))
+
+  #?(:clj
+     (testing "Browses properties as dictionary"
+       (is (= (->> (System/getProperties)
+                   h/render-dictionary
+                   (lookup/select :dataspex.ui/entry)
+                   count)
+              (count (into {} (System/getProperties)))))))
 
   #?(:cljs
      (testing "Renders date as dictionry"
@@ -973,4 +988,12 @@
                 h/render-source
                 (lookup/select ::ui/hiccup-tag)
                 (mapv lookup/text))
-           [":div" ":h2" ":p" ":p"]))))
+           [":div" ":h2" ":p" ":p"])))
+
+  #?(:clj
+     (testing "Renders properties"
+       (is (= (->> (System/getProperties)
+                   h/render-source
+                   (lookup/select :dataspex.ui/map-entry)
+                   count)
+              (count (System/getProperties)))))))

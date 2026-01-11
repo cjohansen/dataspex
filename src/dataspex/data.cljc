@@ -270,6 +270,11 @@
                  :label k
                  :v (inspect (get m k) opt)})))))
 
+(defn get-property-entries [properties opt]
+  (-> (into {} properties)
+      (update-keys symbol)
+      (get-map-entries opt)))
+
 (defn get-js-array-entries [#?(:cljs ^js arr :clj arr) opt]
   (.map arr (fn [v i]
               {:k i
@@ -342,6 +347,12 @@
      dp/INavigatable
      (nav-in [d [p & path]]
        (nav-in (get (date/->map d) p) path))))
+
+#?(:clj
+   (extend-type java.util.Properties
+     dp/INavigatable
+     (nav-in [properties [p & path]]
+       (nav-in (get properties (str p)) path))))
 
 (extend-type #?(:clj Object
                 :cljs object)

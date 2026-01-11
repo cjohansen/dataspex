@@ -126,7 +126,12 @@
   (testing "Navigates into meta data"
     (is (= (-> (with-meta {} {:meta? true})
                (data/nav-in [data/meta-k]))
-           {:meta? true}))))
+           {:meta? true})))
+
+  #?(:clj
+     (testing "Navigates in properties"
+       (is (string? (-> (System/getProperties)
+                        (data/nav-in ["java.class.path"])))))))
 
 (deftest supports-view?-test
   (testing "Primitives are not tableable"
