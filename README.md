@@ -6,7 +6,7 @@ and Datomic connections; trace changes to atoms and databases over time; and
 more -- with minimal effort and a short learning curve.
 
 ```clj
-no.cjohansen/dataspex {:mvn/version "2025.10.2"}
+no.cjohansen/dataspex {:mvn/version "2026.01.1"}
 ```
 
 Dataspex runs as a Chrome and Firefox extension — or as a standalone web app —
@@ -228,5 +228,5 @@ publicly documented.
 
 ## License
 
-Copyright © 2025 Christian Johansen. Distributed under the [MIT
+Copyright © 2025-2026 Christian Johansen. Distributed under the [MIT
 License](https://opensource.org/license/mit).
