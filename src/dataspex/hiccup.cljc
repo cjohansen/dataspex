@@ -251,12 +251,17 @@
 (defn render-inline-atom [r opt]
   (render-paginated-sequential ::ui/vector [(deref r)] (assoc opt ::ui/prefix "#atom")))
 
+(defn render-inline-vector [v opt]
+  (->> {:get-entries data/get-indexed-entries}
+       (render-paginated-sequential ::ui/vector v opt)))
+
 (defn render-inline-object [o opt]
   (if (contains? (::visited opt) o)
     [::ui/symbol "(circular)"]
     (let [opt (update opt ::visited (fnil conj #{}) o)]
       (cond
         (map? o) (render-inline-map o (data/get-map-entries o opt) opt)
+        (vector? o) (render-inline-vector o opt) ;; sub vectors
         (coll? o) (render-inline-seq o opt)
         (uuid? o) [::ui/literal {::ui/prefix "#uuid"} [::ui/string (str o)]]
         (data/js-collection? o) (render-inline-js-coll o opt)
@@ -539,11 +544,10 @@
        :then (conj [::ui/code "..."]))]
     (render-hiccup hiccup opt)))
 
-(defn render-inline-vector [v opt]
+(defn render-inline-hiccup-or-vector [v opt]
   (if (hiccup? v opt)
     (render-inline-hiccup v opt)
-    (->> {:get-entries data/get-indexed-entries}
-         (render-paginated-sequential ::ui/vector v opt))))
+    (render-inline-vector v opt)))
 
 (extend-type #?(:cljs string
                 :clj java.lang.String)
@@ -603,7 +607,7 @@
                 :clj clojure.lang.PersistentVector)
   dp/IRenderInline
   (render-inline [v opt]
-    (render-inline-vector v opt)))
+    (render-inline-hiccup-or-vector v opt)))
 
 (extend-type #?(:cljs cljs.core/List
                 :clj clojure.lang.PersistentList)

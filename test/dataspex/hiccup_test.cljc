@@ -138,6 +138,17 @@
              :hello :hello :hello :hello])
            [::ui/link "[19 items]"])))
 
+  (testing "Renders sub vector"
+    (is (= (h/render-inline
+            (subvec [:hello :hello :hello :hello :hello
+                     :hello :hello :hello :hello 2
+                     :hello :hello :hello :hello :hello
+                     :hello :hello :hello :hello] 3 6))
+           [::ui/vector
+            [::ui/keyword :hello]
+            [::ui/keyword :hello]
+            [::ui/keyword :hello]])))
+
   (testing "Renders hiccup summary"
     (is (= (-> [:div {:data-theme "light"}
                 [:h1.text-lg "Hello world"]
