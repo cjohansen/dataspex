@@ -222,7 +222,7 @@
        (is (= (-> (h/render-inline #js ["hello"])
                   (h/strip-attrs #{::ui/actions}))
               [::ui/vector
-               {:dataspex.ui/prefix "#js"}
+               {::ui/prefix "#js"}
                [::ui/string "hello"]]))))
 
   (testing "Renders short map"
@@ -274,7 +274,7 @@
      (testing "Renders short JS object"
        (is (= (-> #js {:hello "There"}
                   h/render-inline)
-              [::ui/map {:dataspex.ui/prefix "#js"}
+              [::ui/map {::ui/prefix "#js"}
                [::ui/map-entry
                 [::ui/symbol 'hello]
                 [::ui/string "There"]]]))))
@@ -283,14 +283,14 @@
      (testing "Renders object with custom constructor"
        (is (= (-> (MyConstructor. "Secret data")
                   h/render-inline)
-              [::ui/map {:dataspex.ui/prefix "#js/dataspex$hiccup_test$MyConstructor"}
+              [::ui/map {::ui/prefix "#js/dataspex$hiccup_test$MyConstructor"}
                [::ui/map-entry
                 [::ui/symbol 'data]
                 [::ui/string "Secret data"]]]))))
 
   (testing "Renders inline atom"
     (is (= (-> (h/render-inline (atom {}))
-               (h/strip-attrs #{:dataspex.ui/actions}))
+               (h/strip-attrs #{::ui/actions}))
            [::ui/vector {::ui/prefix "#atom"}
             [::ui/map]]))))
 
@@ -869,9 +869,9 @@
                   :dataspex/folding {[:body 0 0 0 0]
                                      {:folded? false
                                       :ident [:main]}}})
-                (lookup/select '[:dataspex.ui/hiccup > ::ui/vector >
+                (lookup/select '[::ui/hiccup > ::ui/vector >
                                  ::ui/vector > ::ui/vector > ::ui/vector >
-                                 :dataspex.ui/hiccup-tag])
+                                 ::ui/hiccup-tag])
                 last
                 lookup/attrs)
            {:data-folded "false"
@@ -929,7 +929,7 @@
               (h/render-source {:dataspex/inspectee "Page hiccup"
                                 :dataspex/path []
                                 :dataspex/default-hiccup-folding-level -1})
-              (lookup/select '["dataspex.ui/hiccup-tag[data-folded=true]"]))))
+              (lookup/select '[":ui/hiccup-tag[data-folded=true]"]))))
 
     (is (= (->> [:div [:h2]]
                 (h/render-source {:dataspex/inspectee "Page hiccup"
