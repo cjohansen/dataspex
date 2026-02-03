@@ -35,16 +35,18 @@
    500))
 
 (defonce store
-  (let [host-str (get-host-str (ua/parse-user-agent) js/location.origin)
-        store (atom (-> (some-> (try
-                                  (js/localStorage.getItem "dataspex")
-                                  (catch :default _ nil))
-                                codec/parse-string)
-                        (assoc :dataspex/host-str host-str)))]
-    (add-watch store ::remember (fn [_ _ _ state] (persist! state)))
-    (render-host/start-render-host store)
-    (render-host/add-channel store (in-process-host/create-channel host-str))
-    store))
+  (if (exists? js/location)
+    (let [host-str (get-host-str (ua/parse-user-agent) js/location.origin)
+          store (atom (-> (some-> (try
+                                    (js/localStorage.getItem "dataspex")
+                                    (catch :default _ nil))
+                                  codec/parse-string)
+                          (assoc :dataspex/host-str host-str)))]
+      (add-watch store ::remember (fn [_ _ _ state] (persist! state)))
+      (render-host/start-render-host store)
+      (render-host/add-channel store (in-process-host/create-channel host-str))
+      store)
+    (atom nil)))
 
 (defn ^:export connect-remote-inspector
   "Connect a server to send inspected data to for remote viewing. Sending to a
