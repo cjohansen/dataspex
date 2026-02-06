@@ -97,7 +97,7 @@
      "Well, it ain't much to look at - yet. "
      "You can fix that by telling Dataspex to inspect something:"]
     (hiccup/render-source
-     '(require [dataspex.core :as dataspex])
+     '(require '[dataspex.core :as dataspex])
      {})
     (hiccup/render-source
      '(dataspex/inspect "App state" my-data)
