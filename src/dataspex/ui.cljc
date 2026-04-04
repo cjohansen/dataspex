@@ -1,5 +1,6 @@
 (ns dataspex.ui
   (:require [dataspex.data :as data]
+            [dataspex.icons :as icons]
             [replicant.alias :refer [defalias]])
   (:refer-clojure :exclude [keyword boolean symbol vector set map list]))
 
@@ -387,6 +388,11 @@
 
 (defalias error [attrs content]
   [:strong (assoc attrs :data-color "error") content])
+
+(defalias warning [attrs content]
+  [:div.flex.gap-2 attrs
+   [icons/warning {:color "var(--error-fg)"}]
+   content])
 
 (defalias link [attrs text]
   [:button.link

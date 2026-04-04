@@ -44,6 +44,13 @@
    [ui/keyword :b]
    [ui/keyword :c]])
 
+(defscene vector-warning
+  [ui/warning
+   [ui/vector
+    [ui/keyword :a]
+    [ui/keyword :b]
+    [ui/keyword :c]]])
+
 (defscene set
   [ui/set
    [ui/keyword :a]

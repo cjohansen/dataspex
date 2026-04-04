@@ -63,6 +63,9 @@
 (defalias moon [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/moon)))
 
+(defalias warning [attrs _]
+  (render-icon attrs (icons/icon :phosphor.bold/warning)))
+
 (defalias wifi-high [attrs _]
   (render-icon (assoc-in attrs [:style :fill] "currentColor") (icons/icon :phosphor.regular/wifi-high)))
 
