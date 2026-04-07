@@ -9,6 +9,9 @@
 (defn render-icon [attrs icon]
   (icons/render icon (update attrs :class conj :icon)))
 
+(defalias clock [attrs _]
+  (render-icon attrs (icons/icon :phosphor.regular/clock)))
+
 (defalias copy [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/copy)))
 
