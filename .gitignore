@@ -31,3 +31,6 @@ dev-resources/public/portfolio/
 /browser-extension/firefox/manifest.json
 /browser-extension/firefox/panel.html
 /browser-extension/firefox/*.png
+.DS_Store
+/.idea
+dataspex.iml

@@ -13,4 +13,12 @@ window.addEventListener("message", function(event) {
   }
 });
 
-window.postMessage({from: "dataspex-content-script", type: "ready"}, "*");
+function ready() {
+  window.postMessage({from: "dataspex-content-script", type: "ready"}, "*");
+}
+
+if (document.readyState === "complete") {
+  ready();
+} else {
+  window.addEventListener("load", ready, { once: true });
+}
