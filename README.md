@@ -75,8 +75,9 @@ features, including:
 - Browse JWT strings
 - Browse any data that implements `clojure.core.protocols/Datafiable`
 - Browse Datascript databases, indexes and entities
-- Browse Datomic databases and entities (indexes to follow)
-- Navigate Datascript/Datomic refs, including reverse refs
+- Browse Datomic databases and entities
+- Browse Datalevin databases and entities
+- Navigate Datascript/Datomic/Datalevin refs, including reverse refs
 - Browse sequences of maps in tables
 - Browse meta data of data
 - View full data in "syntax highlight mode"
