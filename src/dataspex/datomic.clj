@@ -272,7 +272,7 @@
   (render-inline [datom opt]
     (datalog/render-datom datom opt)))
 
-(defn get-ref-attrs [e]
+(defn get-unique-entity-attrs [e]
   (d/q '[:find [?a ...]
          :in $ [?a ...]
          :where
@@ -306,8 +306,8 @@
   (entity-db [entity]
     (d/entity-db entity))
 
-  (get-ref-attrs [e]
-    (get-ref-attrs e))
+  (get-unique-entity-attrs [e]
+    (get-unique-entity-attrs e))
 
   (get-primitive-attrs [e]
     (get-primitive-attrs e))
@@ -333,8 +333,8 @@
              (catch Throwable _ nil))]
   (extend type-extended-entity-map
     datalog/Entity
-    {:entity-db           d/entity-db
-     :get-ref-attrs       get-ref-attrs
+    {:entity-db d/entity-db
+     :get-unique-entity-attrs get-unique-entity-attrs
      :get-primitive-attrs get-primitive-attrs
      :get-reverse-ref-attrs get-reverse-ref-attrs}
 

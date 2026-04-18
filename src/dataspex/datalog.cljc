@@ -8,7 +8,7 @@
 
 (defprotocol Entity
   (entity-db [entity])
-  (get-ref-attrs [entity])
+  (get-unique-entity-attrs [entity])
   (get-primitive-attrs [entity])
   (get-reverse-ref-attrs [entity]))
 
@@ -145,7 +145,7 @@
   (let [ks (keys e)]
     (or (when-let [ident (:db/ident e)]
           ident)
-        (when-let [uniq (seq (get-ref-attrs e))]
+        (when-let [uniq (seq (get-unique-entity-attrs e))]
           (select-keys e uniq))
         (when (< (count ks) 5)
           (into {} e))

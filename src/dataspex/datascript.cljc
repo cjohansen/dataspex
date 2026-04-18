@@ -224,7 +224,7 @@
   (entity-db [entity]
     (d/entity-db entity))
 
-  (get-ref-attrs [e]
+  (get-unique-entity-attrs [e]
     (->> (keys e)
          (filterv (:db/unique (:rschema (d/entity-db e))))
          not-empty))
