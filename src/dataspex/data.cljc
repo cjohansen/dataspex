@@ -82,7 +82,10 @@
              (and (seq? x) (or (string? (first x))
                                (hiccup? (first x))))))))
 
-(def string-inspectors (atom []))
+(defonce inspectors (atom []))
+
+(defn ^:export add-inspector! [f]
+  (swap! inspectors conj f))
 
 (defn ^:export add-string-inspector!
   "Add a function `f` that can convert a string to inspectable data. The function
@@ -92,22 +95,20 @@
   structured data. Examples include JWTs (see `dataspex.jwt`), query parameters,
   string-encoded JSON/EDN, encrypted data, stack traces strings, etc."
   [f]
-  (swap! string-inspectors conj f))
+  (swap! inspectors conj (fn [x] (when (string? x ) (f x)))))
 
 (defn inspect
   "Converts `x` into inspectable data.
 
   This is a wrapper around `clojure.datafy/datafy` that prefers values
-  implementing the relevant Dataspex rendering protocol for the given `view`. If
-  `x` is a string, registered string inspectors (see `add-string-inspector!`)
-  will be tried first.
+  implementing the relevant Dataspex rendering protocol for the given `view`.
+  Tries registered inspectors first (see `add-string-inspector!` and
+  `add-inspectors`).
 
   Returns a value suitable for visualization in the Dataspex UI."
   ([x] (inspect x nil))
   ([x {:dataspex/keys [view]}]
-   (let [data (if (string? x)
-                (some #(% x) (conj @string-inspectors identity))
-                x)]
+   (let [data (or (some #(% x) @inspectors) x)]
      (cond
        (and (= view :dataspex.views/inline)
             (satisfies? dp/IRenderInline data))
@@ -256,9 +257,12 @@
          (not (sorted? s))
          (sort-by sort-order))
        (map (fn [v]
-              (let [v (inspect v opt)]
-                {:k (as-key v)
-                 :v v})))))
+              (let [v* (inspect v opt)
+                    k (as-key v)]
+                {:k (if (not= v k)
+                      k
+                      (as-key v*))
+                 :v v*})))))
 
 (defn get-map-entries [m opt & [{:keys [ks]}]]
   (->> (or ks (if (sorted? m)

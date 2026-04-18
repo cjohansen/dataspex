@@ -20,6 +20,11 @@
    (when (= "Special string" s)
      datafiable-inline-renderable)))
 
+(data/add-inspector!
+ (fn [m]
+   (when (= {:special "Map"} m)
+     datafiable-inline-renderable)))
+
 (deftest hiccup?
   (testing "Recognizes hiccup"
     (is (data/hiccup? [:br]))
@@ -50,8 +55,12 @@
                (data/inspect {:dataspex/view views/dictionary}))
            "Datafied!")))
 
-  (testing "Runs string through custom inspectors, and tests the result for protocol implementations"
+  (testing "Runs value through custom string inspectors, and tests the result for protocol implementations"
     (is (= (data/inspect "Special string" {:dataspex/view views/dictionary})
+           "Datafied!")))
+
+  (testing "Runs value through all custom inspectors, and tests the result for protocol implementations"
+    (is (= (data/inspect {:special "Map"} {:dataspex/view views/dictionary})
            "Datafied!"))))
 
 (deftest nav-in
