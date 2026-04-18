@@ -121,6 +121,7 @@
             {:dataspex/inspectee "Store"
              :dataspex/path []
              :dataspex/activity :dataspex.activity/browse
+             :idx 0
              :rev 1
              :rev-rendered 1
              :val {:my "Data"}
@@ -137,6 +138,7 @@
             {:dataspex/inspectee "Store"
              :dataspex/path []
              :dataspex/activity :dataspex.activity/browse
+             :idx 0
              :rev 1
              :rev-rendered 1
              :val {:my "Data"}

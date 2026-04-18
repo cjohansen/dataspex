@@ -100,20 +100,24 @@
 
 (defn inspect
   {:arglists '[[store label x]
-               [store label x {:keys [track-changes? history-limit max-height default-hiccup-folding-level]}]]}
+               [store label x {:keys [track-changes? history-limit max-height default-hiccup-folding-level idx]}]]}
   [store label x & [opt]]
   (let [x (try-extend-inspectee x)
         [val subscription]
         (if (satisfies? dp/Watchable x)
           [(dp/get-val x)
            (dp/watch x ::inspect (watch-fn store label opt))]
-          [x])]
-    (->> (cond-> (assoc (get-opts opt)
-                        :label label
-                        :host-str (:dataspex/host-str @store))
-           subscription (assoc :subscription subscription
-                               :ref x))
-         (swap! store update label inspect-val val))))
+          [x])
+        options (cond-> (assoc (get-opts opt)
+                               :label label
+                               :host-str (:dataspex/host-str @store))
+                  subscription (assoc :subscription subscription
+                                      :ref x))]
+    (swap! store
+           (fn [state]
+             (cond-> (update state label inspect-val val options)
+               (not (get-in state [label :idx]))
+               (assoc-in [label :idx] (or (:idx opt) (count state))))))))
 
 (defn uninspect [store label]
   (let [{:keys [ref subscription]} (get @store label)]

@@ -3,6 +3,7 @@
             [clojure.test :refer [deftest is testing]]
             [dataspex.actions :as-alias actions]
             [dataspex.icons :as-alias icons]
+            [dataspex.inspector :as inspector]
             [dataspex.panel :as panel]
             [dataspex.ui :as-alias ui]
             [dataspex.views :as views]
@@ -294,3 +295,23 @@
                          :history [{:rev 1 :val {}}]}}
                "Store")
               (lookup/select ::ui/card-list))))))
+
+(deftest render-inspector
+  (testing "Renders panels in inspected order"
+    (is (= (->> (let [store (atom {})]
+                  (inspector/inspect store "Page data" {})
+                  (inspector/inspect store "App data" {})
+                  (panel/render-inspector @store))
+                (lookup/select :h2)
+                (map lookup/text))
+           ["Page data" "App data"])))
+
+  (testing "Renders panels in custom order"
+    (is (= (->> (let [store (atom {})]
+                  (inspector/inspect store "Page data" {} {:idx 1})
+                  (inspector/inspect store "Location data" {} {:idx 0})
+                  (inspector/inspect store "App data" {} {:idx 2})
+                  (panel/render-inspector @store))
+                (lookup/select :h2)
+                (map lookup/text))
+           ["Location data" "Page data" "App data"]))))

@@ -178,9 +178,9 @@
             pagination]))))))
 
 (defn render-inspector [state]
-  (some->> (keys state)
-           (filterv string?)
-           sort
-           (mapv #(render-panel state %))
+  (some->> state
+           (filterv (comp string? key))
+           (sort-by (comp :idx val))
+           (mapv #(render-panel state (key %)))
            not-empty
            (into [:div])))
