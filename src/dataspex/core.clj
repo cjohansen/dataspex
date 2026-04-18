@@ -15,6 +15,12 @@
   (require 'dataspex.datomic)
   (catch Throwable _ false))
 
+(try
+  (require 'dataspex.datalevin)
+  (when-let [f (resolve 'dataspex.datalevin/reify-conn)]
+    (data/add-inspector! f))
+  (catch Throwable _ false))
+
 (data/add-string-inspector! jwt/inspect-jwt)
 
 (defn- get-host-str []
