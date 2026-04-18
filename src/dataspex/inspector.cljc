@@ -55,9 +55,6 @@
 
 (defn ^:no-doc get-opts [opt]
   (cond-> (assoc opt :now (now))
-    (not (contains? opt :track-changes?))
-    (assoc :track-changes? true)
-
     (not (number? (:history-limit opt)))
     (assoc :history-limit 25)))
 

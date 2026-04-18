@@ -100,7 +100,7 @@
                count)
            3)))
 
-  (testing "Optionally does not track history"
+  (testing "Explicitly does not track history"
     (is (nil? (:history (inspector/inspect-val nil data {:track-changes? false})))))
 
   (testing "Updates rev without tracking history"
@@ -112,10 +112,10 @@
 (def app-store (atom {:my "Data"}))
 
 (deftest inspect-test
-  (testing "Tracks history by default"
+  (testing "Tracks history when instructed to"
     (is (= (let [store (atom {})]
              (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
-               (inspector/inspect store "Store" {:my "Data"}))
+               (inspector/inspect store "Store" {:my "Data"} {:track-changes? true}))
              @store)
            {"Store"
             {:dataspex/inspectee "Store"
@@ -128,6 +128,20 @@
              :history [{:created-at #inst "2025-04-16T16:19:58"
                         :rev 1
                         :val {:my "Data"}}]}})))
+
+  (testing "Does not track history by default"
+    (is (= (let [store (atom {})]
+             (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
+               (inspector/inspect store "Store" {:my "Data"}))
+             @store)
+           {"Store"
+            {:dataspex/inspectee "Store"
+             :dataspex/path []
+             :dataspex/activity :dataspex.activity/browse
+             :idx 0
+             :rev 1
+             :rev-rendered 1
+             :val {:my "Data"}}})))
 
   (testing "Inspects atom"
     (is (= (let [dataspex-store (atom {})]
@@ -143,16 +157,13 @@
              :rev-rendered 1
              :val {:my "Data"}
              :subscription :dataspex.inspector/inspect
-             :ref app-store
-             :history [{:created-at #inst "2025-04-16T16:19:58"
-                        :rev 1
-                        :val {:my "Data"}}]}})))
+             :ref app-store}})))
 
   (testing "Inspect watches atom for updates"
     (is (= (let [my-store (atom {})
                  dataspex-store (atom {})]
              (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
-               (inspector/inspect dataspex-store "Store" my-store))
+               (inspector/inspect dataspex-store "Store" my-store {:track-changes? true}))
              (with-redefs [inspector/now (constantly #inst "2025-04-16T17:02:23")]
                (swap! my-store assoc :new "Data"))
              (get-in @dataspex-store ["Store" :history]))
@@ -180,7 +191,7 @@
              (d/transact! conn [{:person/id "christian"
                                  :person/given-name "Christian"}])
              (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
-               (inspector/inspect dataspex-store "DB" conn))
+               (inspector/inspect dataspex-store "DB" conn {:track-changes? true}))
              (with-redefs [inspector/now (constantly #inst "2025-04-16T17:02:23")]
                (d/transact! conn [{:person/id "christian"
                                    :person/given-name "Christian"
@@ -206,7 +217,7 @@
     (is (= (let [conn (d/create-conn {:person/id {:db/unique :db.unique/identity}})
                  dataspex-store (atom {})]
              (with-redefs [inspector/now (constantly #inst "2025-04-16T16:19:58")]
-               (inspector/inspect dataspex-store "DB" conn))
+               (inspector/inspect dataspex-store "DB" conn {:track-changes? true}))
              (with-redefs [inspector/now (constantly #inst "2025-04-16T17:02:23")]
                (d/transact! conn [{:person/id "christian"
                                    :person/given-name "Christian"}

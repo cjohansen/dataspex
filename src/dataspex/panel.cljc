@@ -21,14 +21,14 @@
      {::ui/actions [[::actions/assoc-in [inspectee :dataspex/activity] tab-activity]]})
    (str/capitalize (name tab-activity))])
 
-(defn render-title-bar [{:keys [history]} {:dataspex/keys [inspectee host-str] :as opt}]
+(defn render-title-bar [{:dataspex/keys [inspectee host-str] :as opt}]
   (let [rendering? (render? opt)]
     [::ui/toolbar
      (cond-> [::ui/tabs]
        rendering?
        (conj (render-tab opt browse))
 
-       (and rendering? (get opt :dataspex/auditable? true) (< 1 (count (or history []))))
+       (and rendering? (get opt :dataspex/auditable? true))
        (conj (render-tab opt audit)))
      (cond-> [:h2 [:strong inspectee]]
        host-str (conj [:span.subtle.ml-4 host-str]))
@@ -160,7 +160,7 @@
     (into
      [:div.panel (cond-> {}
                    (not rendering?) (assoc :data-folded "folded"))
-      (render-title-bar (get state label) opt)]
+      (render-title-bar opt)]
      (when rendering?
        (if (= audit (:dataspex/activity opt))
          [(-> (get state label)

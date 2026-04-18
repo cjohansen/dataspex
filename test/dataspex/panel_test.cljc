@@ -12,12 +12,16 @@
 (deftest render-title-bar
   (testing "Renders title bar"
     (is (= (panel/render-title-bar
-            {}
             {:dataspex/path ["Store"]
              :dataspex/inspectee "Store"})
            [::ui/toolbar
             [::ui/tabs
-             [::ui/tab {::ui/selected? true} "Browse"]]
+             [::ui/tab {::ui/selected? true} "Browse"]
+             [:dataspex.ui/tab
+              {:dataspex.ui/actions [[:dataspex.actions/assoc-in
+                                      ["Store" :dataspex/activity]
+                                      :dataspex.activity/audit]]}
+              "Audit"]]
             [:h2 [:strong "Store"]]
             [::ui/button-bar
              [::ui/button {::ui/title "Minimize"
@@ -31,27 +35,14 @@
     (is (= (->> {:dataspex/path ["Store"]
                  :dataspex/inspectee "Store"
                  :dataspex/host-str "localhost:9090 Chrome macOS"}
-                (panel/render-title-bar {})
+                panel/render-title-bar
                 (lookup/select-one :h2))
            [:h2
             [:strong "Store"]
             [:span {:class #{"ml-4" "subtle"}} "localhost:9090 Chrome macOS"]])))
 
-  (testing "Renders audit tab when there are more than one version"
-    (is (= (->> (panel/render-title-bar
-                 {:history [{} {}]}
-                 {:dataspex/path []
-                  :dataspex/inspectee "Store"})
-                (lookup/select ::ui/tab)
-                last)
-           [::ui/tab
-            {::ui/actions
-             [[::actions/assoc-in ["Store" :dataspex/activity] :dataspex.activity/audit]]}
-            "Audit"])))
-
   (testing "Cannot audit value that isn't auditable"
     (is (= (->> (panel/render-title-bar
-                 {}
                  {:dataspex/path []
                   :dataspex/inspectee "Store@12:27:06"
                   :dataspex/auditable? false})
@@ -61,7 +52,6 @@
 
   (testing "Selects audit tab when auditing"
     (is (= (->> (panel/render-title-bar
-                 {:history [{} {}]}
                  {:dataspex/path []
                   :dataspex/inspectee "Store@12:27:06"
                   :dataspex/activity panel/audit})
@@ -72,7 +62,6 @@
 
   (testing "Renders minimized title bar"
     (is (= (panel/render-title-bar
-            {}
             {:dataspex/inspectee "Store"
              :dataspex/render? false})
            [::ui/toolbar
