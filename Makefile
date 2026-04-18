@@ -22,8 +22,11 @@ chrome-extension: browser-extension/extension.js browser-extension/chrome/manife
 	cp browser-extension/devtools.html browser-extension/chrome/devtools.html
 	cp browser-extension/panel.html browser-extension/chrome/panel.html
 
+chrome-dist: chrome-extension
+	cd browser-extension/chrome && zip -r ../../dataspex-chrome.zip .
+
 browser-extension/firefox/manifest.json: check-xmllint pom.xml
-	sed 's/VERSION/$(VERSION)/' browser-extension/firefox/manifest.tpl.json > browser-extension/firefox/manifest.json
+	sed 's/VERSION/$(VERSION)/' browser-extension/firefox/manifest.tpl.json | sed -E 's/\.0+([0-9])/\.\1/g' > browser-extension/firefox/manifest.json
 
 firefox-extension: browser-extension/extension.js browser-extension/firefox/manifest.json
 	cp resources/public/dataspex/inspector.css browser-extension/firefox/inspector.css
@@ -32,6 +35,9 @@ firefox-extension: browser-extension/extension.js browser-extension/firefox/mani
 	cp browser-extension/content-script.js browser-extension/firefox/content-script.js
 	cp browser-extension/devtools.html browser-extension/firefox/devtools.html
 	cp browser-extension/panel.html browser-extension/firefox/panel.html
+
+firefox-dist: firefox-extension
+	web-ext build --source-dir=browser-extension/firefox
 
 resources/public/dataspex/inspector.js:
 	npx shadow-cljs release remote-inspector

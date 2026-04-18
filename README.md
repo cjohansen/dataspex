@@ -227,6 +227,21 @@ publicly documented.
 - `dataspex.render_client`: Client wiring
 - `dataspex.render_host`: Host wiring
 
+### Releasing new versions
+
+Chrome extension:
+
+- Go to the Chrome Web Store Developer Dashboard:
+  https://chrome.google.com/webstore/devconsole/43d95f40-5932-4c98-83fd-0c3a7684fbf8/blgomkhaagnapapellmdfelmohbalneo/edit/package
+- `make chrome-dist`
+- Upload dataspex-chrome.zip
+
+Firefox extension:
+
+- `make firefox-extension`
+- `web-ext build --source-dir=browser-extension/firefox`
+- Go to the Mozilla Add-on Developer Hub: https://addons.mozilla.org/en-US/developers/addon/dataspex/versions/submit/
+
 ## License
 
 Copyright © 2025-2026 Christian Johansen. Distributed under the [MIT
