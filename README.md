@@ -77,7 +77,8 @@ features, including:
 - Browse Datascript databases, indexes and entities
 - Browse Datomic databases and entities
 - Browse Datalevin databases and entities
-- Navigate Datascript/Datomic/Datalevin refs, including reverse refs
+- Browse Datahike databases, entities and transactions
+- Navigate Datascript/Datomic/Datalevin/Datahike refs, including reverse refs
 - Browse sequences of maps in tables
 - Browse meta data of data
 - View full data in "syntax highlight mode"

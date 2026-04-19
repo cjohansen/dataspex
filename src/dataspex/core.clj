@@ -21,6 +21,10 @@
     (data/add-inspector! f))
   (catch Throwable _ false))
 
+(try
+  (require 'dataspex.datahike)
+  (catch Throwable _ false))
+
 (data/add-string-inspector! jwt/inspect-jwt)
 
 (defn- get-host-str []

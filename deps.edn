@@ -10,20 +10,21 @@
   {:extra-paths ["dev" "test" "dev-resources" "portfolio"]
    :extra-deps
    {org.clojure/clojure {:mvn/version "1.12.0"}
-    com.datomic/peer {:mvn/version "1.0.6726"}
     babashka/fs {:mvn/version "0.5.30"}
+    com.datomic/peer {:mvn/version "1.0.6726"}
+    com.lambdaisland/kaocha-cljs {:mvn/version "1.5.154"}
+    com.widdindustries/cljc.java-time {:mvn/version "0.1.21"}
+    com.widdindustries/time-literals {:mvn/version "0.1.10"}
     datalevin/datalevin {:mvn/version "0.9.22"}
     datomic-type-extensions/datomic-type-extensions {:mvn/version "2025.01.15"}
-    thheller/shadow-cljs {:mvn/version "2.28.23"}
+    kaocha-noyoda/kaocha-noyoda {:mvn/version "2019-06-03"}
+    lambdaisland/kaocha {:mvn/version "1.91.1392"}
     no.cjohansen/lookup {:mvn/version "2025.04.12"}
     no.cjohansen/phosphor-clj {:mvn/version "2025.04.16"}
     no.cjohansen/portfolio {:mvn/version "2025.01.28"}
     no.cjohansen/replicant {:mvn/version "2025.03.27"}
-    kaocha-noyoda/kaocha-noyoda {:mvn/version "2019-06-03"}
-    lambdaisland/kaocha {:mvn/version "1.91.1392"}
-    com.lambdaisland/kaocha-cljs {:mvn/version "1.5.154"}
-    com.widdindustries/cljc.java-time {:mvn/version "0.1.21"}
-    com.widdindustries/time-literals {:mvn/version "0.1.10"}}}
+    org.replikativ/datahike {:mvn/version "0.8.1671"}
+    thheller/shadow-cljs {:mvn/version "2.28.23"}}}
 
   :jar
   {:extra-deps {pack/pack.alpha {:git/url "https://github.com/juxt/pack.alpha.git"
