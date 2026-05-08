@@ -33,7 +33,7 @@
 (defn subscribe-to-messages [render on-message]
   (when (and js/chrome js/chrome.runtime)
     (if firefox?
-      (-> (js/chrome.runtime.connect #js {:name "dataspex-panel"})
+      (-> (js/chrome.runtime.connect #js {:name (str "dataspex-panel-" js/browser.devtools.inspectedWindow.tabId)})
           .-onMessage
           (.addListener
            (fn [^js message]
