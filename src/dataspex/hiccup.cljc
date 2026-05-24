@@ -342,11 +342,14 @@
                            (= sort-order :dataspex.sort.order/descending)))
                 :dataspex.sort.order/ascending
                 :dataspex.sort.order/descending))))}
-   (some-> label (render-inline opt))
-   (when (= sort-k k)
-     (if (= :dataspex.sort.order/descending sort-order)
-       [:dataspex.icons/sort-descending]
-       [:dataspex.icons/sort-ascending]))])
+   (let [label-el (some-> label (render-inline opt))]
+     (if (= sort-k k)
+       [::ui/info
+        label-el
+        (if (= :dataspex.sort.order/descending sort-order)
+          [:dataspex.icons/sort-descending]
+          [:dataspex.icons/sort-ascending])]
+       label-el))])
 
 (defn render-map-table
   ([xs opt]

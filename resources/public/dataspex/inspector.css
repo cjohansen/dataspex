@@ -492,6 +492,14 @@ a.clickable:hover,
   gap: 12px;
 }
 
+/* Info */
+.info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1lh;
+}
+
 /* Syntax/data types */
 
 .string, [data-type=string] {color: var(--string-color);}
@@ -554,19 +562,6 @@ a.clickable:hover,
 .table-middle th,
 .table-middle td {
   vertical-align: middle;
-}
-
-.table th:has(.icon) {
-  display: flex;
-  align-items: center;
-}
-
-.table th .icon:not(:first-child) {
-  margin-left: 0.5em;
-}
-
-.table thead th:not(:has(.icon)) code {
-  margin-right: 1.75em;
 }
 
 .table th:empty {

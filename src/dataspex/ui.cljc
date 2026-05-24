@@ -201,6 +201,9 @@
   [:table.table attrs
    sections])
 
+(defalias info [attrs content]
+  (into [:div.info attrs] content))
+
 (defn indent-str [n]
   (loop [s ""
          n n]

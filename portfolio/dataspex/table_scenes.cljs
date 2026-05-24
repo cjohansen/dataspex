@@ -16,8 +16,9 @@
   [ui/table
    [ui/thead
     [ui/th {::ui/actions []}
-     [ui/keyword :point/label]
-     [icons/sort-ascending]]
+     [ui/info
+      [ui/keyword :point/label]
+      [icons/sort-ascending]]]
     [ui/th {::ui/actions []}
      [ui/keyword :point/latitude]]
     [ui/th {::ui/actions []}
