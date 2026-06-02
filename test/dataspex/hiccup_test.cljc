@@ -524,6 +524,31 @@
                    (mapv lookup/text))
               ["0"])))))
 
+(deftest render-entries-dictionary-test
+  (testing "Supports path in place of k"
+    (is (= (->> (hiccup/render-entries-dictionary
+                 {:k "Value"}
+                 {:dataspex/inspectee "Store"
+                  :dataspex/path [:map]}
+                 [{:path [:path :to :k]
+                   :v "Value"}])
+                (lookup/select-one :dataspex.ui/entry)
+                lookup/attrs
+                ::ui/actions)
+           [[:dataspex.actions/navigate "Store" [:map :path :to :k]]])))
+
+  (testing "Supports absolute path in place of k"
+    (is (= (->> (hiccup/render-entries-dictionary
+                 {:k "Value"}
+                 {:dataspex/inspectee "Store"
+                  :dataspex/path [:map]}
+                 [{:absolute-path [:other]
+                   :v "Value"}])
+                (lookup/select-one :dataspex.ui/entry)
+                lookup/attrs
+                ::ui/actions)
+           [[:dataspex.actions/navigate "Store" [:other]]]))))
+
 (deftest render-table-test
   (testing "Renders collection of maps as table"
     (is (= (->> (h/render-table

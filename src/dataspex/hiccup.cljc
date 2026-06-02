@@ -311,13 +311,14 @@
 
         :then
         (into
-         (for [{:keys [k path label v copyable?]} rows]
+         (for [{:keys [k path absolute-path label v copyable?]} rows]
            (let [opt (cond-> opt
                        k (update :dataspex/path conj k)
-                       path (update :dataspex/path into path))]
+                       path (update :dataspex/path into path)
+                       absolute-path (assoc :dataspex/path absolute-path))]
              [::ui/entry
               {::ui/actions
-               (when (or k path)
+               (when (or k path absolute-path)
                  (views/navigate-to opt (views/path-to opt)))}
               (or (some-> label (render-inline opt)) "")
               (render-inline v opt)
