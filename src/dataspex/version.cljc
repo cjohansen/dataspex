@@ -1,8 +1,8 @@
 (ns dataspex.version
   (:require [dataspex.ui :as-alias ui]))
 
-(def breaking-version 4)
-(def version "2026.05.2")
+(def breaking-version 5)
+(def version "2026.06.1")
 
 (defn render-outdated-extension-error [host]
   [::ui/alert.m-2 {:data-color "error"}

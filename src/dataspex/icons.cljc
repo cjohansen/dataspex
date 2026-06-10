@@ -12,6 +12,9 @@
 (defalias clock [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/clock)))
 
+(defalias arrow-bend-down-right [attrs _]
+  (render-icon attrs (icons/icon :phosphor.regular/arrow-bend-down-right)))
+
 (defalias copy [attrs _]
   (render-icon attrs (icons/icon :phosphor.regular/copy)))
 
