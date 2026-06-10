@@ -34,3 +34,8 @@ dev-resources/public/portfolio/
 .DS_Store
 /.idea
 dataspex.iml
+/browser-extension/cljs-runtime/
+/browser-extension/firefox/web-ext-artifacts/
+/dataspex-chrome.zip
+/resources/test/
+/web-ext-artifacts/
