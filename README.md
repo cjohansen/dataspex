@@ -239,8 +239,7 @@ Chrome extension:
 
 Firefox extension:
 
-- `make firefox-extension`
-- `web-ext build --source-dir=browser-extension/firefox`
+- `make firefox-dist`
 - Go to the Mozilla Add-on Developer Hub: https://addons.mozilla.org/en-US/developers/addon/dataspex/versions/submit/
 
 ## Contributing to Dataspex
