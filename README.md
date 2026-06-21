@@ -245,10 +245,10 @@ Firefox extension:
 ## Contributing to Dataspex
 
 I'm happy to collaborate with other humans to improve and add new features to
-Dataspex. However, I will not review the results of your AI prompts. When
+Dataspex. However, I will not review the results of your LLM prompts. When
 opening a pull request, I expect that you understand the code you're submitting
-and can vouch for its quality. I don't care if you had help from an AI to write
-it, and I certainly do not want to read excerpts from your AI chatlogs.
+and can vouch for its quality. I don't care if you had help from an LLM to write
+it, and I certainly do not want to read any part of your LLM chat logs.
 
 If you have an idea for a new feature, please discuss it with me before writing
 code: Open a PR with a description, or drop by [#dataspex on the Clojurians
