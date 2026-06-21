@@ -313,7 +313,7 @@
                @(d/transact conn (into [{:db/id "datomic.tx"
                                          :db/txInstant #inst "2025-04-26T16:01:00"}]
                                        data))
-               (inspector/inspect dataspex-store "Datomic conn" conn)
+               (inspector/inspect dataspex-store "Datomic conn" conn {:track-changes? true})
                @(d/transact conn [{:db/id "datomic.tx"
                                    :db/txInstant #inst "2025-04-26T16:02:00"}
                                   {:person/id "bob"
