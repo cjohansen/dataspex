@@ -585,6 +585,26 @@
   (render-dictionary [n opt]
     (render-primitive-dictionary "Number" n opt)))
 
+#?(:clj
+   (extend-type clojure.lang.BigInt
+     dp/IRenderInline
+     (render-inline [n _]
+       [::ui/number (str n "N")])
+
+     dp/IRenderDictionary
+     (render-dictionary [n opt]
+       (render-primitive-dictionary "BigInt" n opt))))
+
+#?(:clj
+   (extend-type java.math.BigDecimal
+     dp/IRenderInline
+     (render-inline [n _]
+       [::ui/number (str n "M")])
+
+     dp/IRenderDictionary
+     (render-dictionary [n opt]
+       (render-primitive-dictionary "BigDecimal" n opt))))
+
 (extend-type #?(:cljs boolean
                 :clj java.lang.Boolean)
   dp/IRenderInline

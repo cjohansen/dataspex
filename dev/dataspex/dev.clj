@@ -9,7 +9,9 @@
   (dataspex/inspect "Map"
     {:hello "World!"
      :runtime "JVM, baby!"
-     :numbers (range 1500)})
+     :numbers (range 1500)
+     :very-precise-number 1234567890.0987654321M
+     :really-large-number 12345678901234567890N})
 
   (dataspex/inspect "Map"
     {:greeting {:hello "World"}

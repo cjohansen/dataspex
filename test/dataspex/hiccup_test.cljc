@@ -89,6 +89,16 @@
     (is (= (h/render-inline 42)
            [::ui/number 42])))
 
+  #?(:clj
+     (testing "Renders BigInt"
+       (is (= (h/render-inline 42N)
+              [::ui/number "42N"]))))
+
+  #?(:clj
+     (testing "Renders BigDecimal"
+       (is (= (h/render-inline 42.42M)
+              [::ui/number "42.42M"]))))
+
   (testing "Renders boolean"
     (is (= (h/render-inline true)
            [::ui/boolean true])))
@@ -346,6 +356,26 @@
                 (lookup/select '[::ui/entry ::ui/number])
                 lookup/text)
            "42")))
+
+  #?(:clj
+     (testing "Renders BigInt"
+       (is (= (->> 42N
+                   (h/render-dictionary
+                    {:dataspex/inspectee "Store"
+                     :dataspex/path [:bigint]})
+                   (lookup/select '[::ui/entry ::ui/number])
+                   lookup/text)
+              "42N"))))
+
+  #?(:clj
+     (testing "Renders BigDecimal"
+       (is (= (->> 42.42M
+                   (h/render-dictionary
+                    {:dataspex/inspectee "Store"
+                     :dataspex/path [:bigdec]})
+                   (lookup/select '[::ui/entry ::ui/number])
+                   lookup/text)
+              "42.42M"))))
 
   (testing "Renders boolean"
     (is (= (->> (h/render-dictionary {:dataspex/path [:bool]} true)
@@ -650,6 +680,16 @@
   (testing "Renders number"
     (is (= (h/render-source 42)
            [::ui/source [::ui/number 42]])))
+
+  #?(:clj
+     (testing "Renders BigInt"
+       (is (= (h/render-source 42N)
+              [::ui/source [::ui/number "42N"]]))))
+
+  #?(:clj
+     (testing "Renders BigDecimal"
+       (is (= (h/render-source 42.42M)
+              [::ui/source [::ui/number "42.42M"]]))))
 
   (testing "Renders boolean"
     (is (= (h/render-source true)
